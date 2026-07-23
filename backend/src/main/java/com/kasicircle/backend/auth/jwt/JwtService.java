@@ -3,7 +3,6 @@ package com.kasicircle.backend.auth.jwt;
 import com.kasicircle.backend.users.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,10 +19,10 @@ public class JwtService {
     private final long expirationMillis;
 
     public JwtService(
-            @Value("${jwt.secret}") String base64Secret,
+            @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration}") long expirationMillis
     ) {
-        this.signingKey = Keys.hmacShaKeyFor(base64Secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
         this.expirationMillis = expirationMillis;
     }
 
