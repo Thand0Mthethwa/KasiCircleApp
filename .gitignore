@@ -1,0 +1,51 @@
+# Java/Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE - IntelliJ
+.idea/
+*.iml
+*.iws
+
+# IDE - VS Code
+.vscode/
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Windows
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Secrets - Do not commit local configurations
+application-local.properties
+application-dev.properties
+application-secret.properties
+.env
+.env.*
+
+# Temporary files
+*.tmp
+*.swp
+*~
