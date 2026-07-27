@@ -1,6 +1,6 @@
 package com.kasicircle.backend.users.controller;
 
-import com.kasicircle.backend.users.dto.UserResponse;
+import com.kasicircle.backend.users.dto.UserProfileResponse;
 import com.kasicircle.backend.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +15,14 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * GET /api/users/me : Get the currently authenticated user's profile.
+     *
+     * @return the ResponseEntity with status 200 (OK) and the user's profile in body.
+     */
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getCurrentUser() {
-        return ResponseEntity.ok(userService.getCurrentUser());
+    public ResponseEntity<UserProfileResponse> getCurrentUser() {
+        UserProfileResponse userProfile = userService.getCurrentUser();
+        return ResponseEntity.ok(userProfile);
     }
 }
