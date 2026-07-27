@@ -37,7 +37,7 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public AuthenticationResponse register(@Valid RegisterRequest request) {
+    public void register(@Valid RegisterRequest request) {
         String email = request.email().trim().toLowerCase(Locale.ROOT);
         userRepository.findByEmail(email).ifPresent(user -> {
             throw new UserAlreadyExistsException("User with email " + email + " already exists");
@@ -54,7 +54,6 @@ public class AuthenticationService {
                 .build();
 
         userRepository.save(newUser);
-        return new AuthenticationResponse(null);
     }
 
     @Transactional(readOnly = true)
