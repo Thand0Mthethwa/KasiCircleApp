@@ -1,9 +1,12 @@
 package com.kasicircle.backend.users.service;
 
-import com.kasicircle.backend.auth.dto.RegisterRequest;
-import com.kasicircle.backend.users.dto.UserResponse;
+import com.kasicircle.backend.users.dto.UserProfileResponse;
 
+/**
+ * Service interface for user-related operations.
+ */
 public interface UserService {
-    UserResponse getCurrentUser();
-    void createUser(RegisterRequest request);
+
+    UserProfileResponse getCurrentUser();
+
 }
