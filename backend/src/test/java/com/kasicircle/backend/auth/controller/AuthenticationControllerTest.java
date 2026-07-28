@@ -59,9 +59,11 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void register_withExistingEmail_shouldReturnUnauthorized() throws Exception {
+    void register_withExistingEmail_shouldReturnConflict() throws Exception {
         // Arrange: Create an existing user
         User existingUser = User.builder()
+                .firstName("Existing")
+                .lastName("User")
                 .email("existing.user@test.com")
                 .password(passwordEncoder.encode("some-password"))
                 .role(Role.USER)
@@ -74,7 +76,7 @@ class AuthenticationControllerTest {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -92,6 +94,8 @@ class AuthenticationControllerTest {
     void login_withValidCredentials_shouldReturnToken() throws Exception {
         // Arrange: Create a user to log in with
         User user = User.builder()
+                .firstName("Login")
+                .lastName("User")
                 .email("login.user@test.com")
                 .password(passwordEncoder.encode("Password123!"))
                 .role(Role.USER)
@@ -113,6 +117,8 @@ class AuthenticationControllerTest {
     void login_withInvalidPassword_shouldReturnUnauthorized() throws Exception {
         // Arrange: Create a user
         User user = User.builder()
+                .firstName("Login")
+                .lastName("User")
                 .email("login.user@test.com")
                 .password(passwordEncoder.encode("Password123!"))
                 .role(Role.USER)
@@ -143,6 +149,8 @@ class AuthenticationControllerTest {
     void login_withDisabledUser_shouldReturnForbidden() throws Exception {
         // Arrange: Create a disabled user
         User user = User.builder()
+                .firstName("Disabled")
+                .lastName("User")
                 .email("disabled.user@test.com")
                 .password(passwordEncoder.encode("Password123!"))
                 .role(Role.USER)
