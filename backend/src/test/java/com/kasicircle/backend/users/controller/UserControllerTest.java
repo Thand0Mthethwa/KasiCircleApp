@@ -1,7 +1,7 @@
 package com.kasicircle.backend.users.controller;
 
 import com.kasicircle.backend.auth.jwt.JwtService;
-import com.kasicircle.backend.users.dto.UserResponse;
+import com.kasicircle.backend.users.dto.UserProfileResponse;
 import com.kasicircle.backend.users.entity.Role;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.service.CustomUserDetailsService;
@@ -41,17 +41,16 @@ class UserControllerTest {
     @Test
     @WithMockUser(username = "test@example.com")
     void getCurrentUser_withValidJwt_shouldReturnOk() throws Exception {
-        UserResponse userResponse = UserResponse.builder()
+        UserProfileResponse userProfileResponse = UserProfileResponse.builder()
                 .id(UUID.randomUUID())
                 .firstName("Test")
                 .lastName("User")
                 .email("test@example.com")
+                .phoneNumber("1234567890")
                 .role(Role.USER)
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
                 .build();
 
-        when(userService.getCurrentUser()).thenReturn(userResponse);
+        when(userService.getCurrentUser()).thenReturn(userProfileResponse);
 
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isOk())
