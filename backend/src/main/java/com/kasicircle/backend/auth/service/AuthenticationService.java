@@ -4,9 +4,11 @@ import com.kasicircle.backend.auth.dto.AuthenticationResponse;
 import com.kasicircle.backend.auth.dto.LoginRequest;
 import com.kasicircle.backend.auth.dto.RegisterRequest;
 import com.kasicircle.backend.auth.jwt.JwtService;
+import com.kasicircle.backend.users.entity.Role;
 import com.kasicircle.backend.users.entity.User;
+import com.kasicircle.backend.users.exception.UserAlreadyExistsException;
 import com.kasicircle.backend.users.repository.UserRepository;
-import com.kasicircle.backend.users.service.UserService;
+import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -19,29 +21,31 @@ import java.util.Locale;
 
 @Service
 @Validated
+@RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthenticationService(
-            UserService userService,
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService
-    ) {
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-    }
+    @Transactional
+    public void register(@Valid RegisterRequest request) {
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
+        userRepository.findByEmail(email).ifPresent(user -> {
+            throw new UserAlreadyExistsException("User with email " + email + " already exists");
+        });
 
-    public AuthenticationResponse register(@Valid RegisterRequest request) {
-        userService.createUser(request);
+        User newUser = User.builder()
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .email(email)
+                .phoneNumber(request.phoneNumber())
+                .password(passwordEncoder.encode(request.password()))
+                .role(Role.USER) // Default role for new users
+                .enabled(true) // Enable user by default
+                .build();
 
-        return new AuthenticationResponse(null);
+        userRepository.save(newUser);
     }
 
     @Transactional(readOnly = true)

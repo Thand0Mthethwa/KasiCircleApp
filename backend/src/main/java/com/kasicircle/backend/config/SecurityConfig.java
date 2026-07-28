@@ -57,14 +57,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthenticationFilterRegistration() {
-        FilterRegistrationBean<JwtAuthenticationFilter> registration =
-                new FilterRegistrationBean<>(jwtAuthenticationFilter);
-        registration.setEnabled(false);
-        return registration;
-    }
-
-    @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
