@@ -8,6 +8,7 @@ import com.kasicircle.backend.users.entity.Role;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.exception.UserAlreadyExistsException;
 import com.kasicircle.backend.users.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -20,21 +21,12 @@ import java.util.Locale;
 
 @Service
 @Validated
+@RequiredArgsConstructor
 public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-
-    public AuthenticationService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService
-    ) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-    }
 
     @Transactional
     public void register(@Valid RegisterRequest request) {
