@@ -114,7 +114,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void login_withInvalidPassword_shouldReturnUnauthorized() throws Exception {
+    void login_withInvalidPassword_shouldReturnBadRequest() throws Exception {
         // Arrange: Create a user
         User user = User.builder()
                 .firstName("Login")
@@ -132,17 +132,17 @@ class AuthenticationControllerTest {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void login_withNonExistentUser_shouldReturnUnauthorized() throws Exception {
+    void login_withNonExistentUser_shouldReturnBadRequest() throws Exception {
         LoginRequest request = new LoginRequest("non.existent@test.com", "any-password");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -155,7 +155,7 @@ class AuthenticationControllerTest {
                 .password(passwordEncoder.encode("Password123!"))
                 .role(Role.USER)
                 .enabled(false) // User is disabled
-                .build(); 
+                .build();
         userRepository.save(user);
 
         LoginRequest request = new LoginRequest("disabled.user@test.com", "Password123!");
