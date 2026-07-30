@@ -1,5 +1,6 @@
 package com.kasicircle.backend.users.controller;
 
+import com.kasicircle.backend.users.dto.ChangePasswordRequest;
 import com.kasicircle.backend.users.dto.UpdateUserProfileRequest;
 import com.kasicircle.backend.users.dto.UserProfileResponse;
 import com.kasicircle.backend.users.service.UserService;
@@ -40,5 +41,17 @@ public class UserController {
     public ResponseEntity<UserProfileResponse> updateCurrentUser(@Valid @RequestBody UpdateUserProfileRequest request) {
         UserProfileResponse updatedUserProfile = userService.updateCurrentUser(request);
         return ResponseEntity.ok(updatedUserProfile);
+    }
+
+    /**
+     * PUT /api/users/change-password : Change the currently authenticated user's password.
+     *
+     * @param request The request body containing the current and new passwords.
+     * @return the ResponseEntity with status 200 (OK).
+     */
+    @PutMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(request);
+        return ResponseEntity.ok().build();
     }
 }
