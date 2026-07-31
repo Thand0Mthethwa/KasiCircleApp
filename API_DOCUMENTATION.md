@@ -57,3 +57,51 @@ The request body must be a JSON object containing the fields to update.
 - **401 Unauthorized:** Returned if the JWT is missing, invalid, or expired.
 
 ---
+
+### Change Authenticated User Password
+
+Securely changes the password for the currently authenticated user.
+
+- **URL:** `/api/users/change-password`
+- **Method:** `PUT`
+- **Authentication:** Required (JWT Bearer Token)
+
+#### Request Body
+
+The request body must be a JSON object containing the current and new passwords.
+
+| Field               | Type   | Required | Description                                                                                                   |
+|---------------------|--------|----------|---------------------------------------------------------------------------------------------------------------|
+| `currentPassword`   | String | Yes      | The user's current password. Cannot be blank.                                                                 |
+| `newPassword`       | String | Yes      | The user's new password. Minimum 8 characters. Must be a strong password. Cannot be blank.                     |
+| `confirmPassword`   | String | Yes      | The confirmation of the new password. Must match `newPassword`. Cannot be blank.                                |
+
+**Example Request:**
+```json
+{
+  "currentPassword": "old-secure-password",
+  "newPassword": "new-very-secure-password-123!",
+  "confirmPassword": "new-very-secure-password-123!"
+}
+```
+
+#### Responses
+
+- **200 OK:** Returned upon a successful password change. The response body will be empty.
+
+- **400 Bad Request:** Returned under the following conditions:
+  - The request body fails validation (e.g., blank fields, weak `newPassword`).
+  - The `newPassword` and `confirmPassword` fields do not match.
+  - The `newPassword` is the same as the `currentPassword`.
+  - The `currentPassword` is incorrect.
+
+  **Example Error Response Body:**
+  ```json
+  {
+      "error": "New password and confirmation password do not match."
+  }
+  ```
+
+- **401 Unauthorized:** Returned if the JWT is missing, invalid, or expired.
+
+---

@@ -2,6 +2,7 @@ package com.kasicircle.backend.users.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kasicircle.backend.auth.jwt.JwtService;
+import com.kasicircle.backend.users.dto.ChangePasswordRequest;
 import com.kasicircle.backend.users.dto.UpdateUserProfileRequest;
 import com.kasicircle.backend.users.dto.UserProfileResponse;
 import com.kasicircle.backend.users.entity.Role;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,6 +23,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -124,5 +128,91 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.firstName").exists()); // Assert that firstName error exists
     }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void changePassword_withValidRequest_shouldReturnOk() throws Exception {
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("oldPassword")
+                .newPassword("newPassword123!")
+                .confirmPassword("newPassword123!")
+                .build();
+
+        doNothing().when(userService).changePassword(any(ChangePasswordRequest.class));
+
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void changePassword_withMissingJwt_shouldReturnUnauthorized() throws Exception {
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("oldPassword")
+                .newPassword("newPassword")
+                .confirmPassword("newPassword")
+                .build();
+
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void changePassword_withIncorrectCurrentPassword_shouldReturnBadRequest() throws Exception {
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("wrongPassword")
+                .newPassword("newPassword123!")
+                .confirmPassword("newPassword123!")
+                .build();
+
+        doThrow(new BadCredentialsException("Incorrect current password."))
+                .when(userService).changePassword(any(ChangePasswordRequest.class));
+
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void changePassword_withMismatchedNewPasswords_shouldReturnBadRequest() throws Exception {
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("oldPassword")
+                .newPassword("newPassword123!")
+                .confirmPassword("differentPassword123!")
+                .build();
+
+        doThrow(new BadCredentialsException("New password and confirmation password do not match."))
+                .when(userService).changePassword(any(ChangePasswordRequest.class));
+
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void changePassword_withWeakPassword_shouldReturnBadRequest() throws Exception {
+        // Password "password" is likely to be caught by the StrongPassword validator
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("oldPassword")
+                .newPassword("password")
+                .confirmPassword("password")
+                .build();
+
+        // No need to mock the service call, as the validation should be triggered before
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.newPassword").exists());
+    }
 }
+
 

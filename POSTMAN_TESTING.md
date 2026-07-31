@@ -1,6 +1,6 @@
-# Sprint 2.2 Postman Testing: Update User Profile
+# Sprint 2.3 Postman Testing: Change Password
 
-This document provides test cases for the `PUT /api/users/me` endpoint.
+This document provides test cases for the `PUT /api/users/change-password` endpoint.
 
 **Prerequisites:**
 1. A user must be registered and logged in.
@@ -9,183 +9,137 @@ This document provides test cases for the `PUT /api/users/me` endpoint.
 
 ---
 
-### Test Case 1: Successful Update
+### Test Case 1: Successful Password Change
 
-**Description:** Verifies that a user can successfully update their `firstName`, `lastName`, and `phoneNumber`.
+**Description:** Verifies that a user can successfully change their password.
 
 **Request:**
 - **Method:** `PUT`
-- **URL:** `http://localhost:8080/api/users/me`
+- **URL:** `http://localhost:8080/api/users/change-password`
 - **Headers:**
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer {{your_jwt_token}}`
 - **Body (raw, JSON):**
   ```json
   {
-    "firstName": "JohnUpdated",
-    "lastName": "DoeUpdated",
-    "phoneNumber": "+11234567890"
+    "currentPassword": "old-secure-password",
+    "newPassword": "new-very-secure-password-123!",
+    "confirmPassword": "new-very-secure-password-123!"
   }
   ```
 
 **Expected Response:**
 - **Status Code:** `200 OK`
-- **Body:**
-  ```json
-  {
-    "id": "user-uuid-goes-here",
-    "firstName": "JohnUpdated",
-    "lastName": "DoeUpdated",
-    "email": "user.email@example.com",
-    "phoneNumber": "+11234567890",
-    "role": "USER"
-  }
-  ```
-  *(Note: `id` and `email` will be the authenticated user's actual values and should not have changed.)*
 
 ---
 
-### Test Case 2: Missing JWT
+### Test Case 2: Incorrect Current Password
+
+**Description:** Verifies that the endpoint returns `400 Bad Request` when the `currentPassword` is incorrect.
+
+**Request:**
+- **Method:** `PUT`
+- **URL:** `http://localhost:8080/api/users/change-password`
+- **Headers:**
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer {{your_jwt_token}}`
+- **Body (raw, JSON):**
+  ```json
+  {
+    "currentPassword": "wrong-password",
+    "newPassword": "new-very-secure-password-123!",
+    "confirmPassword": "new-very-secure-password-123!"
+  }
+  ```
+
+**Expected Response:**
+- **Status Code:** `400 Bad Request`
+- **Body (may include details like):**
+  ```json
+  {
+    "error": "Incorrect current password."
+  }
+  ```
+
+---
+
+### Test Case 3: New Passwords Do Not Match
+
+**Description:** Verifies that the endpoint returns `400 Bad Request` when `newPassword` and `confirmPassword` do not match.
+
+**Request:**
+- **Method:** `PUT`
+- **URL:** `http://localhost:8080/api/users/change-password`
+- **Headers:**
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer {{your_jwt_token}}`
+- **Body (raw, JSON):**
+  ```json
+  {
+    "currentPassword": "old-secure-password",
+    "newPassword": "new-very-secure-password-123!",
+    "confirmPassword": "a-different-password"
+  }
+  ```
+
+**Expected Response:**
+- **Status Code:** `400 Bad Request`
+- **Body (may include details like):**
+  ```json
+  {
+    "error": "New password and confirmation password do not match."
+  }
+  ```
+
+---
+
+### Test Case 4: Weak New Password
+
+**Description:** Verifies that a request with a weak `newPassword` is rejected.
+
+**Request:**
+- **Method:** `PUT`
+- **URL:** `http://localhost:8080/api/users/change-password`
+- **Headers:**
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer {{your_jwt_token}}`
+- **Body (raw, JSON):**
+  ```json
+  {
+    "currentPassword": "old-secure-password",
+    "newPassword": "weak",
+    "confirmPassword": "weak"
+  }
+  ```
+
+**Expected Response:**
+- **Status Code:** `400 Bad Request`
+- **Body (may include details like):**
+  ```json
+  {
+    "newPassword": "Password must be at least 8 characters long and contain at least one digit, one lowercase letter, one uppercase letter, and one special character."
+  }
+  ```
+---
+
+### Test Case 5: Missing JWT
 
 **Description:** Verifies that the endpoint returns `401 Unauthorized` when the JWT is missing.
 
 **Request:**
 - **Method:** `PUT`
-- **URL:** `http://localhost:8080/api/users/me`
+- **URL:** `http://localhost:8080/api/users/change-password`
 - **Headers:**
   - `Content-Type`: `application/json`
   - `Authorization`: *(Header is omitted)*
 - **Body (raw, JSON):**
   ```json
   {
-    "firstName": "Test",
-    "lastName": "User",
-    "phoneNumber": "12345"
+    "currentPassword": "old-secure-password",
+    "newPassword": "new-very-secure-password-123!",
+    "confirmPassword": "new-very-secure-password-123!"
   }
   ```
 
 **Expected Response:**
 - **Status Code:** `401 Unauthorized`
-
----
-
-### Test Case 3: Invalid JWT
-
-**Description:** Verifies that the endpoint returns `401 Unauthorized` for an invalid or expired JWT.
-
-**Request:**
-- **Method:** `PUT`
-- **URL:** `http://localhost:8080/api/users/me`
-- **Headers:**
-  - `Content-Type`: `application/json`
-  - `Authorization`: `Bearer an-invalid-or-expired-token`
-- **Body (raw, JSON):**
-  ```json
-  {
-    "firstName": "Test",
-    "lastName": "User",
-    "phoneNumber": "12345"
-  }
-  ```
-
-**Expected Response:**
-- **Status Code:** `401 Unauthorized`
-
----
-
-### Test Case 4: Invalid Phone Number
-
-**Description:** Verifies that a request with an invalid phone number format is rejected.
-
-**Request:**
-- **Method:** `PUT`
-- **URL:** `http://localhost:8080/api/users/me`
-- **Headers:**
-  - `Content-Type`: `application/json`
-  - `Authorization`: `Bearer {{your_jwt_token}}`
-- **Body (raw, JSON):**
-  ```json
-  {
-    "firstName": "Jane",
-    "lastName": "Doe",
-    "phoneNumber": "not-a-number"
-  }
-  ```
-
-**Expected Response:**
-- **Status Code:** `400 Bad Request`
-- **Body (may include details like):**
-  ```json
-  {
-    "phoneNumber": "Phone number must be between 10 and 15 digits and may start with a plus sign"
-  }
-  ```
-
----
-
-### Test Case 5: Blank First Name
-
-**Description:** Verifies that a request with a blank `firstName` is rejected.
-
-**Request:**
-- **Method:** `PUT`
-- **URL:** `http://localhost:8080/api/users/me`
-- **Headers:**
-  - `Content-Type`: `application/json`
-  - `Authorization`: `Bearer {{your_jwt_token}}`
-- **Body (raw, JSON):**
-  ```json
-  {
-    "firstName": "",
-    "lastName": "Doe",
-    "phoneNumber": "+19876543210"
-  }
-  ```
-
-**Expected Response:**
-- **Status Code:** `400 Bad Request`
-- **Body (may include details like):**
-  ```json
-  {
-    "firstName": "First name cannot be blank"
-  }
-  ```
-
----
-
-### Test Case 6: Attempt to Change Email, Password, or Role
-
-**Description:** Verifies that including `email`, `password`, or `role` in the request body does not change their values. The DTO only includes fields for `firstName`, `lastName`, and `phoneNumber`, so other fields will be ignored during deserialization.
-
-**Request:**
-- **Method:** `PUT`
-- **URL:** `http://localhost:8080/api/users/me`
-- **Headers:**
-  - `Content-Type`: `application/json`
-  - `Authorization`: `Bearer {{your_jwt_token}}`
-- **Body (raw, JSON):**
-  ```json
-  {
-    "firstName": "SafeUpdate",
-    "lastName": "User",
-    "phoneNumber": "+12223334444",
-    "email": "new.email@example.com",
-    "password": "newPassword123",
-    "role": "ADMIN"
-  }
-  ```
-
-**Expected Response:**
-- **Status Code:** `200 OK`
-- **Body:**
-  ```json
-  {
-    "id": "user-uuid-goes-here",
-    "firstName": "SafeUpdate",
-    "lastName": "User",
-    "email": "user.email@example.com", // Email is UNCHANGED
-    "phoneNumber": "+12223334444",
-    "role": "USER" // Role is UNCHANGED
-  }
-  ```
-  *(Note: The original `email` and `role` are returned, proving they were not modified.)*
