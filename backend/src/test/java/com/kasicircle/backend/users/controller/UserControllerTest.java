@@ -31,6 +31,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Integration tests for the {@link UserController}.
+ *
+ * <p>This class uses {@link MockMvc} to test the controller's endpoints, mocking the service layer
+ * to isolate the web layer for testing. It covers success, failure, and edge cases for each endpoint.
+ *
+ * @author KasiCircle Team
+ * @since 1.0
+ */
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class UserControllerTest {
@@ -50,6 +60,11 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    /**
+     * Tests GET /api/users/me
+     * Verifies that a 200 OK response with the user's profile is returned for an authenticated user.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void getCurrentUser_withValidJwt_shouldReturnOk() throws Exception {
@@ -69,12 +84,22 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.email").value("test@example.com"));
     }
 
+    /**
+     * Tests GET /api/users/me
+     * Verifies that a 401 Unauthorized response is returned when the JWT is missing.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     void getCurrentUser_withMissingJwt_shouldReturnUnauthorized() throws Exception {
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isUnauthorized());
     }
 
+    /**
+     * Tests GET /api/users/me
+     * Verifies that a 404 Not Found response is returned if the authenticated user does not exist in the database.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void getCurrentUser_withDeletedUser_shouldReturnNotFound() throws Exception {
@@ -84,6 +109,11 @@ class UserControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Tests PUT /api/users/me
+     * Verifies that a 200 OK response with the updated profile is returned for a valid update request.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void updateCurrentUser_withValidRequest_shouldReturnOk() throws Exception {
@@ -112,6 +142,11 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.phoneNumber").value("+19876543210"));
     }
 
+    /**
+     * Tests PUT /api/users/me
+     * Verifies that a 400 Bad Request response is returned when the request body fails validation.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void updateCurrentUser_withInvalidRequest_shouldReturnBadRequest() throws Exception {
@@ -129,6 +164,11 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.firstName").exists()); // Assert that firstName error exists
     }
 
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 200 OK response is returned for a successful password change.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void changePassword_withValidRequest_shouldReturnOk() throws Exception {
@@ -146,6 +186,11 @@ class UserControllerTest {
                 .andExpect(status().isOk());
     }
 
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 401 Unauthorized response is returned when the JWT is missing.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     void changePassword_withMissingJwt_shouldReturnUnauthorized() throws Exception {
         ChangePasswordRequest request = ChangePasswordRequest.builder()
@@ -160,6 +205,11 @@ class UserControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 400 Bad Request response is returned when the current password is incorrect.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void changePassword_withIncorrectCurrentPassword_shouldReturnBadRequest() throws Exception {
@@ -178,6 +228,11 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 400 Bad Request response is returned when the new password and confirmation do not match.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void changePassword_withMismatchedNewPasswords_shouldReturnBadRequest() throws Exception {
@@ -196,6 +251,11 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 400 Bad Request response is returned when the new password is weak and fails validation.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void changePassword_withWeakPassword_shouldReturnBadRequest() throws Exception {
@@ -214,5 +274,3 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.newPassword").exists());
     }
 }
-
-
