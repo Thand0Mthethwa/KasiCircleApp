@@ -100,7 +100,7 @@ This document provides test cases for the `PUT /api/users/change-password` endpo
 **Request:**
 - **Method:** `PUT`
 - **URL:** `http://localhost:8080/api/users/change-password`
-- **Headers:**
+-- **Headers:**
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer {{your_jwt_token}}`
 - **Body (raw, JSON):**
@@ -138,6 +138,110 @@ This document provides test cases for the `PUT /api/users/change-password` endpo
     "currentPassword": "old-secure-password",
     "newPassword": "new-very-secure-password-123!",
     "confirmPassword": "new-very-secure-password-123!"
+  }
+  ```
+
+**Expected Response:**
+- **Status Code:** `401 Unauthorized`
+
+---
+# Sprint 3.1 Postman Testing: Create Business Profile
+
+This document provides test cases for the `POST /api/businesses` endpoint.
+
+**Prerequisites:**
+1. A user must be registered and logged in.
+2. A valid JWT token must be obtained from the `/api/auth/login` endpoint.
+3. In Postman, set the `Authorization` header for each request: `Bearer {{your_jwt_token}}`.
+
+---
+
+### Test Case 1: Successful Business Creation
+
+**Description:** Verifies that an authenticated user can successfully create a business profile.
+
+**Request:**
+- **Method:** `POST`
+- **URL:** `http://localhost:8080/api/businesses`
+- **Headers:**
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer {{your_jwt_token}}`
+- **Body (raw, JSON):**
+  ```json
+  {
+    "name": "The Corner Cafe",
+    "description": "A cozy cafe serving the best coffee in town.",
+    "phoneNumber": "+27112223333",
+    "email": "contact@cornercafe.co.za",
+    "category": "Food & Beverage",
+    "address": "123 Main Road",
+    "city": "Johannesburg",
+    "province": "Gauteng"
+  }
+  ```
+
+**Expected Response:**
+- **Status Code:** `201 Created`
+- **Body (JSON):** The response should contain the newly created business profile, including the `id`, `ownerId`, `createdAt`, and `updatedAt`.
+
+---
+
+### Test Case 2: Invalid Input Data
+
+**Description:** Verifies that the endpoint returns `400 Bad Request` when the request body contains invalid data (e.g., blank name, invalid email).
+
+**Request:**
+- **Method:** `POST`
+- **URL:** `http://localhost:8080/api/businesses`
+- **Headers:**
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer {{your_jwt_token}}`
+- **Body (raw, JSON):**
+  ```json
+  {
+    "name": "",
+    "description": "A business with no name.",
+    "phoneNumber": "+27112223333",
+    "email": "invalid-email",
+    "category": "Food & Beverage",
+    "address": "123 Main Road",
+    "city": "Johannesburg",
+    "province": "Gauteng"
+  }
+  ```
+
+**Expected Response:**
+- **Status Code:** `400 Bad Request`
+- **Body (JSON):** A JSON object containing validation error messages.
+  ```json
+  {
+    "name": "Business name is required.",
+    "email": "A valid email address is required."
+  }
+  ```
+---
+
+### Test Case 3: Missing JWT
+
+**Description:** Verifies that the endpoint returns `401 Unauthorized` when the JWT is missing.
+
+**Request:**
+- **Method:** `POST`
+- **URL:** `http://localhost:8080/api/businesses`
+- **Headers:**
+  - `Content-Type`: `application/json`
+  - `Authorization`: *(Header is omitted)*
+- **Body (raw, JSON):**
+  ```json
+  {
+    "name": "Unauthorized Business",
+    "description": "This should not be created.",
+    "phoneNumber": "+27112223333",
+    "email": "unauthorized@example.com",
+    "category": "Test",
+    "address": "123 Nowhere",
+    "city": "Nowhere",
+    "province": "Nowhere"
   }
   ```
 
