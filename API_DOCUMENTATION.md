@@ -105,3 +105,76 @@ The request body must be a JSON object containing the current and new passwords.
 - **401 Unauthorized:** Returned if the JWT is missing, invalid, or expired.
 
 ---
+
+## Business Profile Management
+
+### Create a new Business Profile
+
+Creates a new business profile for the currently authenticated user.
+
+- **URL:** `/api/businesses`
+- **Method:** `POST`
+- **Authentication:** Required (JWT Bearer Token)
+
+#### Request Body
+
+The request body must be a JSON object containing the business details.
+
+| Field         | Type   | Required | Description                                       |
+|---------------|--------|----------|---------------------------------------------------|
+| `name`        | String | Yes      | The name of the business.                         |
+| `description` | String | Yes      | A description of the business.                    |
+| `phoneNumber` | String | Yes      | The business's contact phone number.              |
+| `email`       | String | Yes      | The business's contact email. Must be a valid email format. |
+| `category`    | String | Yes      | The category of the business (e.g., Retail, Food).|
+| `address`     | String | Yes      | The physical address of the business.             |
+| `city`        | String | Yes      | The city where the business is located.           |
+| `province`    | String | Yes      | The province where the business is located.       |
+
+**Example Request:**
+```json
+{
+  "name": "The Corner Cafe",
+  "description": "A cozy cafe serving the best coffee in town.",
+  "phoneNumber": "+27112223333",
+  "email": "contact@cornercafe.co.za",
+  "category": "Food & Beverage",
+  "address": "123 Main Road",
+  "city": "Johannesburg",
+  "province": "Gauteng"
+}
+```
+
+#### Responses
+
+- **201 Created:** Returned upon successful creation. The response body will contain the created `BusinessResponse` DTO.
+
+  **Example Response Body:**
+  ```json
+  {
+    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "name": "The Corner Cafe",
+    "description": "A cozy cafe serving the best coffee in town.",
+    "phoneNumber": "+27112223333",
+    "email": "contact@cornercafe.co.za",
+    "category": "Food & Beverage",
+    "address": "123 Main Road",
+    "city": "Johannesburg",
+    "province": "Gauteng",
+    "ownerId": "c4a4e1a3-1c3e-4b9d-8c4a-8d6e3e5a0b1f",
+    "createdAt": "2026-07-31T15:00:00.000000Z",
+    "updatedAt": "2026-07-31T15:00:00.000000Z"
+  }
+  ```
+
+- **400 Bad Request:** Returned if the request body fails validation (e.g., blank fields, invalid email). The response body will contain details about the validation errors.
+
+  **Example Response Body:**
+  ```json
+  {
+      "name": "Business name is required."
+  }
+  ```
+
+- **401 Unauthorized:** Returned if the JWT is missing, invalid, or expired.
+---
