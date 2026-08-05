@@ -5,14 +5,19 @@ import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.mapper.BusinessMapper;
 import com.kasicircle.backend.businesses.repository.BusinessRepository;
+import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +49,29 @@ public class BusinessServiceImpl implements BusinessService {
         return businessMapper.toBusinessResponse(savedBusiness);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public BusinessResponse getBusinessById(UUID id) {
+        return businessRepository.findById(id)
+                .map(businessMapper::toBusinessResponse)
+                .orElseThrow(() -> new BusinessNotFoundException("Business with ID " + id + " not found."));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BusinessResponse> getAllBusinesses(Pageable pageable) {
+        return businessRepository.findAll(pageable)
+                .map(businessMapper::toBusinessResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BusinessResponse> getBusinessesForCurrentUser(Pageable pageable) {
+        User owner = getAuthenticatedUser();
+        return businessRepository.findByOwner(owner, pageable)
+                .map(businessMapper::toBusinessResponse);
+    }
+
     private User getAuthenticatedUser() {
         String email = getAuthenticatedUserEmail();
         return userRepository.findByEmail(email)
@@ -58,3 +86,4 @@ public class BusinessServiceImpl implements BusinessService {
         return principal.toString();
     }
 }
+

@@ -2,6 +2,8 @@ package com.kasicircle.backend.users.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kasicircle.backend.auth.jwt.JwtService;
+import com.kasicircle.backend.businesses.dto.BusinessResponse;
+import com.kasicircle.backend.businesses.service.BusinessService;
 import com.kasicircle.backend.users.dto.ChangePasswordRequest;
 import com.kasicircle.backend.users.dto.UpdateUserProfileRequest;
 import com.kasicircle.backend.users.dto.UserProfileResponse;
@@ -14,12 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -50,6 +56,9 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private BusinessService businessService;
 
     @MockBean
     private JwtService jwtService;
@@ -168,7 +177,7 @@ class UserControllerTest {
      * Tests PUT /api/users/change-password
      * Verifies that a 200 OK response is returned for a successful password change.
      * @throws Exception if MockMvc performance fails.
-     */
+     *
     @Test
     @WithMockUser(username = "test@example.com")
     void changePassword_withValidRequest_shouldReturnOk() throws Exception {
@@ -272,5 +281,20 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.newPassword").exists());
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void getBusinessesForCurrentUser_shouldReturnOk() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        BusinessResponse response = BusinessResponse.builder().id(businessId).build();
+        Page<BusinessResponse> page = new PageImpl<>(Collections.singletonList(response));
+
+        when(businessService.getBusinessesForCurrentUser(any(PageRequest.class))).thenReturn(page);
+
+        mockMvc.perform(get("/api/users/me/businesses?page=0&size=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(businessId.toString()))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 }
