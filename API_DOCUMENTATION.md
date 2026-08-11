@@ -82,6 +82,119 @@ Retrieves a single business by its unique identifier.
 
 ---
 
+### Update a Business Profile
+
+Updates a business profile that is owned by the currently authenticated user.
+
+- **URL:** `/api/businesses/{id}`
+- **Method:** `PUT`
+- **Authentication:** Required (JWT Bearer Token)
+- **Authorization:** Only the business owner may update the business.
+
+#### URL Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | The unique identifier of the business to update. |
+
+#### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | String | Yes | The name of the business. |
+| `description` | String | Yes | A description of the business. |
+| `phoneNumber` | String | Yes | The business's contact phone number. |
+| `email` | String | Yes | The business's contact email. Must be a valid email address. |
+| `category` | String | Yes | The category of the business. |
+| `address` | String | Yes | The physical address of the business. |
+| `city` | String | Yes | The city where the business is located. |
+| `province` | String | Yes | The province where the business is located. |
+
+#### Responses
+
+- **200 OK:** The business was updated successfully. Returns the updated `BusinessResponse`.
+- **400 Bad Request:** Validation failed for the request body.
+- **401 Unauthorized:** JWT is missing, invalid, or expired.
+- **403 Forbidden:** The authenticated user does not own the business.
+- **404 Not Found:** No business exists with the specified ID.
+
+#### Example Request
+
+```http
+PUT /api/businesses/{{businessId}}
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Business",
+  "description": "Updated description",
+  "phoneNumber": "+27123456789",
+  "email": "updated@example.com",
+  "category": "Retail",
+  "address": "456 Updated Street",
+  "city": "Cape Town",
+  "province": "Western Cape"
+}
+```
+
+#### Example Response
+
+```json
+{
+  "id": "{{businessId}}",
+  "name": "Updated Business",
+  "description": "Updated description",
+  "phoneNumber": "+27123456789",
+  "email": "updated@example.com",
+  "category": "Retail",
+  "address": "456 Updated Street",
+  "city": "Cape Town",
+  "province": "Western Cape",
+  "ownerId": "{{ownerId}}",
+  "createdAt": "...",
+  "updatedAt": "..."
+}
+```
+
+---
+
+### Delete a Business Profile
+
+Deletes a business profile owned by the currently authenticated user.
+
+- **URL:** `/api/businesses/{id}`
+- **Method:** `DELETE`
+- **Authentication:** Required (JWT Bearer Token)
+- **Authorization:** Only the business owner may delete the business.
+
+#### URL Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | The unique identifier of the business to delete. |
+
+#### Responses
+
+- **204 No Content:** The business was deleted successfully.
+- **401 Unauthorized:** JWT is missing, invalid, or expired.
+- **403 Forbidden:** The authenticated user does not own the business.
+- **404 Not Found:** No business exists with the specified ID.
+
+#### Example Request
+
+```http
+DELETE /api/businesses/{{businessId}}
+Authorization: Bearer {{jwt_token}}
+```
+
+#### Example Response
+
+```http
+HTTP/1.1 204 No Content
+```
+
+---
+
 ### Get All Businesses (Paginated)
 
 Retrieves a paginated list of all businesses.

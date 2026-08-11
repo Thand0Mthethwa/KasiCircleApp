@@ -1,6 +1,7 @@
 package com.kasicircle.backend.businesses.controller;
 
 import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
+import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.service.BusinessService;
 import jakarta.validation.Valid;
@@ -53,5 +54,20 @@ public class BusinessController {
     ) {
         Page<BusinessResponse> response = businessService.getAllBusinesses(pageable);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BusinessResponse> updateBusiness(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateBusinessRequest request
+    ) {
+        BusinessResponse response = businessService.updateBusiness(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBusiness(@PathVariable UUID id) {
+        businessService.deleteBusiness(id);
+        return ResponseEntity.noContent().build();
     }
 }

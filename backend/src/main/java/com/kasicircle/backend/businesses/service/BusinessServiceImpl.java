@@ -2,6 +2,7 @@ package com.kasicircle.backend.businesses.service;
 
 import com.kasicircle.backend.businesses.domain.Business;
 import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
+import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.mapper.BusinessMapper;
 import com.kasicircle.backend.businesses.repository.BusinessRepository;
@@ -12,10 +13,12 @@ import com.kasicircle.backend.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -70,6 +73,47 @@ public class BusinessServiceImpl implements BusinessService {
         User owner = getAuthenticatedUser();
         return businessRepository.findByOwner(owner, pageable)
                 .map(businessMapper::toBusinessResponse);
+    }
+
+    @Override
+    @Transactional
+    public BusinessResponse updateBusiness(UUID id, UpdateBusinessRequest request) {
+        User owner = getAuthenticatedUser();
+        Business business = getBusinessByIdInternal(id);
+        verifyOwnership(business, owner);
+
+        business.setName(request.name());
+        business.setDescription(request.description());
+        business.setPhoneNumber(request.phoneNumber());
+        business.setEmail(request.email());
+        business.setCategory(request.category());
+        business.setAddress(request.address());
+        business.setCity(request.city());
+        business.setProvince(request.province());
+
+        Business updatedBusiness = businessRepository.save(business);
+        return businessMapper.toBusinessResponse(updatedBusiness);
+    }
+
+    @Override
+    @Transactional
+    public void deleteBusiness(UUID id) {
+        User owner = getAuthenticatedUser();
+        Business business = getBusinessByIdInternal(id);
+        verifyOwnership(business, owner);
+        businessRepository.delete(business);
+    }
+
+    private Business getBusinessByIdInternal(UUID id) {
+        return businessRepository.findById(id)
+                .orElseThrow(() -> new BusinessNotFoundException("Business with ID " + id + " not found."));
+    }
+
+    private void verifyOwnership(Business business, User owner) {
+        if (business.getOwner() == null || business.getOwner().getId() == null || owner.getId() == null ||
+                !business.getOwner().getId().equals(owner.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to modify this business.");
+        }
     }
 
     private User getAuthenticatedUser() {

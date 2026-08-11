@@ -1,6 +1,7 @@
 package com.kasicircle.backend.businesses.service;
 
 import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
+import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,22 @@ public interface BusinessService {
      * @return The response DTO of the newly created business.
      */
     BusinessResponse createBusiness(CreateBusinessRequest request);
+
+    /**
+     * Updates an existing business owned by the authenticated user.
+     *
+     * @param id The UUID of the business to update.
+     * @param request The request DTO containing updated business details.
+     * @return The response DTO of the updated business.
+     */
+    BusinessResponse updateBusiness(UUID id, UpdateBusinessRequest request);
+
+    /**
+     * Deletes an existing business owned by the authenticated user.
+     *
+     * @param id The UUID of the business to delete.
+     */
+    void deleteBusiness(UUID id);
 
     /**
      * Retrieves a single business by its unique ID.
