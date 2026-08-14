@@ -31,7 +31,6 @@ public class GlobalExceptionHandler {
         response.put("timestamp", Instant.now());
         response.put("status", HttpStatus.BAD_REQUEST.value());
         response.put("error", "Validation Error");
-        response.put("message", "Validation failed.");
         response.put("path", request.getRequestURI());
 
         Map<String, String> fieldErrors = new LinkedHashMap<>();
@@ -42,6 +41,8 @@ public class GlobalExceptionHandler {
         if (!fieldErrors.isEmpty()) {
             response.put("message", fieldErrors.values().iterator().next());
             response.putAll(fieldErrors);
+        } else {
+            response.put("message", "Validation failed.");
         }
 
         return ResponseEntity.badRequest().body(response);
