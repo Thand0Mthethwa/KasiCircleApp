@@ -166,4 +166,27 @@ class AuthenticationControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void protectedEndpoint_withMissingJwt_shouldReturnUnauthorizedJsonError() throws Exception {
+        mockMvc.perform(post("/api/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.error").value("Unauthorized"))
+                .andExpect(jsonPath("$.path").value("/api/users/me"));
+    }
+
+    @Test
+    void protectedEndpoint_withMalformedJwt_shouldReturnUnauthorizedJsonError() throws Exception {
+        mockMvc.perform(post("/api/users/me")
+                        .header("Authorization", "Bearer not-a-valid-jwt")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.error").value("Unauthorized"))
+                .andExpect(jsonPath("$.path").value("/api/users/me"));
+    }
 }
