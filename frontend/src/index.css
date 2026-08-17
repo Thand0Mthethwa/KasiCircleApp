@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utilities */
+@layer components {
+  .page-wrapper {
+    @apply flex flex-col min-h-screen bg-white;
+  }
+
+  .page-content {
+    @apply flex-1;
+  }
+
+  .page-header {
+    @apply bg-kasi-green text-white py-6;
+  }
+
+  .page-padding {
+    @apply px-4;
+  }
+
+  .btn-primary {
+    @apply w-full bg-kasi-green text-white font-semibold py-3 px-4 rounded-full hover:bg-kasi-green-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply w-full border-2 border-kasi-green text-kasi-green font-semibold py-3 px-4 rounded-full hover:bg-kasi-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-tertiary {
+    @apply text-kasi-green font-semibold hover:opacity-75 transition-opacity;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border border-neutral-300 rounded-lg bg-white text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-kasi-green focus:border-transparent transition-all;
+  }
+
+  .card-stat {
+    @apply flex flex-col items-center justify-center p-4 rounded-xl font-semibold;
+  }
+
+  .link-text {
+    @apply text-kasi-green font-semibold hover:opacity-75 transition-opacity;
+  }
+}

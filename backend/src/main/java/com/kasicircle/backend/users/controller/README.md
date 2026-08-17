@@ -6,13 +6,13 @@ Retrieves the profile information for the currently authenticated user.
 
 ### Authentication
 
-- **Bearer Token**: A valid JWT must be included in the `Authorization` header.
+- Bearer Token: A valid JWT must be included in the Authorization header.
 
 **Example Request:**
 
 ```http
 GET /api/users/me
-Host: localhost:8080
+Host: localhost:8081
 Authorization: Bearer <your-jwt-token>
 ```
 
@@ -25,14 +25,12 @@ Authorization: Bearer <your-jwt-token>
   "lastName": "Doe",
   "email": "john.doe@example.com",
   "phoneNumber": "+1234567890",
-  "role": "USER",
-  "createdAt": "2023-10-27T10:00:00Z",
-  "updatedAt": "2023-10-27T10:00:00Z"
+  "role": "USER"
 }
 ```
 
 ### HTTP Status Codes
 
-- **200 OK**: The user's profile was successfully retrieved.
-- **401 Unauthorized**: The request is missing a valid JWT, or the token is invalid/expired.
-- **404 Not Found**: The authenticated user could not be found in the database (e.g., if the user was deleted after the token was issued).
+- 200 OK: The user's profile was successfully retrieved.
+- 401 Unauthorized: The request is missing a valid JWT, or the token is invalid or expired.
+- 404 Not Found: The authenticated user could not be found in the database.

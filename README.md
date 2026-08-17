@@ -4,16 +4,9 @@ Connecting township communities to opportunities, trusted local services, and bu
 
 ## Vision
 
-KasiCircle is a community-first platform designed to empower South African townships by making it easier to:
+KasiCircle connects South African communities to local work, trusted services, and businesses through a simple digital platform.
 
-- Find work
-- Hire skilled workers
-- Discover local businesses
-- Buy and sell locally
-- Access community services
-- Build trusted digital communities
-
-## Technology
+## Tech stack
 
 ### Frontend
 
@@ -22,34 +15,42 @@ KasiCircle is a community-first platform designed to empower South African towns
 
 ### Backend
 
-- Spring Boot
 - Java 21
-
-### Database
-
+- Spring Boot 3.5.4
+- Spring Security
+- JWT authentication
 - PostgreSQL
-
-### Authentication
-
-- Spring Security with JWT authentication
-
-### Maps
-
-- Google Maps API
-
-## Project Status
-
-🚧 Under Active Development
 
 ## Local backend configuration
 
-Set these environment variables before starting the backend. `JWT_SECRET` must be at least 32 random bytes for HS256 signing.
+Set the environment variables before starting the app. The backend listens on port 8081 and expects a local PostgreSQL database.
 
 ```bash
+export DB_URL=jdbc:postgresql://localhost:5432/kasicircle
 export DB_USERNAME=your_postgres_user
 export DB_PASSWORD=your_postgres_password
-export JWT_SECRET=your-long-random-jwt-secret
+export JWT_SECRET=replace_with_a_secure_random_secret_at_least_32_chars
+export JWT_EXPIRATION=86400000
 ```
+
+Then start the backend:
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+The API is available at:
+
+```text
+http://localhost:8081
+```
+
+## Security notes
+
+- Public routes: POST /api/auth/register and POST /api/auth/login
+- Protected routes require a valid Bearer JWT
+- Missing or malformed JWTs return a JSON error payload with status, error, message, and path
 
 ## Team
 

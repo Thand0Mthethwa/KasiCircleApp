@@ -4,7 +4,7 @@ The KasiCircleApp team takes security seriously. We appreciate your efforts to r
 
 ## Reporting a Vulnerability
 
-To report a security vulnerability, please send an email to `security@example.com` with a detailed description of the issue.
+To report a security vulnerability, please send an email to `KasiCircle@testing.com` with a detailed description of the issue.
 
 Please include the following information in your report:
 

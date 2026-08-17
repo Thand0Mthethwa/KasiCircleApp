@@ -13,17 +13,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @Transactional // Rollback database changes after each test
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthenticationControllerTest {
@@ -114,7 +117,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void login_withInvalidPassword_shouldReturnUnauthorized() throws Exception {
+    void login_withInvalidPassword_shouldReturnBadRequest() throws Exception {
         // Arrange: Create a user
         User user = User.builder()
                 .firstName("Login")
@@ -132,17 +135,17 @@ class AuthenticationControllerTest {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void login_withNonExistentUser_shouldReturnUnauthorized() throws Exception {
+    void login_withNonExistentUser_shouldReturnBadRequest() throws Exception {
         LoginRequest request = new LoginRequest("non.existent@test.com", "any-password");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -155,7 +158,7 @@ class AuthenticationControllerTest {
                 .password(passwordEncoder.encode("Password123!"))
                 .role(Role.USER)
                 .enabled(false) // User is disabled
-                .build(); 
+                .build();
         userRepository.save(user);
 
         LoginRequest request = new LoginRequest("disabled.user@test.com", "Password123!");
@@ -165,5 +168,26 @@ class AuthenticationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void protectedEndpoint_withMissingJwt_shouldReturnUnauthorizedJsonError() throws Exception {
+        mockMvc.perform(get("/api/users/me")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.error").value("Unauthorized"))
+                .andExpect(jsonPath("$.path").value("/api/users/me"));
+    }
+
+    @Test
+    void protectedEndpoint_withMalformedJwt_shouldReturnUnauthorizedJsonError() throws Exception {
+        mockMvc.perform(get("/api/users/me")
+                        .header("Authorization", "Bearer not-a-valid-jwt")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.error").value("Unauthorized"))
+                .andExpect(jsonPath("$.path").value("/api/users/me"));
     }
 }

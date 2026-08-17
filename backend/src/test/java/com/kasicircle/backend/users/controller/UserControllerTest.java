@@ -1,6 +1,11 @@
 package com.kasicircle.backend.users.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kasicircle.backend.auth.jwt.JwtService;
+import com.kasicircle.backend.businesses.dto.BusinessResponse;
+import com.kasicircle.backend.businesses.service.BusinessService;
+import com.kasicircle.backend.users.dto.ChangePasswordRequest;
+import com.kasicircle.backend.users.dto.UpdateUserProfileRequest;
 import com.kasicircle.backend.users.dto.UserProfileResponse;
 import com.kasicircle.backend.users.entity.Role;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
@@ -11,19 +16,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Integration tests for the {@link UserController}.
+ *
+ * <p>This class uses {@link MockMvc} to test the controller's endpoints, mocking the service layer
+ * to isolate the web layer for testing. It covers success, failure, and edge cases for each endpoint.
+ *
+ * @author KasiCircle Team
+ * @since 1.0
+ */
+
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class UserControllerTest {
 
     @Autowired
@@ -33,11 +60,22 @@ class UserControllerTest {
     private UserService userService;
 
     @MockBean
+    private BusinessService businessService;
+
+    @MockBean
     private JwtService jwtService;
 
     @MockBean
     private CustomUserDetailsService customUserDetailsService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    /**
+     * Tests GET /api/users/me
+     * Verifies that a 200 OK response with the user's profile is returned for an authenticated user.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void getCurrentUser_withValidJwt_shouldReturnOk() throws Exception {
@@ -57,12 +95,22 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.email").value("test@example.com"));
     }
 
+    /**
+     * Tests GET /api/users/me
+     * Verifies that a 401 Unauthorized response is returned when the JWT is missing.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     void getCurrentUser_withMissingJwt_shouldReturnUnauthorized() throws Exception {
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isUnauthorized());
     }
 
+    /**
+     * Tests GET /api/users/me
+     * Verifies that a 404 Not Found response is returned if the authenticated user does not exist in the database.
+     * @throws Exception if MockMvc performance fails.
+     */
     @Test
     @WithMockUser(username = "test@example.com")
     void getCurrentUser_withDeletedUser_shouldReturnNotFound() throws Exception {
@@ -70,5 +118,185 @@ class UserControllerTest {
 
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isNotFound());
+    }
+
+    /**
+     * Tests PUT /api/users/me
+     * Verifies that a 200 OK response with the updated profile is returned for a valid update request.
+     * @throws Exception if MockMvc performance fails.
+     */
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void updateCurrentUser_withValidRequest_shouldReturnOk() throws Exception {
+        UpdateUserProfileRequest updateRequest = UpdateUserProfileRequest.builder()
+                .firstName("Updated")
+                .lastName("User")
+                .phoneNumber("+19876543210")
+                .build();
+
+        UserProfileResponse updatedProfile = UserProfileResponse.builder()
+                .id(UUID.randomUUID())
+                .firstName("Updated")
+                .lastName("User")
+                .email("test@example.com")
+                .phoneNumber("+19876543210")
+                .role(Role.USER)
+                .build();
+
+        when(userService.updateCurrentUser(any(UpdateUserProfileRequest.class))).thenReturn(updatedProfile);
+
+        mockMvc.perform(put("/api/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("Updated"))
+                .andExpect(jsonPath("$.phoneNumber").value("+19876543210"));
+    }
+
+    /**
+     * Tests PUT /api/users/me
+     * Verifies that a 400 Bad Request response is returned when the request body fails validation.
+     * @throws Exception if MockMvc performance fails.
+     */
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void updateCurrentUser_withInvalidRequest_shouldReturnBadRequest() throws Exception {
+        // Blank first name should trigger validation error
+        UpdateUserProfileRequest invalidRequest = UpdateUserProfileRequest.builder()
+                .firstName("")
+                .lastName("User")
+                .phoneNumber("1234567890")
+                .build();
+
+        mockMvc.perform(put("/api/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.firstName").exists()); // Assert that firstName error exists
+    }
+
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 200 OK response is returned for a successful password change.
+     * @throws Exception if MockMvc performance fails.
+     *
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void changePassword_withValidRequest_shouldReturnOk() throws Exception {
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("oldPassword")
+                .newPassword("newPassword123!")
+                .confirmPassword("newPassword123!")
+                .build();
+
+        doNothing().when(userService).changePassword(any(ChangePasswordRequest.class));
+
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 401 Unauthorized response is returned when the JWT is missing.
+     * @throws Exception if MockMvc performance fails.
+     */
+    @Test
+    void changePassword_withMissingJwt_shouldReturnUnauthorized() throws Exception {
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("oldPassword")
+                .newPassword("newPassword")
+                .confirmPassword("newPassword")
+                .build();
+
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 400 Bad Request response is returned when the current password is incorrect.
+     * @throws Exception if MockMvc performance fails.
+     */
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void changePassword_withIncorrectCurrentPassword_shouldReturnBadRequest() throws Exception {
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("wrongPassword")
+                .newPassword("newPassword123!")
+                .confirmPassword("newPassword123!")
+                .build();
+
+        doThrow(new BadCredentialsException("Incorrect current password."))
+                .when(userService).changePassword(any(ChangePasswordRequest.class));
+
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 400 Bad Request response is returned when the new password and confirmation do not match.
+     * @throws Exception if MockMvc performance fails.
+     */
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void changePassword_withMismatchedNewPasswords_shouldReturnBadRequest() throws Exception {
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("oldPassword")
+                .newPassword("newPassword123!")
+                .confirmPassword("differentPassword123!")
+                .build();
+
+        doThrow(new BadCredentialsException("New password and confirmation password do not match."))
+                .when(userService).changePassword(any(ChangePasswordRequest.class));
+
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Tests PUT /api/users/change-password
+     * Verifies that a 400 Bad Request response is returned when the new password is weak and fails validation.
+     * @throws Exception if MockMvc performance fails.
+     */
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void changePassword_withWeakPassword_shouldReturnBadRequest() throws Exception {
+        // Password "password" is likely to be caught by the StrongPassword validator
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPassword("oldPassword")
+                .newPassword("password")
+                .confirmPassword("password")
+                .build();
+
+        // No need to mock the service call, as the validation should be triggered before
+        mockMvc.perform(put("/api/users/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.newPassword").exists());
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void getBusinessesForCurrentUser_shouldReturnOk() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        BusinessResponse response = BusinessResponse.builder().id(businessId).build();
+        Page<BusinessResponse> page = new PageImpl<>(Collections.singletonList(response));
+
+        when(businessService.getBusinessesForCurrentUser(any(PageRequest.class))).thenReturn(page);
+
+        mockMvc.perform(get("/api/users/me/businesses?page=0&size=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(businessId.toString()))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 }
