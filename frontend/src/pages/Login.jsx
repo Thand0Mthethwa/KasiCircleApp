@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Header, LoadingSpinner } from '../components';
 import { useAuth } from '../contexts/AuthContext';
-import { ChevronLeft } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
   const { login, isLoading, error: authError } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -19,12 +19,10 @@ export default function Login() {
     const newErrors = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email or phone number is required';
-    } else if (
-      !formData.email.includes('@') &&
-      !formData.email.match(/^[\d\s\-\+]{10,}$/)
-    ) {
-      newErrors.email = 'Enter a valid email or phone number';
+      newErrors.email = 'Email is required';
+    } else if (!formData.email.includes('@')) {
+      // Backend only supports email for now, per LoginRequest.java
+      newErrors.email = 'Enter a valid email address';
     }
 
     if (!formData.password.trim()) {
@@ -58,27 +56,20 @@ export default function Login() {
     }
 
     const result = await login(formData.email, formData.password);
-    
+
     if (result.success) {
       navigate('/home');
     }
   };
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper bg-white">
       {/* Header */}
-      <div className="bg-white border-b border-neutral-200 page-padding py-4">
-        <div className="flex items-center gap-3 mb-4">
-          <button
-            onClick={() => navigate('/welcome')}
-            className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
-            aria-label="Go back"
-          >
-            <ChevronLeft className="w-6 h-6 text-neutral-900" />
-          </button>
-          <h1 className="text-2xl font-bold text-neutral-900">Login</h1>
-        </div>
-      </div>
+      <Header 
+        title="Login" 
+        onBack={() => navigate('/welcome')} 
+        showBack={true} 
+      />
 
       {/* Form Content */}
       <div className="page-content page-padding py-8">
@@ -102,13 +93,14 @@ export default function Login() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 mb-8">
           <Input
-            label="Email or Phone Number"
+            label="Email"
             name="email"
-            type="text"
+            type="email"
             placeholder="e.g. sipho@email.com"
             value={formData.email}
             onChange={handleChange}
             error={errors.email}
+            autoComplete="email"
           />
 
           <div className="relative">
@@ -120,14 +112,15 @@ export default function Login() {
               value={formData.password}
               onChange={handleChange}
               error={errors.password}
+              autoComplete="current-password"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-10 text-neutral-500 hover:text-neutral-700"
+              className="absolute right-3 top-10 text-neutral-500 hover:text-neutral-700 p-1"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {showPassword ? '👁️' : '👁️‍🗨️'}
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
 
@@ -135,7 +128,7 @@ export default function Login() {
           <div className="text-right">
             <button
               type="button"
-              className="text-kasi-green text-sm font-semibold hover:opacity-75 transition-opacity"
+              className="link-text text-sm"
             >
               Forgot Password?
             </button>
@@ -145,6 +138,7 @@ export default function Login() {
           <Button
             variant="primary"
             type="submit"
+            size="lg"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -171,10 +165,10 @@ export default function Login() {
         {/* Social Login Buttons */}
         <div className="grid grid-cols-2 gap-3 mb-8">
           <Button variant="secondary">
-            <span>📱 Phone</span>
+            <span className="flex items-center justify-center gap-2">📱 Phone</span>
           </Button>
           <Button variant="secondary">
-            <span>🔍 Google</span>
+            <span className="flex items-center justify-center gap-2">G Google</span>
           </Button>
         </div>
 
