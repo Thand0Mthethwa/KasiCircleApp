@@ -93,7 +93,7 @@ export default function Login() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 mb-8">
           <Input
-            label="Email"
+            label="Email or Phone Number"
             name="email"
             type="email"
             placeholder="e.g. sipho@email.com"
