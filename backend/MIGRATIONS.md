@@ -116,3 +116,4 @@ If a migration script encounters a syntax error or constraint conflict during de
      DELETE FROM flyway_schema_history WHERE success = false;
      ```
 4. Restart the Spring Boot backend to re-run the corrected migration.
+
