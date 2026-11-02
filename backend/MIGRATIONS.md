@@ -74,7 +74,12 @@ To run migrations during local development:
 ```bash
 cd backend
 mvn spring-boot:run
-```
+'''
+
+To kill running port:
+
+sudo kill -9 $(sudo lsof -t -i:8081)
+
 
 To run against the test database (H2 in PostgreSQL compatibility mode):
 ```bash
