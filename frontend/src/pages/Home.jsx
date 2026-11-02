@@ -42,8 +42,7 @@ export default function Home() {
   ];
 
   const handleSearch = (query) => {
-    console.log('Search:', query);
-    navigate('/search?q=' + encodeURIComponent(query));
+    navigate('/explore?search=' + encodeURIComponent(query));
   };
 
   const handleNavigate = (path) => {

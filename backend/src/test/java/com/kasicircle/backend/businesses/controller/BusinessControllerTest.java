@@ -15,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -27,6 +28,7 @@ import java.util.Collections;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -213,12 +215,39 @@ class BusinessControllerTest {
         BusinessResponse response = BusinessResponse.builder().id(businessId).name("Public Business").build();
         Page<BusinessResponse> page = new PageImpl<>(Collections.singletonList(response));
 
-        when(businessService.getAllBusinesses(any(PageRequest.class))).thenReturn(page);
+        when(businessService.getAllBusinesses(any(), any(), any(), any(Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/api/businesses?page=0&size=10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(businessId.toString()))
                 .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    @WithAnonymousUser
+    void getAllBusinesses_withSearchAndFilters_shouldReturnFilteredResults() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        BusinessResponse response = BusinessResponse.builder()
+                .id(businessId)
+                .name("Soweto Cafe")
+                .category("Food & Beverage")
+                .city("Soweto")
+                .build();
+        Page<BusinessResponse> page = new PageImpl<>(Collections.singletonList(response));
+
+        when(businessService.getAllBusinesses(eq("Cafe"), eq("Food & Beverage"), eq("Soweto"), any(Pageable.class)))
+                .thenReturn(page);
+
+        mockMvc.perform(get("/api/businesses")
+                        .param("search", "Cafe")
+                        .param("category", "Food & Beverage")
+                        .param("city", "Soweto")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("Soweto Cafe"))
+                .andExpect(jsonPath("$.content[0].category").value("Food & Beverage"))
+                .andExpect(jsonPath("$.content[0].city").value("Soweto"));
     }
 
     @Test
@@ -255,7 +284,7 @@ class BusinessControllerTest {
         BusinessResponse response = BusinessResponse.builder().id(businessId).build();
         Page<BusinessResponse> page = new PageImpl<>(Collections.singletonList(response));
 
-        when(businessService.getAllBusinesses(any(PageRequest.class))).thenReturn(page);
+        when(businessService.getAllBusinesses(any(), any(), any(), any(Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/api/businesses?page=0&size=10"))
                 .andExpect(status().isOk())

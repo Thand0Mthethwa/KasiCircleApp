@@ -86,19 +86,13 @@ function AppRoutes() {
 
       {/* Main App Routes */}
       <Route path="/home" element={<Home />} />
+      <Route path="/explore" element={<Explore />} />
+      <Route path="/businesses" element={<Explore />} />
       <Route
         path="/jobs"
         element={
           <ProtectedRoute>
             <Jobs />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/explore"
-        element={
-          <ProtectedRoute>
-            <Explore />
           </ProtectedRoute>
         }
       />

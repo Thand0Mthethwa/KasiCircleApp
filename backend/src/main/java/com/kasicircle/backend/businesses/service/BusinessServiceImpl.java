@@ -6,6 +6,7 @@ import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.mapper.BusinessMapper;
 import com.kasicircle.backend.businesses.repository.BusinessRepository;
+import com.kasicircle.backend.businesses.repository.BusinessSpecifications;
 import com.kasicircle.backend.businesses.exception.BusinessAlreadyExistsException;
 import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
 import com.kasicircle.backend.users.entity.AccountType;
@@ -14,6 +15,7 @@ import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -73,9 +75,16 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<BusinessResponse> getAllBusinesses(Pageable pageable) {
-        return businessRepository.findAll(pageable)
+    public Page<BusinessResponse> getAllBusinesses(String search, String category, String city, Pageable pageable) {
+        Specification<Business> spec = BusinessSpecifications.withFilters(search, category, city);
+        return businessRepository.findAll(spec, pageable)
                 .map(businessMapper::toBusinessResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BusinessResponse> getAllBusinesses(Pageable pageable) {
+        return getAllBusinesses(null, null, null, pageable);
     }
 
     @Override

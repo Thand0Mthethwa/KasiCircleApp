@@ -162,9 +162,12 @@ Responses:
 - Authorization: None (Accessible to anonymous visitors and authenticated users)
 
 Query parameters:
-- page
-- size
-- sort
+- `page` (optional, default: 0): Zero-based page index
+- `size` (optional, default: 20): Page size
+- `sort` (optional): Sort fields and direction (e.g. `createdAt,desc`)
+- `search` (optional): Substring search matching business name (case-insensitive)
+- `category` (optional): Exact category filter (e.g. `Food & Beverage`, `Automotive`, `Retail`)
+- `city` (optional): Case-insensitive filter matching township or city (e.g. `Soweto`, `Johannesburg`)
 
 Responses:
 - 200 OK with paginated list of public business summaries

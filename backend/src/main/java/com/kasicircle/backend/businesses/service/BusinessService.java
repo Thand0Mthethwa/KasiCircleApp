@@ -46,12 +46,25 @@ public interface BusinessService {
     BusinessResponse getBusinessById(UUID id);
 
     /**
-     * Retrieves a paginated list of all businesses.
+     * Retrieves a paginated list of all businesses, optionally filtered by search keyword, category, and city.
+     *
+     * @param search Optional keyword matching against business name.
+     * @param category Optional category filter.
+     * @param city Optional township/city filter.
+     * @param pageable The pagination information.
+     * @return A page of business response DTOs.
+     */
+    Page<BusinessResponse> getAllBusinesses(String search, String category, String city, Pageable pageable);
+
+    /**
+     * Retrieves a paginated list of all businesses without filters.
      *
      * @param pageable The pagination information.
      * @return A page of business response DTOs.
      */
-    Page<BusinessResponse> getAllBusinesses(Pageable pageable);
+    default Page<BusinessResponse> getAllBusinesses(Pageable pageable) {
+        return getAllBusinesses(null, null, null, pageable);
+    }
 
     /**
      * Retrieves a paginated list of businesses owned by the currently authenticated user.

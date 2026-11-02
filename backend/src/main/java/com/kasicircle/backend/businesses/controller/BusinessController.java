@@ -44,17 +44,23 @@ public class BusinessController {
     }
 
     /**
-     * Retrieves a paginated list of all businesses.
+     * Retrieves a paginated list of public businesses, optionally filtered by search term, category, and city.
      * Supports pagination and sorting. Defaults to sorting by creation date descending.
      *
+     * @param search Optional search keyword matching business name.
+     * @param category Optional category filter.
+     * @param city Optional township/city filter.
      * @param pageable Pagination and sorting information.
      * @return ResponseEntity containing a Page of BusinessResponse.
      */
     @GetMapping
     public ResponseEntity<Page<BusinessResponse>> getAllBusinesses(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String city,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<BusinessResponse> response = businessService.getAllBusinesses(pageable);
+        Page<BusinessResponse> response = businessService.getAllBusinesses(search, category, city, pageable);
         return ResponseEntity.ok(response);
     }
 

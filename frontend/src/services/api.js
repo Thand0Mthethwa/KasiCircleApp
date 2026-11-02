@@ -124,9 +124,36 @@ export const userService = {
 };
 
 export const businessService = {
-  getAllBusinesses: async (page = 0, size = 10) => {
+  getAllBusinesses: async (pageOrParams = 0, maybeSize = 10, maybeFilters = {}) => {
+    let page = 0;
+    let size = 10;
+    let search = '';
+    let category = '';
+    let city = '';
+
+    if (typeof pageOrParams === 'object' && pageOrParams !== null) {
+      page = pageOrParams.page ?? 0;
+      size = pageOrParams.size ?? 10;
+      search = pageOrParams.search ?? '';
+      category = pageOrParams.category ?? '';
+      city = pageOrParams.city ?? '';
+    } else {
+      page = pageOrParams;
+      size = maybeSize;
+      search = maybeFilters.search ?? '';
+      category = maybeFilters.category ?? '';
+      city = maybeFilters.city ?? '';
+    }
+
+    const queryParams = new URLSearchParams();
+    queryParams.append('page', page);
+    queryParams.append('size', size);
+    if (search && search.trim()) queryParams.append('search', search.trim());
+    if (category && category.trim()) queryParams.append('category', category.trim());
+    if (city && city.trim()) queryParams.append('city', city.trim());
+
     const response = await fetch(
-      `${API_BASE_URL}/api/businesses?page=${page}&size=${size}`,
+      `${API_BASE_URL}/api/businesses?${queryParams.toString()}`,
       {
         method: 'GET',
         headers: getHeaders(false),

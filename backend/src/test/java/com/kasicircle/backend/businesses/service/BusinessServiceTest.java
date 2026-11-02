@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -35,6 +36,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,7 +94,7 @@ class BusinessServiceTest {
     void getAllBusinesses_shouldReturnPageOfBusinessResponses() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Business> businessPage = new PageImpl<>(Collections.singletonList(testBusiness));
-        when(businessRepository.findAll(pageable)).thenReturn(businessPage);
+        when(businessRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(businessPage);
         when(businessMapper.toBusinessResponse(any(Business.class))).thenReturn(testBusinessResponse);
 
         Page<BusinessResponse> result = businessService.getAllBusinesses(pageable);
@@ -100,6 +102,21 @@ class BusinessServiceTest {
         assertFalse(result.isEmpty());
         assertEquals(1, result.getTotalElements());
         assertEquals(businessId, result.getContent().get(0).id());
+    }
+
+    @Test
+    void getAllBusinesses_withFilters_shouldReturnFilteredPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Business> businessPage = new PageImpl<>(Collections.singletonList(testBusiness));
+        when(businessRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(businessPage);
+        when(businessMapper.toBusinessResponse(any(Business.class))).thenReturn(testBusinessResponse);
+
+        Page<BusinessResponse> result = businessService.getAllBusinesses("Cafe", "Food & Beverage", "Soweto", pageable);
+
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(businessId, result.getContent().get(0).id());
+        verify(businessRepository).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
