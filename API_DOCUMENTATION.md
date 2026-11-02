@@ -197,7 +197,8 @@ Sample response (200 OK):
   "province": "Gauteng",
   "ownerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "createdAt": "2026-10-01T10:00:00Z",
-  "updatedAt": "2026-10-01T10:00:00Z"
+  "updatedAt": "2026-10-01T10:00:00Z",
+  "coverImageUrl": "https://res.cloudinary.com/kasicircle/image/upload/v1/kasicircle/businesses/7f6aba4b-643f-41ec-a509-94b8f4381404/sample.jpg"
 }
 ```
 
@@ -246,6 +247,173 @@ Responses:
 - 401 Unauthorized when JWT is missing or invalid
 - 403 Forbidden if the user is not a BUSINESS account or does not own the listing
 - 404 Not Found if the business does not exist
+
+## Business image endpoints
+
+Business images are stored in Cloudinary and their metadata is persisted in PostgreSQL.
+Image uploads and management are strictly restricted to the authenticated business owner (`accountType = BUSINESS`), while photo galleries can be browsed publicly.
+
+### Image upload specifications & limits:
+- Maximum file size: **5 MB**
+- Maximum photos per business: **10**
+- Allowed image formats: **JPEG (`.jpg`, `.jpeg`)**, **PNG (`.png`)**, **WebP (`.webp`)**
+- Rejected formats: SVG (preventing XSS/script execution), GIF, PDF, executables
+- Content validation: Image magic bytes and integrity are validated server-side
+- Automatic cover designation: The first photo uploaded for a business automatically becomes the cover photo
+
+---
+
+### Upload business image
+
+- Method: POST
+- URL: `/api/businesses/{businessId}/images`
+- Content-Type: `multipart/form-data`
+- Auth required: Yes
+- Authorization: Authenticated owner of `{businessId}` with `accountType = BUSINESS`
+
+Form parameters:
+- `file` (binary, required): The image file (max 5MB, JPEG/PNG/WebP).
+- `isCover` (boolean, optional, default: `false`): When `true`, automatically unsets previous cover and designates this photo as the new cover.
+
+Sample response (201 Created):
+
+```json
+{
+  "id": "8e3b5e43-85b9-4a9f-9a1b-3fbb13854123",
+  "businessId": "7f6aba4b-643f-41ec-a509-94b8f4381404",
+  "imageUrl": "https://res.cloudinary.com/kasicircle/image/upload/v1/kasicircle/businesses/7f6aba4b-643f-41ec-a509-94b8f4381404/abc123.jpg",
+  "storageId": "kasicircle/businesses/7f6aba4b-643f-41ec-a509-94b8f4381404/abc123",
+  "fileName": "storefront.jpg",
+  "contentType": "image/jpeg",
+  "fileSize": 1548290,
+  "isCover": true,
+  "sortOrder": 0,
+  "createdAt": "2026-11-02T22:00:00Z"
+}
+```
+
+Responses:
+- 201 Created on success
+- 400 Bad Request for invalid image format, corrupted payload, file > 5MB, or quota reached (>10 photos)
+- 401 Unauthorized when JWT is missing or invalid
+- 403 Forbidden if the user is not a BUSINESS account or does not own the business
+- 404 Not Found if the business does not exist
+
+---
+
+### List business images (Gallery)
+
+- Method: GET
+- URL: `/api/businesses/{businessId}/images`
+- Auth required: No (Public)
+- Authorization: Accessible to anonymous visitors, residents, workers, and business owners
+
+Images are returned ordered with the cover photo first, followed by sort order and creation date descending.
+
+Sample response (200 OK):
+
+```json
+[
+  {
+    "id": "8e3b5e43-85b9-4a9f-9a1b-3fbb13854123",
+    "businessId": "7f6aba4b-643f-41ec-a509-94b8f4381404",
+    "imageUrl": "https://res.cloudinary.com/kasicircle/image/upload/v1/kasicircle/businesses/7f6aba4b-643f-41ec-a509-94b8f4381404/abc123.jpg",
+    "storageId": "kasicircle/businesses/7f6aba4b-643f-41ec-a509-94b8f4381404/abc123",
+    "fileName": "storefront.jpg",
+    "contentType": "image/jpeg",
+    "fileSize": 1548290,
+    "isCover": true,
+    "sortOrder": 0,
+    "createdAt": "2026-11-02T22:00:00Z"
+  },
+  {
+    "id": "a1b2c3d4-e5f6-4a9b-8c7d-0e1f2a3b4c5d",
+    "businessId": "7f6aba4b-643f-41ec-a509-94b8f4381404",
+    "imageUrl": "https://res.cloudinary.com/kasicircle/image/upload/v1/kasicircle/businesses/7f6aba4b-643f-41ec-a509-94b8f4381404/interior.jpg",
+    "storageId": "kasicircle/businesses/7f6aba4b-643f-41ec-a509-94b8f4381404/interior",
+    "fileName": "interior.jpg",
+    "contentType": "image/jpeg",
+    "fileSize": 2104320,
+    "isCover": false,
+    "sortOrder": 0,
+    "createdAt": "2026-11-02T22:05:00Z"
+  }
+]
+```
+
+Responses:
+- 200 OK with list of image metadata
+- 404 Not Found if the business does not exist
+
+---
+
+### Delete business image
+
+- Method: DELETE
+- URL: `/api/businesses/{businessId}/images/{imageId}`
+- Auth required: Yes
+- Authorization: Authenticated owner of `{businessId}` with `accountType = BUSINESS`
+
+Deletes the image file from Cloudinary and deletes the record from PostgreSQL.
+If the deleted image was the cover photo, another remaining image (if available) is automatically promoted to cover.
+
+Responses:
+- 204 No Content on successful deletion
+- 401 Unauthorized when JWT is missing or invalid
+- 403 Forbidden if the user is not a BUSINESS account or does not own the business
+- 404 Not Found if the business or image does not exist
+
+---
+
+### Set cover image
+
+- Method: PUT
+- URL: `/api/businesses/{businessId}/images/{imageId}/cover`
+- Auth required: Yes
+- Authorization: Authenticated owner of `{businessId}` with `accountType = BUSINESS`
+
+Atomically unsets the cover flag on all other images for `{businessId}` and sets `isCover = true` on `{imageId}`.
+
+Sample response (200 OK):
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-4a9b-8c7d-0e1f2a3b4c5d",
+  "businessId": "7f6aba4b-643f-41ec-a509-94b8f4381404",
+  "imageUrl": "https://res.cloudinary.com/kasicircle/image/upload/v1/kasicircle/businesses/7f6aba4b-643f-41ec-a509-94b8f4381404/interior.jpg",
+  "storageId": "kasicircle/businesses/7f6aba4b-643f-41ec-a509-94b8f4381404/interior",
+  "fileName": "interior.jpg",
+  "contentType": "image/jpeg",
+  "fileSize": 2104320,
+  "isCover": true,
+  "sortOrder": 0,
+  "createdAt": "2026-11-02T22:05:00Z"
+}
+```
+
+Responses:
+- 200 OK with updated image metadata
+- 401 Unauthorized when JWT is missing or invalid
+- 403 Forbidden if the user is not a BUSINESS account or does not own the business
+- 404 Not Found if the business or image does not exist
+
+## Environment variables and local configuration
+
+To run the backend with live Cloudinary image storage, configure the following environment variables:
+
+| Variable | Description | Example / Note |
+| :--- | :--- | :--- |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary account cloud name | `kasicircle` |
+| `CLOUDINARY_API_KEY` | Cloudinary API Key | `123456789012345` |
+| `CLOUDINARY_API_SECRET` | Cloudinary API Secret | `abcdefghijklmnopqrstuvwxyz01234` |
+| `DB_URL` | PostgreSQL JDBC connection URL | `jdbc:postgresql://localhost:5432/kasicircle` |
+| `DB_USERNAME` | PostgreSQL database username | `postgres` |
+| `DB_PASSWORD` | PostgreSQL database password | `postgres` |
+| `JWT_SECRET` | Secret key for HMAC-SHA256 JWT signing | At least 32 characters |
+
+### Local testing notes:
+- Automated tests mock Cloudinary and execute entirely without network access or real credentials.
+- In test profiles (`test`), Flyway is disabled to allow H2 in-memory databases to run without failing on PostgreSQL-specific partial indexes.
 
 ## Standard error format
 

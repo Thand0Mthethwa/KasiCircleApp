@@ -1,18 +1,24 @@
 package com.kasicircle.backend.businesses.service;
 
 import com.kasicircle.backend.businesses.domain.Business;
+import com.kasicircle.backend.businesses.domain.BusinessImage;
 import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.mapper.BusinessMapper;
+import com.kasicircle.backend.businesses.repository.BusinessImageRepository;
 import com.kasicircle.backend.businesses.repository.BusinessRepository;
 import com.kasicircle.backend.businesses.repository.BusinessSpecifications;
+import com.kasicircle.backend.businesses.storage.ImageStorageService;
 import com.kasicircle.backend.businesses.exception.BusinessAlreadyExistsException;
 import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
 import com.kasicircle.backend.users.entity.AccountType;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,19 +29,44 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 public class BusinessServiceImpl implements BusinessService {
 
+    private static final Logger log = LoggerFactory.getLogger(BusinessServiceImpl.class);
+
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
     private final BusinessMapper businessMapper;
+    private final BusinessImageRepository businessImageRepository;
+    private final ImageStorageService imageStorageService;
 
-    public BusinessServiceImpl(BusinessRepository businessRepository, UserRepository userRepository, BusinessMapper businessMapper) {
+    @Autowired
+    public BusinessServiceImpl(
+            BusinessRepository businessRepository,
+            UserRepository userRepository,
+            BusinessMapper businessMapper,
+            @Autowired(required = false) BusinessImageRepository businessImageRepository,
+            @Autowired(required = false) ImageStorageService imageStorageService
+    ) {
         this.businessRepository = businessRepository;
         this.userRepository = userRepository;
         this.businessMapper = businessMapper;
+        this.businessImageRepository = businessImageRepository;
+        this.imageStorageService = imageStorageService;
+    }
+
+    public BusinessServiceImpl(
+            BusinessRepository businessRepository,
+            UserRepository userRepository,
+            BusinessMapper businessMapper
+    ) {
+        this(businessRepository, userRepository, businessMapper, null, null);
     }
 
     @Override
@@ -68,17 +99,25 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     @Transactional(readOnly = true)
     public BusinessResponse getBusinessById(UUID id) {
-        return businessRepository.findById(id)
-                .map(businessMapper::toBusinessResponse)
-                .orElseThrow(() -> new BusinessNotFoundException("Business with ID " + id + " not found."));
+        Business business = getBusinessByIdInternal(id);
+        String coverImageUrl = getCoverImageUrl(id);
+        return coverImageUrl != null
+                ? businessMapper.toBusinessResponse(business, coverImageUrl)
+                : businessMapper.toBusinessResponse(business);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<BusinessResponse> getAllBusinesses(String search, String category, String city, Pageable pageable) {
         Specification<Business> spec = BusinessSpecifications.withFilters(search, category, city);
-        return businessRepository.findAll(spec, pageable)
-                .map(businessMapper::toBusinessResponse);
+        Page<Business> page = businessRepository.findAll(spec, pageable);
+        Map<UUID, String> coverImageMap = getCoverImageMap(page.getContent());
+        return page.map(b -> {
+            String coverUrl = coverImageMap.get(b.getId());
+            return coverUrl != null
+                    ? businessMapper.toBusinessResponse(b, coverUrl)
+                    : businessMapper.toBusinessResponse(b);
+        });
     }
 
     @Override
@@ -91,8 +130,14 @@ public class BusinessServiceImpl implements BusinessService {
     @Transactional(readOnly = true)
     public Page<BusinessResponse> getBusinessesForCurrentUser(Pageable pageable) {
         User owner = getAuthenticatedUser();
-        return businessRepository.findByOwner(owner, pageable)
-                .map(businessMapper::toBusinessResponse);
+        Page<Business> page = businessRepository.findByOwner(owner, pageable);
+        Map<UUID, String> coverImageMap = getCoverImageMap(page.getContent());
+        return page.map(b -> {
+            String coverUrl = coverImageMap.get(b.getId());
+            return coverUrl != null
+                    ? businessMapper.toBusinessResponse(b, coverUrl)
+                    : businessMapper.toBusinessResponse(b);
+        });
     }
 
     @Override
@@ -113,7 +158,10 @@ public class BusinessServiceImpl implements BusinessService {
         business.setProvince(request.province());
 
         Business updatedBusiness = businessRepository.save(business);
-        return businessMapper.toBusinessResponse(updatedBusiness);
+        String coverImageUrl = getCoverImageUrl(id);
+        return coverImageUrl != null
+                ? businessMapper.toBusinessResponse(updatedBusiness, coverImageUrl)
+                : businessMapper.toBusinessResponse(updatedBusiness);
     }
 
     @Override
@@ -123,7 +171,41 @@ public class BusinessServiceImpl implements BusinessService {
         verifyBusinessAccount(owner);
         Business business = getBusinessByIdInternal(id);
         verifyOwnership(business, owner);
+
+        if (businessImageRepository != null && imageStorageService != null) {
+            List<BusinessImage> images = businessImageRepository.findByBusinessId(id);
+            for (BusinessImage image : images) {
+                try {
+                    imageStorageService.deleteImage(image.getStorageId());
+                } catch (Exception ex) {
+                    log.warn("Failed to delete storage asset {} during business deletion: {}",
+                            image.getStorageId(), ex.getMessage());
+                }
+            }
+        }
+
         businessRepository.delete(business);
+    }
+
+    private String getCoverImageUrl(UUID businessId) {
+        if (businessImageRepository == null || businessId == null) {
+            return null;
+        }
+        return businessImageRepository.findCoverImageUrlByBusinessId(businessId).orElse(null);
+    }
+
+    private Map<UUID, String> getCoverImageMap(Collection<Business> businesses) {
+        Map<UUID, String> map = new HashMap<>();
+        if (businessImageRepository == null || businesses == null || businesses.isEmpty()) {
+            return map;
+        }
+
+        List<UUID> ids = businesses.stream().map(Business::getId).toList();
+        List<Object[]> rows = businessImageRepository.findCoverImageUrlsByBusinessIds(ids);
+        for (Object[] row : rows) {
+            map.put((UUID) row[0], (String) row[1]);
+        }
+        return map;
     }
 
     private void verifyBusinessAccount(User user) {

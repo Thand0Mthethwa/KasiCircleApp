@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BusinessMapper {
 
-    public BusinessResponse toBusinessResponse(Business business) {
+    public BusinessResponse toBusinessResponse(Business business, String coverImageUrl) {
         return BusinessResponse.builder()
                 .id(business.getId())
                 .name(business.getName())
@@ -18,9 +18,14 @@ public class BusinessMapper {
                 .address(business.getAddress())
                 .city(business.getCity())
                 .province(business.getProvince())
-                .ownerId(business.getOwner().getId())
+                .ownerId(business.getOwner() != null ? business.getOwner().getId() : null)
                 .createdAt(business.getCreatedAt())
                 .updatedAt(business.getUpdatedAt())
+                .coverImageUrl(coverImageUrl)
                 .build();
+    }
+
+    public BusinessResponse toBusinessResponse(Business business) {
+        return toBusinessResponse(business, null);
     }
 }

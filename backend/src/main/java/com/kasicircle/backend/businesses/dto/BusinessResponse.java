@@ -18,6 +18,7 @@ public record BusinessResponse(
         String province,
         UUID ownerId,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        String coverImageUrl
 ) {
 }

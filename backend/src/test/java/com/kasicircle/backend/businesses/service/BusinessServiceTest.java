@@ -72,6 +72,11 @@ class BusinessServiceTest {
         testBusinessResponse = BusinessResponse.builder().id(businessId).name("Test Business").ownerId(userId).build();
     }
 
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     void getBusinessById_whenBusinessExists_shouldReturnBusinessResponse() {
         when(businessRepository.findById(businessId)).thenReturn(Optional.of(testBusiness));
