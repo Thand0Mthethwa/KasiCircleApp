@@ -38,6 +38,7 @@ export const Button = ({
 
 // Input Component
 export const Input = ({
+  id,
   label,
   error,
   hint,
@@ -45,16 +46,18 @@ export const Input = ({
   className = '',
   ...props
 }) => {
+  const inputId = id || props.name;
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-semibold text-neutral-900 mb-2">
+        <label htmlFor={inputId} className="block text-sm font-semibold text-neutral-900 mb-2">
           {label}
         </label>
       )}
       <div className="relative">
         {Icon && <Icon className="absolute left-4 top-3.5 w-5 h-5 text-neutral-400 pointer-events-none" />}
         <input
+          id={inputId}
           className={`input-field ${Icon ? 'pl-12' : 'pl-4'} ${error ? 'ring-2 ring-red-500 border-red-500' : ''} ${className}`}
           {...props}
         />

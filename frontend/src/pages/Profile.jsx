@@ -247,7 +247,7 @@ export default function Profile() {
                 type="button"
                 onClick={handleStartEdit}
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-kasi-green hover:text-kasi-green-dark transition-colors"
-                aria-label="Edit Profile"
+                aria-label="Edit personal information"
               >
                 <Edit2 className="w-4 h-4" />
                 <span>Edit</span>
