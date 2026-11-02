@@ -17,6 +17,7 @@ vi.mock('../services/api', () => ({
   businessService: {
     getMyBusinesses: vi.fn(),
     createBusiness: vi.fn(),
+    updateBusiness: vi.fn(),
   },
 }));
 
@@ -361,5 +362,274 @@ describe('BusinessProfile Page', () => {
     // Confirm that the creation form is NOT displayed
     expect(screen.queryByTestId('business-create-form')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Create Business Profile' })).not.toBeInTheDocument();
+  });
+
+  it('opens populated edit form when clicking Edit Business Profile button', async () => {
+    const user = userEvent.setup();
+    useAuth.mockReturnValue({
+      user: businessUser,
+      isLoading: false,
+    });
+    businessService.getMyBusinesses.mockResolvedValueOnce({
+      content: [mockExistingBusiness],
+      totalElements: 1,
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('existing-business-view')).toBeInTheDocument();
+    });
+
+    const editButton = screen.getByRole('button', { name: /edit business profile/i });
+    await user.click(editButton);
+
+    // Form is displayed
+    expect(await screen.findByTestId('business-edit-form')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Edit Business Listing' })).toBeInTheDocument();
+
+    // Fields are pre-populated with existing business data
+    expect(screen.getByLabelText(/Business Name/i)).toHaveValue('Kasi Fresh Cafe');
+    expect(screen.getByLabelText(/Category/i)).toHaveValue('Food & Beverage');
+    expect(screen.getByLabelText(/Business Description/i)).toHaveValue(
+      'Serving delicious township meals and refreshments daily.'
+    );
+    expect(screen.getByLabelText(/Phone Number/i)).toHaveValue('+27821112222');
+    expect(screen.getByLabelText(/Business Email/i)).toHaveValue('info@kasifresh.co.za');
+    expect(screen.getByLabelText(/Physical Address/i)).toHaveValue('45 Vilakazi Street');
+    expect(screen.getByLabelText(/Township \/ City/i)).toHaveValue('Soweto');
+    expect(screen.getByLabelText(/Province/i)).toHaveValue('Gauteng');
+
+    // Save and Cancel buttons are available
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+  });
+
+  it('cancels editing, discards unsaved changes, and returns to existing view', async () => {
+    const user = userEvent.setup();
+    useAuth.mockReturnValue({
+      user: businessUser,
+      isLoading: false,
+    });
+    businessService.getMyBusinesses.mockResolvedValueOnce({
+      content: [mockExistingBusiness],
+      totalElements: 1,
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('existing-business-view')).toBeInTheDocument();
+    });
+
+    // Enter edit mode
+    await user.click(screen.getByRole('button', { name: /edit business profile/i }));
+
+    const nameInput = screen.getByLabelText(/Business Name/i);
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Unsaved Modified Name');
+
+    // Click Cancel
+    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    await user.click(cancelButton);
+
+    // Edit form is closed, original view is restored
+    expect(await screen.findByTestId('existing-business-view')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Kasi Fresh Cafe' })).toBeInTheDocument();
+    expect(screen.queryByText('Unsaved Modified Name')).not.toBeInTheDocument();
+    expect(businessService.updateBusiness).not.toHaveBeenCalled();
+  });
+
+  it('validates required fields when editing and prevents update request', async () => {
+    const user = userEvent.setup();
+    useAuth.mockReturnValue({
+      user: businessUser,
+      isLoading: false,
+    });
+    businessService.getMyBusinesses.mockResolvedValueOnce({
+      content: [mockExistingBusiness],
+      totalElements: 1,
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('existing-business-view')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /edit business profile/i }));
+
+    // Clear required fields
+    const nameInput = screen.getByLabelText(/Business Name/i);
+    await user.clear(nameInput);
+    const emailInput = screen.getByLabelText(/Business Email/i);
+    await user.clear(emailInput);
+
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    // Validation errors show up
+    expect(await screen.findByText('Business name is required')).toBeInTheDocument();
+    expect(screen.getByText('Business email is required')).toBeInTheDocument();
+    expect(businessService.updateBusiness).not.toHaveBeenCalled();
+  });
+
+  it('updates business listing successfully and displays updated information', async () => {
+    const user = userEvent.setup();
+    useAuth.mockReturnValue({
+      user: businessUser,
+      isLoading: false,
+    });
+    businessService.getMyBusinesses.mockResolvedValueOnce({
+      content: [mockExistingBusiness],
+      totalElements: 1,
+    });
+
+    const updatedResponse = {
+      ...mockExistingBusiness,
+      name: 'Kasi Gourmet Cafe',
+      description: 'Upgraded menu with artisan township dishes.',
+      city: 'Johannesburg',
+    };
+    businessService.updateBusiness.mockResolvedValueOnce(updatedResponse);
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('existing-business-view')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /edit business profile/i }));
+
+    // Modify fields
+    const nameInput = screen.getByLabelText(/Business Name/i);
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Kasi Gourmet Cafe');
+
+    const descInput = screen.getByLabelText(/Business Description/i);
+    await user.clear(descInput);
+    await user.type(descInput, 'Upgraded menu with artisan township dishes.');
+
+    const cityInput = screen.getByLabelText(/Township \/ City/i);
+    await user.clear(cityInput);
+    await user.type(cityInput, 'Johannesburg');
+
+    // Save
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    await waitFor(() => {
+      expect(businessService.updateBusiness).toHaveBeenCalledWith(
+        'biz-123',
+        expect.objectContaining({
+          name: 'Kasi Gourmet Cafe',
+          description: 'Upgraded menu with artisan township dishes.',
+          city: 'Johannesburg',
+        })
+      );
+    });
+
+    // Success message and updated view are displayed
+    expect(await screen.findByText('Business profile updated successfully!')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Kasi Gourmet Cafe' })).toBeInTheDocument();
+    expect(screen.getByText('Upgraded menu with artisan township dishes.')).toBeInTheDocument();
+    expect(screen.getByText(/45 Vilakazi Street, Johannesburg, Gauteng/i)).toBeInTheDocument();
+    expect(screen.queryByTestId('business-edit-form')).not.toBeInTheDocument();
+  });
+
+  it('displays API error when business update fails', async () => {
+    const user = userEvent.setup();
+    useAuth.mockReturnValue({
+      user: businessUser,
+      isLoading: false,
+    });
+    businessService.getMyBusinesses.mockResolvedValueOnce({
+      content: [mockExistingBusiness],
+      totalElements: 1,
+    });
+    businessService.updateBusiness.mockRejectedValueOnce({
+      status: 400,
+      data: { message: 'Invalid phone number format provided.' },
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('existing-business-view')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /edit business profile/i }));
+
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    expect(await screen.findByText('Invalid phone number format provided.')).toBeInTheDocument();
+    expect(screen.getByTestId('business-edit-form')).toBeInTheDocument();
+  });
+
+  it('prevents duplicate submissions while saving edit changes', async () => {
+    const user = userEvent.setup();
+    useAuth.mockReturnValue({
+      user: businessUser,
+      isLoading: false,
+    });
+    businessService.getMyBusinesses.mockResolvedValueOnce({
+      content: [mockExistingBusiness],
+      totalElements: 1,
+    });
+
+    let resolveUpdate;
+    const updatePromise = new Promise((resolve) => {
+      resolveUpdate = resolve;
+    });
+    businessService.updateBusiness.mockReturnValueOnce(updatePromise);
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('existing-business-view')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /edit business profile/i }));
+
+    const saveButton = screen.getByRole('button', { name: 'Save Changes' });
+    await user.click(saveButton);
+
+    expect(screen.getByText('Saving Changes...')).toBeInTheDocument();
+    expect(saveButton).toBeDisabled();
+
+    // Attempt second click
+    await user.click(saveButton);
+    expect(businessService.updateBusiness).toHaveBeenCalledTimes(1);
+
+    // Resolve update
+    resolveUpdate({
+      ...mockExistingBusiness,
+      name: 'Resolved Cafe',
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Business profile updated successfully!')).toBeInTheDocument();
+    });
+  });
+
+  it('navigates to public business page when clicking View Public Page', async () => {
+    const user = userEvent.setup();
+    useAuth.mockReturnValue({
+      user: businessUser,
+      isLoading: false,
+    });
+    businessService.getMyBusinesses.mockResolvedValueOnce({
+      content: [mockExistingBusiness],
+      totalElements: 1,
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('existing-business-view')).toBeInTheDocument();
+    });
+
+    const viewPublicButton = screen.getByRole('button', { name: /view public page/i });
+    await user.click(viewPublicButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/businesses/biz-123');
   });
 });

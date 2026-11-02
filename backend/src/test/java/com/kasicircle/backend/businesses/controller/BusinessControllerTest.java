@@ -343,7 +343,14 @@ class BusinessControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(businessId.toString()))
-                .andExpect(jsonPath("$.name").value("Updated Business"));
+                .andExpect(jsonPath("$.name").value("Updated Business"))
+                .andExpect(jsonPath("$.description").value("Updated description"))
+                .andExpect(jsonPath("$.phoneNumber").value("+27123456789"))
+                .andExpect(jsonPath("$.email").value("updated@example.com"))
+                .andExpect(jsonPath("$.category").value("Retail"))
+                .andExpect(jsonPath("$.address").value("456 Updated Street"))
+                .andExpect(jsonPath("$.city").value("Cape Town"))
+                .andExpect(jsonPath("$.province").value("Western Cape"));
     }
 
     @Test

@@ -197,6 +197,16 @@ class BusinessServiceTest {
 
         BusinessResponse result = businessService.updateBusiness(businessId, request);
 
+        verify(businessRepository).save(testBusiness);
+        assertEquals(request.name(), testBusiness.getName());
+        assertEquals(request.description(), testBusiness.getDescription());
+        assertEquals(request.phoneNumber(), testBusiness.getPhoneNumber());
+        assertEquals(request.email(), testBusiness.getEmail());
+        assertEquals(request.category(), testBusiness.getCategory());
+        assertEquals(request.address(), testBusiness.getAddress());
+        assertEquals(request.city(), testBusiness.getCity());
+        assertEquals(request.province(), testBusiness.getProvince());
+
         assertEquals(request.name(), result.name());
         assertEquals(request.email(), result.email());
         assertEquals(userId, result.ownerId());

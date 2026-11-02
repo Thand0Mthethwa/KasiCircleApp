@@ -14,6 +14,8 @@ import {
   Lock,
   Calendar,
   ShieldCheck,
+  Edit3,
+  ExternalLink,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -46,6 +48,7 @@ export default function BusinessProfile() {
 
   const [isLoadingBusiness, setIsLoadingBusiness] = useState(true);
   const [business, setBusiness] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
   const [errors, setErrors] = useState({});
@@ -95,6 +98,29 @@ export default function BusinessProfile() {
       loadMyBusiness();
     }
   }, [user, isAuthLoading, loadMyBusiness]);
+
+  const handleStartEdit = () => {
+    if (!business) return;
+    setFormData({
+      name: business.name || '',
+      category: business.category || 'Retail',
+      description: business.description || '',
+      phoneNumber: business.phoneNumber || '',
+      email: business.email || '',
+      address: business.address || '',
+      city: business.city || '',
+      province: business.province || 'Gauteng',
+    });
+    setErrors({});
+    setStatusMessage(null);
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setErrors({});
+    setStatusMessage(null);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -190,20 +216,34 @@ export default function BusinessProfile() {
     };
 
     try {
-      const created = await businessService.createBusiness(payload);
-      setBusiness(created);
-      setStatusMessage({
-        type: 'success',
-        text: 'Business profile created successfully!',
-      });
+      if (isEditing && business?.id) {
+        const updated = await businessService.updateBusiness(business.id, payload);
+        setBusiness(updated);
+        setIsEditing(false);
+        setStatusMessage({
+          type: 'success',
+          text: 'Business profile updated successfully!',
+        });
+      } else {
+        const created = await businessService.createBusiness(payload);
+        setBusiness(created);
+        setStatusMessage({
+          type: 'success',
+          text: 'Business profile created successfully!',
+        });
+      }
     } catch (err) {
-      let message = 'Failed to create business listing. Please check your details.';
+      let message = isEditing
+        ? 'Failed to update business profile. Please check your details.'
+        : 'Failed to create business listing. Please check your details.';
+
       if (err.status === 409 || err.data?.status === 409) {
         message = 'A business listing already exists for this account.';
-        // Refresh from backend to display the existing listing
         loadMyBusiness();
       } else if (err.status === 403 || err.data?.status === 403) {
-        message = 'Only BUSINESS accounts have permission to create listings.';
+        message = isEditing
+          ? 'You do not have permission to update this business.'
+          : 'Only BUSINESS accounts have permission to create listings.';
       } else if (err.data?.message) {
         message = err.data.message;
       } else if (err.message) {
@@ -270,13 +310,31 @@ export default function BusinessProfile() {
     );
   }
 
+  const getPageTitle = () => {
+    if (isEditing) return 'Edit Business Profile';
+    if (business) return 'Business Profile';
+    return 'Create Business Profile';
+  };
+
+  const getPageSubtitle = () => {
+    if (isEditing) return 'Update your business listing details';
+    if (business) return 'Manage your registered business';
+    return 'Set up your township business listing';
+  };
+
   return (
     <div className="page-wrapper pb-24">
       <Header
-        title={business ? 'Business Profile' : 'Create Business Profile'}
-        subtitle={business ? 'Manage your registered business' : 'Set up your township business listing'}
+        title={getPageTitle()}
+        subtitle={getPageSubtitle()}
         showBack={true}
-        onBack={() => navigate('/profile')}
+        onBack={() => {
+          if (isEditing) {
+            handleCancelEdit();
+          } else {
+            navigate('/profile');
+          }
+        }}
       />
 
       <div className="page-content page-padding py-6 max-w-md mx-auto w-full space-y-6">
@@ -299,8 +357,8 @@ export default function BusinessProfile() {
           </div>
         )}
 
-        {/* Existing Business Profile View */}
-        {business ? (
+        {/* Existing Business Profile View (when not editing) */}
+        {business && !isEditing ? (
           <div className="space-y-6" data-testid="existing-business-view">
             {/* Business Header Card */}
             <Card className="p-6 shadow-sm border-neutral-200">
@@ -379,6 +437,29 @@ export default function BusinessProfile() {
               </div>
             </Card>
 
+            {/* Actions: Edit & View Public */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="primary"
+                onClick={handleStartEdit}
+                className="flex-1 flex items-center justify-center gap-2"
+                aria-label="Edit Business Profile"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Edit Business Profile</span>
+              </Button>
+
+              <Button
+                variant="secondary"
+                onClick={() => navigate(`/businesses/${business.id}`)}
+                className="flex-1 flex items-center justify-center gap-2 text-neutral-700"
+                aria-label="View Public Page"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>View Public Page</span>
+              </Button>
+            </div>
+
             {/* Account Policy Info */}
             <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-2.5">
               <Lock className="w-4 h-4 text-blue-700 flex-shrink-0 mt-0.5" />
@@ -388,12 +469,19 @@ export default function BusinessProfile() {
             </div>
           </div>
         ) : (
-          /* Business Creation Form */
-          <Card className="p-6 shadow-sm border-neutral-200" data-testid="business-create-form">
+          /* Business Form (Creation or Edit Mode) */
+          <Card
+            className="p-6 shadow-sm border-neutral-200"
+            data-testid={isEditing ? 'business-edit-form' : 'business-create-form'}
+          >
             <div className="border-b border-neutral-100 pb-3 mb-5">
-              <h2 className="text-lg font-bold text-neutral-900">Register Your Business</h2>
+              <h2 className="text-lg font-bold text-neutral-900">
+                {isEditing ? 'Edit Business Listing' : 'Register Your Business'}
+              </h2>
               <p className="text-xs text-neutral-500 mt-0.5">
-                Fill in your business details to publish your listing to the KasiCircle community.
+                {isEditing
+                  ? 'Update your business information below and save your changes.'
+                  : 'Fill in your business details to publish your listing to the KasiCircle community.'}
               </p>
             </div>
 
@@ -444,7 +532,6 @@ export default function BusinessProfile() {
                   rows={3}
                   value={formData.description}
                   onChange={handleChange}
-                  error={errors.description}
                   placeholder="Tell your community what services or products you provide..."
                   maxLength={255}
                   disabled={isSubmitting}
@@ -535,8 +622,8 @@ export default function BusinessProfile() {
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <div className="pt-4">
+              {/* Form Action Buttons */}
+              <div className="pt-4 flex flex-col gap-2">
                 <Button
                   type="submit"
                   variant="primary"
@@ -546,12 +633,24 @@ export default function BusinessProfile() {
                   {isSubmitting ? (
                     <>
                       <LoadingSpinner size="sm" />
-                      <span>Creating Business Profile...</span>
+                      <span>{isEditing ? 'Saving Changes...' : 'Creating Business Profile...'}</span>
                     </>
                   ) : (
-                    <span>Create Business Profile</span>
+                    <span>{isEditing ? 'Save Changes' : 'Create Business Profile'}</span>
                   )}
                 </Button>
+
+                {isEditing && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleCancelEdit}
+                    disabled={isSubmitting}
+                    className="w-full"
+                  >
+                    Cancel
+                  </Button>
+                )}
               </div>
             </form>
           </Card>
@@ -562,4 +661,3 @@ export default function BusinessProfile() {
     </div>
   );
 }
-
