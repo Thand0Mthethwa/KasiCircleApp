@@ -179,6 +179,28 @@ Responses:
 - Auth required: No (Public)
 - Authorization: None (Accessible to anonymous visitors and authenticated users)
 
+Path parameters:
+- `id` (UUID, required): Unique identifier of the business
+
+Sample response (200 OK):
+
+```json
+{
+  "id": "7f6aba4b-643f-41ec-a509-94b8f4381404",
+  "name": "Kasi Fresh Cafe",
+  "description": "Serving delicious township meals and refreshments daily.",
+  "phoneNumber": "+27821112222",
+  "email": "info@kasifresh.co.za",
+  "category": "Food & Beverage",
+  "address": "45 Vilakazi Street",
+  "city": "Soweto",
+  "province": "Gauteng",
+  "ownerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "createdAt": "2026-10-01T10:00:00Z",
+  "updatedAt": "2026-10-01T10:00:00Z"
+}
+```
+
 Responses:
 - 200 OK with business details (owner ID exposed safely without exposing sensitive credentials)
 - 404 Not Found if the business does not exist

@@ -7,14 +7,11 @@ import {
   Building2,
   MapPin,
   Tag,
-  Phone,
-  Mail,
   ChevronLeft,
   ChevronRight,
   X,
   AlertCircle,
   RotateCcw,
-  Calendar,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -52,7 +49,6 @@ export default function Explore() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedBusiness, setSelectedBusiness] = useState(null);
 
   const pageSize = 8;
 
@@ -368,8 +364,8 @@ export default function Explore() {
 
                   <button
                     type="button"
-                    onClick={() => setSelectedBusiness(biz)}
-                    className="font-bold text-kasi-green hover:text-kasi-green-dark transition-colors inline-flex items-center gap-1"
+                    onClick={() => navigate(`/businesses/${biz.id}`)}
+                    className="font-bold text-kasi-green hover:text-kasi-green-dark transition-colors inline-flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-kasi-green rounded"
                     aria-label={`View details for ${biz.name}`}
                   >
                     <span>View Details</span>
@@ -410,112 +406,6 @@ export default function Explore() {
                 </Button>
               </div>
             )}
-          </div>
-        )}
-
-        {/* Business Detail Modal */}
-        {selectedBusiness && (
-          <div
-            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-business-title"
-          >
-            <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl animate-in fade-in">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-md">
-                    <Building2 className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 id="modal-business-title" className="text-lg font-bold text-neutral-900">
-                      {selectedBusiness.name}
-                    </h2>
-                    <span className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
-                      <Tag className="w-3 h-3" />
-                      {selectedBusiness.category}
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedBusiness(null)}
-                  className="p-1.5 rounded-full text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
-                  aria-label="Close modal"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Description */}
-              <div>
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">
-                  About
-                </h4>
-                <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-line">
-                  {selectedBusiness.description}
-                </p>
-              </div>
-
-              {/* Contact & Location Info */}
-              <div className="space-y-3 pt-2 border-t border-neutral-100 text-sm">
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 text-neutral-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="block text-xs text-neutral-500 font-medium">Location</span>
-                    <span className="text-neutral-900 font-medium">
-                      {selectedBusiness.address}, {selectedBusiness.city}, {selectedBusiness.province}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Phone className="w-4 h-4 text-neutral-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="block text-xs text-neutral-500 font-medium">Phone</span>
-                    <a
-                      href={`tel:${selectedBusiness.phoneNumber}`}
-                      className="text-kasi-green font-semibold hover:underline"
-                    >
-                      {selectedBusiness.phoneNumber}
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Mail className="w-4 h-4 text-neutral-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="block text-xs text-neutral-500 font-medium">Email</span>
-                    <a
-                      href={`mailto:${selectedBusiness.email}`}
-                      className="text-kasi-green font-semibold hover:underline"
-                    >
-                      {selectedBusiness.email}
-                    </a>
-                  </div>
-                </div>
-
-                {selectedBusiness.createdAt && (
-                  <div className="flex items-start gap-3 pt-2 border-t border-neutral-100 text-xs text-neutral-500">
-                    <Calendar className="w-4 h-4 text-neutral-400 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <span>Listed on {new Date(selectedBusiness.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="pt-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => setSelectedBusiness(null)}
-                  className="w-full text-sm"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
           </div>
         )}
       </div>

@@ -185,9 +185,18 @@ class BusinessControllerTest {
     @WithAnonymousUser
     void getBusinessById_asAnonymousUser_whenExists_shouldReturnOk() throws Exception {
         UUID businessId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         BusinessResponse response = BusinessResponse.builder()
                 .id(businessId)
                 .name("Public Business")
+                .description("Quality township enterprise services")
+                .phoneNumber("+27821112222")
+                .email("contact@publicbiz.co.za")
+                .category("Retail")
+                .address("10 Vilakazi St")
+                .city("Soweto")
+                .province("Gauteng")
+                .ownerId(ownerId)
                 .build();
 
         when(businessService.getBusinessById(businessId)).thenReturn(response);
@@ -195,7 +204,15 @@ class BusinessControllerTest {
         mockMvc.perform(get("/api/businesses/{id}", businessId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(businessId.toString()))
-                .andExpect(jsonPath("$.name").value("Public Business"));
+                .andExpect(jsonPath("$.name").value("Public Business"))
+                .andExpect(jsonPath("$.description").value("Quality township enterprise services"))
+                .andExpect(jsonPath("$.phoneNumber").value("+27821112222"))
+                .andExpect(jsonPath("$.email").value("contact@publicbiz.co.za"))
+                .andExpect(jsonPath("$.category").value("Retail"))
+                .andExpect(jsonPath("$.address").value("10 Vilakazi St"))
+                .andExpect(jsonPath("$.city").value("Soweto"))
+                .andExpect(jsonPath("$.province").value("Gauteng"))
+                .andExpect(jsonPath("$.ownerId").value(ownerId.toString()));
     }
 
     @Test

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -319,7 +319,7 @@ describe('Explore (Public Business Directory) Page', () => {
     });
   });
 
-  it('opens and closes business detail modal with all business information', async () => {
+  it('navigates to dedicated business detail page when clicking View Details', async () => {
     const user = userEvent.setup();
     businessService.getAllBusinesses.mockResolvedValue(mockPagedResponse);
 
@@ -329,25 +329,11 @@ describe('Explore (Public Business Directory) Page', () => {
       expect(screen.getByText('Kasi Fresh Cafe')).toBeInTheDocument();
     });
 
-    // Click View Details for Kasi Fresh Cafe
+    // Click View Details for Kasi Fresh Cafe (biz-1)
     const viewDetailsButtons = screen.getAllByRole('button', { name: /view details/i });
     await user.click(viewDetailsButtons[0]);
 
-    // Modal dialog is displayed
-    const modal = screen.getByRole('dialog');
-    expect(modal).toBeInTheDocument();
-
-    // Check modal contents using within(modal)
-    expect(within(modal).getByRole('heading', { name: 'Kasi Fresh Cafe' })).toBeInTheDocument();
-    expect(within(modal).getByText('+27821112222')).toHaveAttribute('href', 'tel:+27821112222');
-    expect(within(modal).getByText('info@kasifresh.co.za')).toHaveAttribute('href', 'mailto:info@kasifresh.co.za');
-    expect(within(modal).getByText(/45 Vilakazi Street, Soweto, Gauteng/i)).toBeInTheDocument();
-
-    // Close modal
-    const closeBtn = screen.getByRole('button', { name: /close modal/i });
-    await user.click(closeBtn);
-
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(mockNavigate).toHaveBeenCalledWith('/businesses/biz-1');
   });
 });
 

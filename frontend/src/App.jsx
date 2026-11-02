@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import Home from './pages/Home';
 import Jobs from './pages/Jobs';
 import Explore from './pages/Explore';
+import BusinessDetail from './pages/BusinessDetail';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import BusinessProfile from './pages/BusinessProfile';
@@ -88,6 +89,7 @@ function AppRoutes() {
       <Route path="/home" element={<Home />} />
       <Route path="/explore" element={<Explore />} />
       <Route path="/businesses" element={<Explore />} />
+      <Route path="/businesses/:id" element={<BusinessDetail />} />
       <Route
         path="/jobs"
         element={
