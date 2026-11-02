@@ -49,13 +49,124 @@ class BusinessControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
+    @WithMockUser(username = "test@example.com")
     void createBusiness_withValidDataAndAuthenticatedUser_shouldReturnCreated() throws Exception {
-        // ... (existing test code)
+        CreateBusinessRequest request = CreateBusinessRequest.builder()
+                .name("Test Business")
+                .description("Test description")
+                .phoneNumber("+27123456789")
+                .email("test@business.com")
+                .category("Retail")
+                .address("123 Main Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        UUID businessId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+        BusinessResponse response = BusinessResponse.builder()
+                .id(businessId)
+                .name(request.name())
+                .description(request.description())
+                .phoneNumber(request.phoneNumber())
+                .email(request.email())
+                .category(request.category())
+                .address(request.address())
+                .city(request.city())
+                .province(request.province())
+                .ownerId(ownerId)
+                .build();
+
+        when(businessService.createBusiness(any(CreateBusinessRequest.class))).thenReturn(response);
+
+        mockMvc.perform(post("/api/businesses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(businessId.toString()))
+                .andExpect(jsonPath("$.name").value("Test Business"));
     }
 
     @Test
+    @WithMockUser(username = "test@example.com")
     void createBusiness_withInvalidData_shouldReturnBadRequest() throws Exception {
-        // ... (existing test code)
+        CreateBusinessRequest invalidRequest = CreateBusinessRequest.builder()
+                .name("")
+                .description("Description")
+                .phoneNumber("+27123456789")
+                .email("invalid-email")
+                .category("Retail")
+                .address("123 Main Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        mockMvc.perform(post("/api/businesses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void createBusiness_withUnauthenticatedUser_shouldReturnUnauthorized() throws Exception {
+        CreateBusinessRequest request = CreateBusinessRequest.builder()
+                .name("Test Business")
+                .description("Test description")
+                .phoneNumber("+27123456789")
+                .email("test@business.com")
+                .category("Retail")
+                .address("123 Main Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        mockMvc.perform(post("/api/businesses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void getBusinessById_asAnonymousUser_whenExists_shouldReturnOk() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        BusinessResponse response = BusinessResponse.builder()
+                .id(businessId)
+                .name("Public Business")
+                .build();
+
+        when(businessService.getBusinessById(businessId)).thenReturn(response);
+
+        mockMvc.perform(get("/api/businesses/{id}", businessId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(businessId.toString()))
+                .andExpect(jsonPath("$.name").value("Public Business"));
+    }
+
+    @Test
+    @WithAnonymousUser
+    void getBusinessById_asAnonymousUser_whenNotExists_shouldReturnNotFound() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        when(businessService.getBusinessById(businessId)).thenThrow(new BusinessNotFoundException("Not found"));
+
+        mockMvc.perform(get("/api/businesses/{id}", businessId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void getAllBusinesses_asAnonymousUser_shouldReturnOk() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        BusinessResponse response = BusinessResponse.builder().id(businessId).name("Public Business").build();
+        Page<BusinessResponse> page = new PageImpl<>(Collections.singletonList(response));
+
+        when(businessService.getAllBusinesses(any(PageRequest.class))).thenReturn(page);
+
+        mockMvc.perform(get("/api/businesses?page=0&size=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(businessId.toString()))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test

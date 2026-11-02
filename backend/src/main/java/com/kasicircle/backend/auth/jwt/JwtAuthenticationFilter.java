@@ -49,10 +49,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authorizationHeader = request.getHeader("Authorization");
 
         if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-            if (isAuthenticationRequired(request)) {
-                authenticationEntryPoint.commence(request, response, null);
-                return;
-            }
             filterChain.doFilter(request, response);
             return;
         }
@@ -83,10 +79,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private boolean isAuthenticationRequired(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return !(path.equals("/api/auth/login") || path.equals("/api/auth/register"));
     }
 }
