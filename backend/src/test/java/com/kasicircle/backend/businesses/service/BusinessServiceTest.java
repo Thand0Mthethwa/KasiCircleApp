@@ -2,10 +2,13 @@ package com.kasicircle.backend.businesses.service;
 
 import com.kasicircle.backend.businesses.domain.Business;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
+import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
 import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
 import com.kasicircle.backend.businesses.mapper.BusinessMapper;
 import com.kasicircle.backend.businesses.repository.BusinessRepository;
+import com.kasicircle.backend.users.entity.AccountType;
+import com.kasicircle.backend.users.entity.Role;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +64,7 @@ class BusinessServiceTest {
         userId = UUID.randomUUID();
         businessId = UUID.randomUUID();
 
-        testUser = User.builder().id(userId).email("test@example.com").build();
+        testUser = User.builder().id(userId).email("test@example.com").accountType(AccountType.BUSINESS).build();
         testBusiness = Business.builder().id(businessId).name("Test Business").owner(testUser).build();
         testBusinessResponse = BusinessResponse.builder().id(businessId).name("Test Business").ownerId(userId).build();
     }
@@ -183,7 +186,7 @@ class BusinessServiceTest {
 
     @Test
     void updateBusiness_nonOwner_shouldThrowForbidden() {
-        User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").build();
+        User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").accountType(AccountType.BUSINESS).build();
         UserDetails userDetails = mock(UserDetails.class);
         when(userDetails.getUsername()).thenReturn(otherUser.getEmail());
         Authentication authentication = mock(Authentication.class);
@@ -259,7 +262,7 @@ class BusinessServiceTest {
 
     @Test
     void deleteBusiness_nonOwner_shouldThrowForbidden() {
-        User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").build();
+        User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").accountType(AccountType.BUSINESS).build();
         UserDetails userDetails = mock(UserDetails.class);
         when(userDetails.getUsername()).thenReturn(otherUser.getEmail());
         Authentication authentication = mock(Authentication.class);
@@ -275,6 +278,284 @@ class BusinessServiceTest {
                 () -> businessService.deleteBusiness(businessId));
 
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void createBusiness_asBusinessAccount_shouldSucceed() {
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(testUser.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(businessRepository.save(any(Business.class))).thenReturn(testBusiness);
+        when(businessMapper.toBusinessResponse(testBusiness)).thenReturn(testBusinessResponse);
+
+        CreateBusinessRequest request = CreateBusinessRequest.builder()
+                .name("New Business")
+                .description("Description")
+                .phoneNumber("+27123456789")
+                .email("biz@example.com")
+                .category("Services")
+                .address("123 Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        BusinessResponse response = businessService.createBusiness(request);
+
+        assertNotNull(response);
+        assertEquals(businessId, response.id());
+    }
+
+    @Test
+    void createBusiness_asResidentAccount_shouldThrowForbidden() {
+        User residentUser = User.builder().id(UUID.randomUUID()).email("resident@example.com").accountType(AccountType.RESIDENT).build();
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(residentUser.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(residentUser.getEmail())).thenReturn(Optional.of(residentUser));
+
+        CreateBusinessRequest request = CreateBusinessRequest.builder()
+                .name("New Business")
+                .description("Description")
+                .phoneNumber("+27123456789")
+                .email("biz@example.com")
+                .category("Services")
+                .address("123 Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.createBusiness(request));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+        assertTrue(exception.getReason().contains("Only BUSINESS accounts"));
+    }
+
+    @Test
+    void createBusiness_asWorkerAccount_shouldThrowForbidden() {
+        User workerUser = User.builder().id(UUID.randomUUID()).email("worker@example.com").accountType(AccountType.WORKER).build();
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(workerUser.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(workerUser.getEmail())).thenReturn(Optional.of(workerUser));
+
+        CreateBusinessRequest request = CreateBusinessRequest.builder()
+                .name("New Business")
+                .description("Description")
+                .phoneNumber("+27123456789")
+                .email("biz@example.com")
+                .category("Services")
+                .address("123 Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.createBusiness(request));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void createBusiness_asAdminWithResidentAccount_shouldThrowForbidden() {
+        User adminResident = User.builder()
+                .id(UUID.randomUUID())
+                .email("admin@example.com")
+                .role(Role.ADMIN)
+                .accountType(AccountType.RESIDENT)
+                .build();
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(adminResident.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(adminResident.getEmail())).thenReturn(Optional.of(adminResident));
+
+        CreateBusinessRequest request = CreateBusinessRequest.builder()
+                .name("Admin Business")
+                .description("Description")
+                .phoneNumber("+27123456789")
+                .email("adminbiz@example.com")
+                .category("Services")
+                .address("123 Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.createBusiness(request));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void updateBusiness_asResidentAccount_shouldThrowForbidden() {
+        User residentOwner = User.builder().id(userId).email("resident@example.com").accountType(AccountType.RESIDENT).build();
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(residentOwner.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(residentOwner.getEmail())).thenReturn(Optional.of(residentOwner));
+
+        UpdateBusinessRequest request = UpdateBusinessRequest.builder()
+                .name("Updated Name")
+                .description("Updated description")
+                .phoneNumber("+27123456789")
+                .email("updated@example.com")
+                .category("Retail")
+                .address("123 Street")
+                .city("Cape Town")
+                .province("Western Cape")
+                .build();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.updateBusiness(businessId, request));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void updateBusiness_asWorkerAccount_shouldThrowForbidden() {
+        User workerOwner = User.builder().id(userId).email("worker@example.com").accountType(AccountType.WORKER).build();
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(workerOwner.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(workerOwner.getEmail())).thenReturn(Optional.of(workerOwner));
+
+        UpdateBusinessRequest request = UpdateBusinessRequest.builder()
+                .name("Updated Name")
+                .description("Updated description")
+                .phoneNumber("+27123456789")
+                .email("updated@example.com")
+                .category("Retail")
+                .address("123 Street")
+                .city("Cape Town")
+                .province("Western Cape")
+                .build();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.updateBusiness(businessId, request));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void updateBusiness_asOtherBusinessAccount_shouldThrowForbidden() {
+        User otherBizUser = User.builder().id(UUID.randomUUID()).email("otherbiz@example.com").accountType(AccountType.BUSINESS).build();
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(otherBizUser.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(otherBizUser.getEmail())).thenReturn(Optional.of(otherBizUser));
+        when(businessRepository.findById(businessId)).thenReturn(Optional.of(testBusiness));
+
+        UpdateBusinessRequest request = UpdateBusinessRequest.builder()
+                .name("Updated Name")
+                .description("Updated description")
+                .phoneNumber("+27123456789")
+                .email("updated@example.com")
+                .category("Retail")
+                .address("123 Street")
+                .city("Cape Town")
+                .province("Western Cape")
+                .build();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.updateBusiness(businessId, request));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+        assertTrue(exception.getReason().contains("not authorized to modify this business"));
+    }
+
+    @Test
+    void deleteBusiness_asResidentAccount_shouldThrowForbidden() {
+        User residentOwner = User.builder().id(userId).email("resident@example.com").accountType(AccountType.RESIDENT).build();
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(residentOwner.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(residentOwner.getEmail())).thenReturn(Optional.of(residentOwner));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.deleteBusiness(businessId));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void deleteBusiness_asWorkerAccount_shouldThrowForbidden() {
+        User workerOwner = User.builder().id(userId).email("worker@example.com").accountType(AccountType.WORKER).build();
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(workerOwner.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(workerOwner.getEmail())).thenReturn(Optional.of(workerOwner));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.deleteBusiness(businessId));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void deleteBusiness_asOtherBusinessAccount_shouldThrowForbidden() {
+        User otherBizUser = User.builder().id(UUID.randomUUID()).email("otherbiz@example.com").accountType(AccountType.BUSINESS).build();
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(otherBizUser.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(otherBizUser.getEmail())).thenReturn(Optional.of(otherBizUser));
+        when(businessRepository.findById(businessId)).thenReturn(Optional.of(testBusiness));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.deleteBusiness(businessId));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+        assertTrue(exception.getReason().contains("not authorized to modify this business"));
     }
 
     @Test

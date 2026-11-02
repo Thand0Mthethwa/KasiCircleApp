@@ -14,11 +14,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -125,6 +127,29 @@ class BusinessControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "resident@example.com")
+    void createBusiness_whenNotBusinessAccount_shouldReturnForbidden() throws Exception {
+        CreateBusinessRequest request = CreateBusinessRequest.builder()
+                .name("Test Business")
+                .description("Test description")
+                .phoneNumber("+27123456789")
+                .email("test@business.com")
+                .category("Retail")
+                .address("123 Main Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        when(businessService.createBusiness(any(CreateBusinessRequest.class)))
+                .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Only BUSINESS accounts can create, update, or delete businesses."));
+
+        mockMvc.perform(post("/api/businesses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -275,7 +300,31 @@ class BusinessControllerTest {
                 .build();
 
         when(businessService.updateBusiness(businessId, request))
-                .thenThrow(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN));
+                .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN));
+
+        mockMvc.perform(put("/api/businesses/{id}", businessId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "resident@example.com")
+    void updateBusiness_whenNotBusinessAccount_shouldReturnForbidden() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        UpdateBusinessRequest request = UpdateBusinessRequest.builder()
+                .name("Updated Business")
+                .description("Updated description")
+                .phoneNumber("+27123456789")
+                .email("updated@example.com")
+                .category("Retail")
+                .address("456 Updated Street")
+                .city("Cape Town")
+                .province("Western Cape")
+                .build();
+
+        when(businessService.updateBusiness(businessId, request))
+                .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Only BUSINESS accounts can create, update, or delete businesses."));
 
         mockMvc.perform(put("/api/businesses/{id}", businessId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -318,7 +367,18 @@ class BusinessControllerTest {
     @WithMockUser(username = "test@example.com")
     void deleteBusiness_whenNotOwner_shouldReturnForbidden() throws Exception {
         UUID businessId = UUID.randomUUID();
-        doThrow(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN))
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+                .when(businessService).deleteBusiness(businessId);
+
+        mockMvc.perform(delete("/api/businesses/{id}", businessId))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "resident@example.com")
+    void deleteBusiness_whenNotBusinessAccount_shouldReturnForbidden() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Only BUSINESS accounts can create, update, or delete businesses."))
                 .when(businessService).deleteBusiness(businessId);
 
         mockMvc.perform(delete("/api/businesses/{id}", businessId))

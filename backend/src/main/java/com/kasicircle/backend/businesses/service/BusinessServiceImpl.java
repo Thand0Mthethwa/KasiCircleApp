@@ -7,6 +7,7 @@ import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.mapper.BusinessMapper;
 import com.kasicircle.backend.businesses.repository.BusinessRepository;
 import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
+import com.kasicircle.backend.users.entity.AccountType;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.repository.UserRepository;
@@ -38,6 +39,7 @@ public class BusinessServiceImpl implements BusinessService {
     @Transactional
     public BusinessResponse createBusiness(CreateBusinessRequest request) {
         User owner = getAuthenticatedUser();
+        verifyBusinessAccount(owner);
 
         Business business = Business.builder()
                 .name(request.name())
@@ -83,6 +85,7 @@ public class BusinessServiceImpl implements BusinessService {
     @Transactional
     public BusinessResponse updateBusiness(UUID id, UpdateBusinessRequest request) {
         User owner = getAuthenticatedUser();
+        verifyBusinessAccount(owner);
         Business business = getBusinessByIdInternal(id);
         verifyOwnership(business, owner);
 
@@ -103,9 +106,16 @@ public class BusinessServiceImpl implements BusinessService {
     @Transactional
     public void deleteBusiness(UUID id) {
         User owner = getAuthenticatedUser();
+        verifyBusinessAccount(owner);
         Business business = getBusinessByIdInternal(id);
         verifyOwnership(business, owner);
         businessRepository.delete(business);
+    }
+
+    private void verifyBusinessAccount(User user) {
+        if (user.getAccountType() != AccountType.BUSINESS) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only BUSINESS accounts can create, update, or delete businesses.");
+        }
     }
 
     private Business getBusinessByIdInternal(UUID id) {
