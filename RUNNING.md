@@ -37,6 +37,13 @@ mvn spring-boot:run
 
 If your shell has the environment variables set, the backend will start on the default port `8081`.
 
+## Database Migrations
+
+Database schema migrations are managed automatically using **Flyway**.
+When the application starts, Flyway automatically scans `classpath:db/migration` and applies any pending migrations before Hibernate validates the entity mapping (`spring.jpa.hibernate.ddl-auto=validate`).
+
+For full details on migration file conventions, baselining existing databases, and disaster recovery, see [backend/MIGRATIONS.md](backend/MIGRATIONS.md).
+
 ## Running Tests
 
 To run the backend test suite:

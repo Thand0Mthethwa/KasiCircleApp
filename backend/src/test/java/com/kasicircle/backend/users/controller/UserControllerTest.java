@@ -176,6 +176,81 @@ class UserControllerTest {
     }
 
     /**
+     * Tests PUT /api/users/me
+     * Verifies that a 200 OK response is returned when fields are at their maximum valid lengths.
+     */
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void updateCurrentUser_withMaxValidFieldLengths_shouldReturnOk() throws Exception {
+        String maxFirstName = "A".repeat(50);
+        String maxLastName = "B".repeat(60);
+
+        UpdateUserProfileRequest updateRequest = UpdateUserProfileRequest.builder()
+                .firstName(maxFirstName)
+                .lastName(maxLastName)
+                .phoneNumber("+19876543210")
+                .build();
+
+        UserProfileResponse updatedProfile = UserProfileResponse.builder()
+                .id(UUID.randomUUID())
+                .firstName(maxFirstName)
+                .lastName(maxLastName)
+                .email("test@example.com")
+                .phoneNumber("+19876543210")
+                .role(Role.USER)
+                .build();
+
+        when(userService.updateCurrentUser(any(UpdateUserProfileRequest.class))).thenReturn(updatedProfile);
+
+        mockMvc.perform(put("/api/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value(maxFirstName))
+                .andExpect(jsonPath("$.lastName").value(maxLastName));
+    }
+
+    /**
+     * Tests PUT /api/users/me
+     * Verifies that a 400 Bad Request response is returned when firstName exceeds 50 characters.
+     */
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void updateCurrentUser_withFirstNameExceeding50Chars_shouldReturnBadRequest() throws Exception {
+        UpdateUserProfileRequest invalidRequest = UpdateUserProfileRequest.builder()
+                .firstName("A".repeat(51))
+                .lastName("User")
+                .phoneNumber("+19876543210")
+                .build();
+
+        mockMvc.perform(put("/api/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.firstName").exists());
+    }
+
+    /**
+     * Tests PUT /api/users/me
+     * Verifies that a 400 Bad Request response is returned when lastName exceeds 60 characters.
+     */
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void updateCurrentUser_withLastNameExceeding60Chars_shouldReturnBadRequest() throws Exception {
+        UpdateUserProfileRequest invalidRequest = UpdateUserProfileRequest.builder()
+                .firstName("ValidName")
+                .lastName("B".repeat(61))
+                .phoneNumber("+19876543210")
+                .build();
+
+        mockMvc.perform(put("/api/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.lastName").exists());
+    }
+
+    /**
      * Tests PUT /api/users/change-password
      * Verifies that a 200 OK response is returned for a successful password change.
      * @throws Exception if MockMvc performance fails.

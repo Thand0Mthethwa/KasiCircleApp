@@ -94,6 +94,59 @@ class AuthenticationControllerTest {
     }
 
     @Test
+    void register_withExpandedValidFieldLengths_shouldCreateUserAndReturnCreated() throws Exception {
+        // Test names up to new limits (50 chars for firstName, 60 chars for lastName)
+        // and email longer than old 26-char limit (67 chars)
+        String longFirstName = "A".repeat(50);
+        String longLastName = "B".repeat(60);
+        String longEmail = "user.with.expanded.email.address@subdomain.example-domain-name.co.za";
+        RegisterRequest request = new RegisterRequest(longFirstName, longLastName, longEmail, "+27821112222", "Password123!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        User user = userRepository.findByEmail(longEmail).orElseThrow();
+        Assertions.assertEquals(longFirstName, user.getFirstName());
+        Assertions.assertEquals(longLastName, user.getLastName());
+    }
+
+    @Test
+    void register_withEmailExceeding254Chars_shouldReturnBadRequest() throws Exception {
+        // 256 characters email exceeding 254 limit
+        String tooLongEmail = "a".repeat(64) + "@" + "b".repeat(63) + "." + "c".repeat(63) + "." + "d".repeat(60) + ".com";
+        RegisterRequest request = new RegisterRequest("Jane", "Doe", tooLongEmail, "+27821112222", "Password123!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void register_withFirstNameExceeding50Chars_shouldReturnBadRequest() throws Exception {
+        String tooLongFirstName = "A".repeat(51);
+        RegisterRequest request = new RegisterRequest(tooLongFirstName, "Doe", "valid.email@test.com", "+27821112222", "Password123!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void register_withLastNameExceeding60Chars_shouldReturnBadRequest() throws Exception {
+        String tooLongLastName = "B".repeat(61);
+        RegisterRequest request = new RegisterRequest("Jane", tooLongLastName, "valid.email@test.com", "+27821112222", "Password123!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void login_withValidCredentials_shouldReturnToken() throws Exception {
         // Arrange: Create a user to log in with
         User user = User.builder()
