@@ -4,6 +4,7 @@ import com.kasicircle.backend.auth.dto.AuthenticationResponse;
 import com.kasicircle.backend.auth.dto.LoginRequest;
 import com.kasicircle.backend.auth.dto.RegisterRequest;
 import com.kasicircle.backend.auth.jwt.JwtService;
+import com.kasicircle.backend.users.entity.AccountType;
 import com.kasicircle.backend.users.entity.Role;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.exception.UserAlreadyExistsException;
@@ -39,6 +40,8 @@ public class AuthenticationService {
             throw new UserAlreadyExistsException("User with email " + email + " already exists");
         }
 
+        AccountType accountType = request.accountType() != null ? request.accountType() : AccountType.RESIDENT;
+
         User newUser = User.builder()
                 .firstName(request.firstName())
                 .lastName(request.lastName())
@@ -46,6 +49,7 @@ public class AuthenticationService {
                 .phoneNumber(request.phoneNumber())
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.USER) // Default role for new users
+                .accountType(accountType)
                 .enabled(true) // Enable user by default
                 .build();
 

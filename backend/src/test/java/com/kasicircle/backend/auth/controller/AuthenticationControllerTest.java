@@ -3,6 +3,7 @@ package com.kasicircle.backend.auth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kasicircle.backend.auth.dto.LoginRequest;
 import com.kasicircle.backend.auth.dto.RegisterRequest;
+import com.kasicircle.backend.users.entity.AccountType;
 import com.kasicircle.backend.users.entity.Role;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.repository.UserRepository;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -144,6 +146,98 @@ class AuthenticationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void register_withResidentAccountType_shouldSucceedAndPersist() throws Exception {
+        RegisterRequest request = new RegisterRequest("Resident", "User", "resident@test.com", "+27821112222", "Password123!", AccountType.RESIDENT);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        User user = userRepository.findByEmail("resident@test.com").orElseThrow();
+        assertEquals(AccountType.RESIDENT, user.getAccountType());
+    }
+
+    @Test
+    void register_withWorkerAccountType_shouldSucceedAndPersist() throws Exception {
+        RegisterRequest request = new RegisterRequest("Worker", "User", "worker@test.com", "+27821112222", "Password123!", AccountType.WORKER);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        User user = userRepository.findByEmail("worker@test.com").orElseThrow();
+        assertEquals(AccountType.WORKER, user.getAccountType());
+    }
+
+    @Test
+    void register_withBusinessAccountType_shouldSucceedAndPersist() throws Exception {
+        RegisterRequest request = new RegisterRequest("Business", "User", "business@test.com", "+27821112222", "Password123!", AccountType.BUSINESS);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        User user = userRepository.findByEmail("business@test.com").orElseThrow();
+        assertEquals(AccountType.BUSINESS, user.getAccountType());
+    }
+
+    @Test
+    void register_withInvalidAccountType_shouldReturnBadRequest() throws Exception {
+        String jsonPayload = """
+                {
+                    "firstName": "Invalid",
+                    "lastName": "User",
+                    "email": "invalid.account@test.com",
+                    "phoneNumber": "+27821112222",
+                    "password": "Password123!",
+                    "accountType": "SUPER_ADMIN"
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void register_withNullAccountType_shouldReturnBadRequest() throws Exception {
+        String jsonPayload = """
+                {
+                    "firstName": "NullType",
+                    "lastName": "User",
+                    "email": "null.account@test.com",
+                    "phoneNumber": "+27821112222",
+                    "password": "Password123!",
+                    "accountType": null
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void user_migrationDefault_shouldBeResident() {
+        User defaultUser = User.builder()
+                .firstName("Migration")
+                .lastName("Default")
+                .email("default.resident@test.com")
+                .password(passwordEncoder.encode("Password123!"))
+                .role(Role.USER)
+                .build();
+        User savedUser = userRepository.save(defaultUser);
+
+        User retrievedUser = userRepository.findById(savedUser.getId()).orElseThrow();
+        assertEquals(AccountType.RESIDENT, retrievedUser.getAccountType());
     }
 
     @Test

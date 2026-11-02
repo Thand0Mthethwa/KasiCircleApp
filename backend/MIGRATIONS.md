@@ -62,6 +62,7 @@ Files must strictly follow Flyway's naming pattern:
 ### Current Migration History:
 1. [`V1__initial_schema.sql`](file:///home/tsmthethwa/Projects/KasiCircle/KasiCircleApp/backend/src/main/resources/db/migration/V1__initial_schema.sql) — Baseline tables (`users`, `businesses`), indexes, and foreign keys with `IF NOT EXISTS`.
 2. [`V2__expand_user_field_lengths.sql`](file:///home/tsmthethwa/Projects/KasiCircle/KasiCircleApp/backend/src/main/resources/db/migration/V2__expand_user_field_lengths.sql) — Expands `first_name` (50), `last_name` (60), and `email` (254).
+3. [`V3__add_account_type_to_users.sql`](file:///home/tsmthethwa/Projects/KasiCircle/KasiCircleApp/backend/src/main/resources/db/migration/V3__add_account_type_to_users.sql) — Adds `account_type` column to `users` with default `'RESIDENT'` and check constraint (`RESIDENT`, `WORKER`, `BUSINESS`).
 
 ---
 

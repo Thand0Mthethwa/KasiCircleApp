@@ -47,6 +47,10 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_type", nullable = false, length = 20)
+    private AccountType accountType;
+
     @Column(nullable = false)
     private boolean enabled;
 
@@ -60,10 +64,15 @@ public class User {
 
     public User() {
         this.role = Role.USER;
+        this.accountType = AccountType.RESIDENT;
         this.enabled = true;
     }
 
     public User(UUID id, String firstName, String lastName, String email, String phoneNumber, String password, Role role, boolean enabled, Instant createdAt, Instant updatedAt) {
+        this(id, firstName, lastName, email, phoneNumber, password, role, AccountType.RESIDENT, enabled, createdAt, updatedAt);
+    }
+
+    public User(UUID id, String firstName, String lastName, String email, String phoneNumber, String password, Role role, AccountType accountType, boolean enabled, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -71,6 +80,7 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.password = password;
         this.role = role != null ? role : Role.USER;
+        this.accountType = accountType != null ? accountType : AccountType.RESIDENT;
         this.enabled = enabled;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -88,6 +98,7 @@ public class User {
         private String phoneNumber;
         private String password;
         private Role role = Role.USER;
+        private AccountType accountType = AccountType.RESIDENT;
         private boolean enabled = true;
         private Instant createdAt;
         private Instant updatedAt;
@@ -130,6 +141,11 @@ public class User {
             return this;
         }
 
+        public UserBuilder accountType(AccountType accountType) {
+            this.accountType = accountType;
+            return this;
+        }
+
         public UserBuilder enabled(boolean enabled) {
             this.enabled = enabled;
             return this;
@@ -146,7 +162,7 @@ public class User {
         }
 
         public User build() {
-            return new User(id, firstName, lastName, email, phoneNumber, password, role, enabled, createdAt, updatedAt);
+            return new User(id, firstName, lastName, email, phoneNumber, password, role, accountType, enabled, createdAt, updatedAt);
         }
     }
 
@@ -204,6 +220,14 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType != null ? accountType : AccountType.RESIDENT;
     }
 
     public boolean isEnabled() {

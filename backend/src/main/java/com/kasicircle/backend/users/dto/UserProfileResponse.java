@@ -1,5 +1,6 @@
 package com.kasicircle.backend.users.dto;
 
+import com.kasicircle.backend.users.entity.AccountType;
 import com.kasicircle.backend.users.entity.Role;
 import lombok.Builder;
 
@@ -16,6 +17,7 @@ public record UserProfileResponse(
         String lastName,
         String email,
         String phoneNumber,
-        Role role
+        Role role,
+        AccountType accountType
 ) {
 }

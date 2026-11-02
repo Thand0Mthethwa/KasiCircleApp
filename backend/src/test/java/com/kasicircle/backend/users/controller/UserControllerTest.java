@@ -7,6 +7,7 @@ import com.kasicircle.backend.businesses.service.BusinessService;
 import com.kasicircle.backend.users.dto.ChangePasswordRequest;
 import com.kasicircle.backend.users.dto.UpdateUserProfileRequest;
 import com.kasicircle.backend.users.dto.UserProfileResponse;
+import com.kasicircle.backend.users.entity.AccountType;
 import com.kasicircle.backend.users.entity.Role;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.service.CustomUserDetailsService;
@@ -86,13 +87,15 @@ class UserControllerTest {
                 .email("test@example.com")
                 .phoneNumber("1234567890")
                 .role(Role.USER)
+                .accountType(AccountType.WORKER)
                 .build();
 
         when(userService.getCurrentUser()).thenReturn(userProfileResponse);
 
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("test@example.com"));
+                .andExpect(jsonPath("$.email").value("test@example.com"))
+                .andExpect(jsonPath("$.accountType").value("WORKER"));
     }
 
     /**

@@ -52,6 +52,8 @@ export const authService = {
     const nameParts = formData.fullName.trim().split(/\s+/);
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
+    const rawAccountType = formData.accountType || 'RESIDENT';
+    const accountType = rawAccountType.toUpperCase();
 
     const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
@@ -62,6 +64,7 @@ export const authService = {
         email: formData.email.trim(),
         phoneNumber: phone,
         password: formData.password,
+        accountType,
       }),
     });
 
