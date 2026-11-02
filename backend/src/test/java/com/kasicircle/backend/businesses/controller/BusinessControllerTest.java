@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
+import com.kasicircle.backend.businesses.exception.BusinessAlreadyExistsException;
 import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
 import com.kasicircle.backend.businesses.service.BusinessService;
 import org.junit.jupiter.api.Test;
@@ -150,6 +151,32 @@ class BusinessControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "business@example.com")
+    void createBusiness_whenOwnerAlreadyHasBusiness_shouldReturnConflict() throws Exception {
+        CreateBusinessRequest request = CreateBusinessRequest.builder()
+                .name("Second Business")
+                .description("Second business description")
+                .phoneNumber("+27123456789")
+                .email("second@business.com")
+                .category("Retail")
+                .address("123 Main Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        when(businessService.createBusiness(any(CreateBusinessRequest.class)))
+                .thenThrow(new BusinessAlreadyExistsException("A business listing already exists for this account."));
+
+        mockMvc.perform(post("/api/businesses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("A business listing already exists for this account."));
     }
 
     @Test

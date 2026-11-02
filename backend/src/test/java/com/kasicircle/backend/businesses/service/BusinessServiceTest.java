@@ -4,6 +4,7 @@ import com.kasicircle.backend.businesses.domain.Business;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
+import com.kasicircle.backend.businesses.exception.BusinessAlreadyExistsException;
 import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
 import com.kasicircle.backend.businesses.mapper.BusinessMapper;
 import com.kasicircle.backend.businesses.repository.BusinessRepository;
@@ -309,6 +310,37 @@ class BusinessServiceTest {
 
         assertNotNull(response);
         assertEquals(businessId, response.id());
+    }
+
+    @Test
+    void createBusiness_whenOwnerAlreadyHasBusiness_shouldThrowConflict() {
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn(testUser.getEmail());
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(businessRepository.existsByOwner(testUser)).thenReturn(true);
+
+        CreateBusinessRequest request = CreateBusinessRequest.builder()
+                .name("Second Business")
+                .description("Description")
+                .phoneNumber("+27123456789")
+                .email("second@example.com")
+                .category("Services")
+                .address("123 Street")
+                .city("Johannesburg")
+                .province("Gauteng")
+                .build();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> businessService.createBusiness(request));
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        assertTrue(exception.getReason().contains("already exists"));
     }
 
     @Test

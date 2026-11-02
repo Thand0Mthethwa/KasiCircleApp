@@ -1,5 +1,6 @@
 package com.kasicircle.backend.shared.exception;
 
+import com.kasicircle.backend.businesses.exception.BusinessAlreadyExistsException;
 import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
 import com.kasicircle.backend.users.exception.UserAlreadyExistsException;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
@@ -116,6 +117,20 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(BusinessAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleBusinessAlreadyExists(
+            BusinessAlreadyExistsException ex,
+            HttpServletRequest request
+    ) {
+        ApiErrorResponse response = buildErrorResponse(
+                HttpStatus.CONFLICT,
+                "Conflict",
+                ex.getReason() != null ? ex.getReason() : ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)

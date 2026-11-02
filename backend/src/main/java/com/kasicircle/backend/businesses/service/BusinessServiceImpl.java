@@ -6,6 +6,7 @@ import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.mapper.BusinessMapper;
 import com.kasicircle.backend.businesses.repository.BusinessRepository;
+import com.kasicircle.backend.businesses.exception.BusinessAlreadyExistsException;
 import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
 import com.kasicircle.backend.users.entity.AccountType;
 import com.kasicircle.backend.users.entity.User;
@@ -40,6 +41,10 @@ public class BusinessServiceImpl implements BusinessService {
     public BusinessResponse createBusiness(CreateBusinessRequest request) {
         User owner = getAuthenticatedUser();
         verifyBusinessAccount(owner);
+
+        if (businessRepository.existsByOwner(owner)) {
+            throw new BusinessAlreadyExistsException("A business listing already exists for this account.");
+        }
 
         Business business = Business.builder()
                 .name(request.name())

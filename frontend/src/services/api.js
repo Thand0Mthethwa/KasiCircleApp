@@ -145,6 +145,18 @@ export const businessService = {
     return handleResponse(response);
   },
 
+  getMyBusinesses: async (page = 0, size = 10) => {
+    const response = await fetch(
+      `${API_BASE_URL}/api/users/me/businesses?page=${page}&size=${size}`,
+      {
+        method: 'GET',
+        headers: getHeaders(true),
+      }
+    );
+
+    return handleResponse(response);
+  },
+
   createBusiness: async (businessData) => {
     const response = await fetch(`${API_BASE_URL}/api/businesses`, {
       method: 'POST',

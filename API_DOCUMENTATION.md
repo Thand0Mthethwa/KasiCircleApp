@@ -152,6 +152,7 @@ Responses:
 - 400 Bad Request for validation errors
 - 401 Unauthorized when JWT is missing or invalid
 - 403 Forbidden when authenticated user is not a BUSINESS account (e.g. RESIDENT or WORKER)
+- 409 Conflict if the BUSINESS account already has an existing business listing (single listing limit)
 
 ### Get all businesses
 

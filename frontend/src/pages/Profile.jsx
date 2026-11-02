@@ -9,6 +9,7 @@ import {
   AlertCircle,
   LogOut,
   Lock,
+  Building2,
 } from 'lucide-react';
 
 /**
@@ -424,6 +425,31 @@ export default function Profile() {
                 </Button>
               </div>
             </form>
+          </Card>
+        )}
+
+        {/* Business Management for BUSINESS accounts */}
+        {user?.accountType === 'BUSINESS' && (
+          <Card className="p-4 shadow-sm border-blue-100 bg-gradient-to-r from-blue-50/50 to-indigo-50/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-neutral-900">Business Profile</h4>
+                  <p className="text-xs text-neutral-500">Manage your business listing</p>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate('/business-profile')}
+                className="text-xs py-2 px-3.5"
+              >
+                Manage
+              </Button>
+            </div>
           </Card>
         )}
 
