@@ -4,7 +4,6 @@ import com.kasicircle.backend.auth.dto.AuthenticationResponse;
 import com.kasicircle.backend.auth.dto.LoginRequest;
 import com.kasicircle.backend.auth.dto.RegisterRequest;
 import com.kasicircle.backend.auth.service.AuthenticationService;
-import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+
+    public AuthenticationController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {

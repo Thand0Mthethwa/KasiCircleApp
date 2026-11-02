@@ -35,7 +35,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-If your shell has the environment variables set, the backend will start on the default port `8080`.
+If your shell has the environment variables set, the backend will start on the default port `8081`.
 
 ## Running Tests
 

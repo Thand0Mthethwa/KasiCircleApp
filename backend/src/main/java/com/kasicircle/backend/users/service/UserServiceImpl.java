@@ -6,7 +6,6 @@ import com.kasicircle.backend.users.dto.UserProfileResponse;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,11 +28,15 @@ import org.springframework.transaction.annotation.Transactional;
  * @since 1.0
  */
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     /**
      * Retrieves the profile of the currently authenticated user from the security context.

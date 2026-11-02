@@ -25,11 +25,13 @@ export default function Register() {
 
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Full name is required';
+    } else if (formData.fullName.trim().split(/\s+/).length < 2) {
+      newErrors.fullName = 'Please enter both your first and last name';
     }
 
     if (!formData.phoneNumber.trim()) {
       newErrors.phoneNumber = 'Phone number is required';
-    } else if (!formData.phoneNumber.match(/^[\d\s\-\+]{10,}$/)) {
+    } else if (!formData.phoneNumber.match(/^[\d\s-+]{10,}$/)) {
       newErrors.phoneNumber = 'Enter a valid phone number';
     }
 
@@ -182,7 +184,7 @@ export default function Register() {
             label="Phone Number"
             name="phoneNumber"
             type="tel"
-            placeholder="e.g. 078 123 4567"
+            placeholder="e.g. +27 78 123 4567"
             value={formData.phoneNumber}
             onChange={handleChange}
             error={errors.phoneNumber}

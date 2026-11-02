@@ -45,14 +45,22 @@ const handleResponse = async (response) => {
 
 export const authService = {
   register: async (formData) => {
+    let phone = formData.phoneNumber.replace(/[\s-]/g, '');
+    if (phone.startsWith('0') && phone.length === 10) {
+      phone = '+27' + phone.substring(1);
+    }
+    const nameParts = formData.fullName.trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
     const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: getHeaders(false),
       body: JSON.stringify({
-        firstName: formData.fullName.split(' ')[0],
-        lastName: formData.fullName.split(' ').slice(1).join(' ') || '',
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
+        firstName,
+        lastName,
+        email: formData.email.trim(),
+        phoneNumber: phone,
         password: formData.password,
       }),
     });

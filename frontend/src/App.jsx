@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Pages
@@ -44,8 +44,6 @@ function PublicRoute({ children }) {
 }
 
 function AppRoutes() {
-  const location = useLocation();
-
   return (
     <Routes>
       {/* Splash/Onboarding Routes */}
@@ -86,14 +84,7 @@ function AppRoutes() {
       />
 
       {/* Main App Routes */}
-      <Route
-        path="/home"
-        element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/home" element={<Home />} />
       <Route
         path="/jobs"
         element={

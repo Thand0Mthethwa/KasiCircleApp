@@ -5,7 +5,6 @@ import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.service.BusinessService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -18,10 +17,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/businesses")
-@RequiredArgsConstructor
 public class BusinessController {
 
     private final BusinessService businessService;
+
+    public BusinessController(BusinessService businessService) {
+        this.businessService = businessService;
+    }
 
     @PostMapping
     public ResponseEntity<BusinessResponse> createBusiness(@Valid @RequestBody CreateBusinessRequest request) {

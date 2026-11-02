@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, StatCard, CategoryCard, WorkerCard, BottomNavigation, SearchBar, LoadingSpinner } from '../components';
+import { StatCard, WorkerCard, BottomNavigation, SearchBar } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import { Bell, MapPin, Zap, Wrench, Hammer, Scissors, Construction, Lightbulb } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
   const [activeNav, setActiveNav] = useState('home');
-  const [isLoading, setIsLoading] = useState(false);
 
   // Mock data - in production would come from API
   const mockStats = [

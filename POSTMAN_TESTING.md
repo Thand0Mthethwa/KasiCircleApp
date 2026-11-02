@@ -133,7 +133,7 @@ Expected: 401 Unauthorized
 
 **Request:**
 - **Method:** `PUT`
-- **URL:** `http://localhost:8080/api/businesses/{{nonExistentBusinessId}}`
+- **URL:** `http://localhost:8081/api/businesses/{{nonExistentBusinessId}}`
 - **Headers:**
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer {{jwt_token}}`
@@ -147,7 +147,7 @@ Expected: 401 Unauthorized
 
 **Request:**
 - **Method:** `DELETE`
-- **URL:** `http://localhost:8080/api/businesses/{{businessId}}`
+- **URL:** `http://localhost:8081/api/businesses/{{businessId}}`
 - **Headers:**
   - `Authorization`: `Bearer {{jwt_token}}`
 
@@ -160,7 +160,7 @@ Expected: 401 Unauthorized
 
 **Request:**
 - **Method:** `DELETE`
-- **URL:** `http://localhost:8080/api/businesses/{{businessId}}`
+- **URL:** `http://localhost:8081/api/businesses/{{businessId}}`
 - **Headers:**
   - `Authorization`: *(Header omitted)*
 
@@ -173,7 +173,7 @@ Expected: 401 Unauthorized
 
 **Request:**
 - **Method:** `DELETE`
-- **URL:** `http://localhost:8080/api/businesses/{{businessId}}`
+- **URL:** `http://localhost:8081/api/businesses/{{businessId}}`
 - **Headers:**
   - `Authorization`: `Bearer invalid_token`
 
@@ -186,7 +186,7 @@ Expected: 401 Unauthorized
 
 **Request:**
 - **Method:** `DELETE`
-- **URL:** `http://localhost:8080/api/businesses/{{otherBusinessId}}`
+- **URL:** `http://localhost:8081/api/businesses/{{otherBusinessId}}`
 - **Headers:**
   - `Authorization`: `Bearer {{jwt_token_for_other_user}}`
 
@@ -199,7 +199,7 @@ Expected: 401 Unauthorized
 
 **Request:**
 - **Method:** `DELETE`
-- **URL:** `http://localhost:8080/api/businesses/{{nonExistentBusinessId}}`
+- **URL:** `http://localhost:8081/api/businesses/{{nonExistentBusinessId}}`
 - **Headers:**
   - `Authorization`: `Bearer {{jwt_token}}`
 
@@ -212,7 +212,7 @@ Expected: 401 Unauthorized
 
 **Request:**
 - **Method:** `GET`
-- **URL:** `http://localhost:8080/api/businesses/{{businessId}}`
+- **URL:** `http://localhost:8081/api/businesses/{{businessId}}`
 - **Headers:**
   - `Content-Type`: `application/json`
 

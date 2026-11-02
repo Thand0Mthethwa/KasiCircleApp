@@ -10,7 +10,6 @@ import com.kasicircle.backend.businesses.exception.BusinessNotFoundException;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,12 +22,17 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class BusinessServiceImpl implements BusinessService {
 
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
     private final BusinessMapper businessMapper;
+
+    public BusinessServiceImpl(BusinessRepository businessRepository, UserRepository userRepository, BusinessMapper businessMapper) {
+        this.businessRepository = businessRepository;
+        this.userRepository = userRepository;
+        this.businessMapper = businessMapper;
+    }
 
     @Override
     @Transactional
