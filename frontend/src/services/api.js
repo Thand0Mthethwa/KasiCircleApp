@@ -172,6 +172,15 @@ export const businessService = {
     return handleResponse(response);
   },
 
+  getBusinessImages: async (businessId) => {
+    const response = await fetch(`${API_BASE_URL}/api/businesses/${businessId}/images`, {
+      method: 'GET',
+      headers: getHeaders(false),
+    });
+
+    return handleResponse(response);
+  },
+
   getMyBusinesses: async (page = 0, size = 10) => {
     const response = await fetch(
       `${API_BASE_URL}/api/users/me/businesses?page=${page}&size=${size}`,

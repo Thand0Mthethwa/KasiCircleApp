@@ -15,6 +15,12 @@ import {
   RotateCcw,
   Calendar,
   ArrowLeft,
+  Image as ImageIcon,
+  Camera,
+  Maximize2,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 export default function BusinessDetail() {
@@ -26,6 +32,12 @@ export default function BusinessDetail() {
   const [error, setError] = useState(null);
   const [isNotFound, setIsNotFound] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
+
+  // Gallery state
+  const [images, setImages] = useState([]);
+  const [isImagesLoading, setIsImagesLoading] = useState(true);
+  const [imagesError, setImagesError] = useState(null);
+  const [activeLightboxIndex, setActiveLightboxIndex] = useState(null);
 
   const fetchBusiness = useCallback(async () => {
     if (!id) {
@@ -66,9 +78,94 @@ export default function BusinessDetail() {
     }
   }, [id]);
 
+  const fetchImages = useCallback(async () => {
+    if (!id || typeof businessService.getBusinessImages !== 'function') {
+      setIsImagesLoading(false);
+      return;
+    }
+
+    setIsImagesLoading(true);
+    setImagesError(null);
+
+    try {
+      const data = await businessService.getBusinessImages(id);
+      setImages(Array.isArray(data) ? data : []);
+    } catch (err) {
+      const message =
+        err.data?.message ||
+        err.message ||
+        'Unable to load business gallery photos.';
+      setImagesError(message);
+      setImages([]);
+    } finally {
+      setIsImagesLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     fetchBusiness();
-  }, [fetchBusiness]);
+    fetchImages();
+  }, [fetchBusiness, fetchImages]);
+
+  // Keyboard navigation and body scroll locking for lightbox
+  useEffect(() => {
+    if (activeLightboxIndex === null) return;
+
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setActiveLightboxIndex(null);
+      } else if (e.key === 'ArrowLeft') {
+        setActiveLightboxIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+      } else if (e.key === 'ArrowRight') {
+        setActiveLightboxIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeLightboxIndex, images.length]);
+
+  const handleRetryAll = () => {
+    fetchBusiness();
+    fetchImages();
+  };
+
+  const coverImage = images.find((img) => img.isCover) || (images.length > 0 ? images[0] : null);
+  const effectiveCoverUrl = coverImage?.imageUrl || business?.coverImageUrl || null;
+
+  const displayImages = images.length > 0
+    ? images
+    : (effectiveCoverUrl
+        ? [{ id: 'cover-only', imageUrl: effectiveCoverUrl, isCover: true, fileName: 'Cover photo' }]
+        : []);
+
+  const currentLightboxImage =
+    activeLightboxIndex !== null && activeLightboxIndex >= 0 && activeLightboxIndex < displayImages.length
+      ? displayImages[activeLightboxIndex]
+      : null;
+
+  const openLightbox = (index) => {
+    setActiveLightboxIndex(index);
+  };
+
+  const closeLightbox = () => {
+    setActiveLightboxIndex(null);
+  };
+
+  const nextLightboxImage = () => {
+    if (displayImages.length <= 1) return;
+    setActiveLightboxIndex((prev) => (prev < displayImages.length - 1 ? prev + 1 : 0));
+  };
+
+  const prevLightboxImage = () => {
+    if (displayImages.length <= 1) return;
+    setActiveLightboxIndex((prev) => (prev > 0 ? prev - 1 : displayImages.length - 1));
+  };
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -224,7 +321,7 @@ export default function BusinessDetail() {
               <Button
                 variant="primary"
                 size="sm"
-                onClick={fetchBusiness}
+                onClick={handleRetryAll}
                 className="flex items-center justify-center gap-1.5 text-xs py-2 px-4"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -245,6 +342,55 @@ export default function BusinessDetail() {
         {/* Business Information */}
         {!isLoading && !isNotFound && !error && business && (
           <div className="space-y-5" data-testid="business-detail-content">
+            {/* Prominent Cover Image / Hero Banner */}
+            {effectiveCoverUrl ? (
+              <div
+                className="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden shadow-sm border border-neutral-200 group cursor-pointer bg-neutral-100"
+                data-testid="business-cover-image"
+                onClick={() => {
+                  const idx = displayImages.findIndex((img) => img.imageUrl === effectiveCoverUrl);
+                  openLightbox(idx >= 0 ? idx : 0);
+                }}
+              >
+                <img
+                  src={effectiveCoverUrl}
+                  alt={`${business.name} cover photo`}
+                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-black/60 text-white backdrop-blur-xs flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Cover Photo</span>
+                  </span>
+                  {images.length > 0 && (
+                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-black/60 text-white backdrop-blur-xs flex items-center gap-1">
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      <span>{images.length} {images.length === 1 ? 'photo' : 'photos'}</span>
+                    </span>
+                  )}
+                </div>
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white p-1.5 rounded-full backdrop-blur-xs">
+                  <Maximize2 className="w-4 h-4" />
+                </div>
+              </div>
+            ) : (
+              <div
+                className="relative w-full h-32 sm:h-40 rounded-2xl overflow-hidden border border-neutral-200 bg-gradient-to-br from-kasi-green-light via-neutral-50 to-neutral-100 flex flex-col items-center justify-center p-4 text-center"
+                data-testid="business-cover-placeholder"
+              >
+                <div className="w-10 h-10 rounded-xl bg-white shadow-xs border border-kasi-green/20 text-kasi-green flex items-center justify-center mb-1.5">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <p className="text-xs font-bold text-neutral-800 tracking-wide uppercase">
+                  Township Enterprise
+                </p>
+                <p className="text-[11px] text-neutral-500">
+                  Verified Business Listing
+                </p>
+              </div>
+            )}
+
             {/* Main Business Profile Card */}
             <Card className="p-6 shadow-sm border-neutral-200 space-y-4">
               <div className="flex items-start justify-between gap-4">
@@ -279,6 +425,113 @@ export default function BusinessDetail() {
               <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-line">
                 {business.description}
               </p>
+            </Card>
+
+            {/* Photos & Gallery Card */}
+            <Card className="p-6 shadow-sm border-neutral-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-kasi-green" />
+                  <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                    Photos & Gallery
+                  </h2>
+                </div>
+                {!isImagesLoading && !imagesError && images.length > 0 && (
+                  <span className="text-xs text-neutral-500 font-medium">
+                    {images.length} {images.length === 1 ? 'photo' : 'photos'}
+                  </span>
+                )}
+              </div>
+
+              {/* Gallery Loading State */}
+              {isImagesLoading && (
+                <div
+                  className="py-8 flex flex-col items-center justify-center gap-2 text-neutral-500"
+                  data-testid="gallery-loading"
+                >
+                  <LoadingSpinner size="md" />
+                  <p className="text-xs font-medium">Loading photos...</p>
+                </div>
+              )}
+
+              {/* Gallery Error State */}
+              {!isImagesLoading && imagesError && (
+                <div
+                  className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2"
+                  data-testid="gallery-error"
+                >
+                  <div className="flex items-center justify-center gap-1.5 text-amber-700 text-xs font-semibold">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>Failed to load gallery photos</span>
+                  </div>
+                  <p className="text-xs text-neutral-600 max-w-xs mx-auto">
+                    {imagesError}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={fetchImages}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-kasi-green hover:underline focus:outline-none focus:ring-2 focus:ring-kasi-green rounded px-2 py-1"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Retry photos</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Gallery Empty State (No Photos) */}
+              {!isImagesLoading && !imagesError && images.length === 0 && (
+                <div
+                  className="p-6 text-center bg-neutral-50 rounded-xl border border-dashed border-neutral-300 space-y-2"
+                  data-testid="gallery-empty"
+                >
+                  <div className="w-10 h-10 rounded-full bg-neutral-200/60 text-neutral-400 mx-auto flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs font-bold text-neutral-800">No photos uploaded yet</p>
+                  <p className="text-[11px] text-neutral-500 max-w-xs mx-auto leading-relaxed">
+                    This business has not shared any gallery photos yet. Check back soon for storefront and product photos!
+                  </p>
+                </div>
+              )}
+
+              {/* Gallery Grid */}
+              {!isImagesLoading && !imagesError && images.length > 0 && (
+                <div
+                  className="grid grid-cols-2 sm:grid-cols-3 gap-2.5"
+                  data-testid="business-image-gallery"
+                >
+                  {images.map((img, index) => {
+                    const altText = img.fileName
+                      ? `${business.name} - ${img.fileName}`
+                      : `${business.name} photo ${index + 1}`;
+                    return (
+                      <button
+                        key={img.id || index}
+                        type="button"
+                        onClick={() => openLightbox(index)}
+                        className="group relative aspect-square rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-kasi-green transition-transform active:scale-95 text-left"
+                        data-testid={`gallery-image-${img.id || index}`}
+                        aria-label={`View photo ${index + 1} of ${images.length}: ${altText}`}
+                      >
+                        <img
+                          src={img.imageUrl}
+                          alt={altText}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                          loading="lazy"
+                        />
+                        {img.isCover && (
+                          <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-kasi-green text-white shadow-xs">
+                            Cover
+                          </span>
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                          <Maximize2 className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow" />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </Card>
 
             {/* Location Details Card */}
@@ -408,6 +661,100 @@ export default function BusinessDetail() {
 
       {/* Persistent Bottom Navigation */}
       <BottomNavigation active="explore" onNavigate={(path) => navigate(path)} />
+
+      {/* Lightbox Modal */}
+      {activeLightboxIndex !== null && currentLightboxImage && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Photo lightbox view"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex flex-col justify-between p-4 animate-in fade-in duration-200"
+          data-testid="image-lightbox"
+          onClick={closeLightbox}
+        >
+          {/* Top Header Bar */}
+          <div
+            className="flex items-center justify-between text-white w-full max-w-4xl mx-auto z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className="text-xs font-semibold text-white/80 bg-white/10 px-2.5 py-1 rounded-full"
+                data-testid="lightbox-counter"
+              >
+                {activeLightboxIndex + 1} of {displayImages.length}
+              </span>
+              {currentLightboxImage.isCover && (
+                <span className="text-xs font-bold bg-kasi-green text-white px-2.5 py-1 rounded-full">
+                  Cover Photo
+                </span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={closeLightbox}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+              aria-label="Close image preview"
+              data-testid="lightbox-close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Center Viewport */}
+          <div
+            className="relative flex-1 flex items-center justify-center max-w-4xl mx-auto w-full my-2 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Previous Button */}
+            {displayImages.length > 1 && (
+              <button
+                type="button"
+                onClick={prevLightboxImage}
+                className="absolute left-2 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-xs transition-colors focus:outline-none focus:ring-2 focus:ring-white z-10"
+                aria-label="Previous photo"
+                data-testid="lightbox-prev"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Main Image */}
+            <img
+              src={currentLightboxImage.imageUrl}
+              alt={
+                currentLightboxImage.fileName
+                  ? `${business?.name || 'Business'} - ${currentLightboxImage.fileName}`
+                  : `${business?.name || 'Business'} photo ${activeLightboxIndex + 1}`
+              }
+              className="max-h-[75vh] max-w-full object-contain rounded-xl shadow-2xl select-none"
+              data-testid="lightbox-image"
+            />
+
+            {/* Next Button */}
+            {displayImages.length > 1 && (
+              <button
+                type="button"
+                onClick={nextLightboxImage}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-xs transition-colors focus:outline-none focus:ring-2 focus:ring-white z-10"
+                aria-label="Next photo"
+                data-testid="lightbox-next"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
+          </div>
+
+          {/* Bottom Caption Bar */}
+          <div
+            className="text-center text-white/70 text-xs py-2 w-full max-w-4xl mx-auto z-10 truncate px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {currentLightboxImage.fileName || business?.name}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

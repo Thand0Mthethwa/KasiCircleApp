@@ -10,6 +10,7 @@ import { businessService } from '../services/api';
 vi.mock('../services/api', () => ({
   businessService: {
     getBusinessById: vi.fn(),
+    getBusinessImages: vi.fn(),
   },
 }));
 
@@ -36,10 +37,51 @@ describe('BusinessDetail (Dedicated Business Detail Page)', () => {
     province: 'Gauteng',
     ownerId: 'owner-1',
     createdAt: '2026-10-01T10:00:00Z',
+    coverImageUrl: null,
   };
+
+  const mockImages = [
+    {
+      id: 'img-1',
+      businessId: 'biz-123',
+      imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/kasicircle/cover.jpg',
+      storageId: 'kasicircle/cover',
+      fileName: 'storefront.jpg',
+      contentType: 'image/jpeg',
+      fileSize: 1548290,
+      isCover: true,
+      sortOrder: 0,
+      createdAt: '2026-10-01T10:00:00Z',
+    },
+    {
+      id: 'img-2',
+      businessId: 'biz-123',
+      imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/kasicircle/interior.jpg',
+      storageId: 'kasicircle/interior',
+      fileName: 'dining-area.jpg',
+      contentType: 'image/jpeg',
+      fileSize: 1200000,
+      isCover: false,
+      sortOrder: 0,
+      createdAt: '2026-10-02T10:00:00Z',
+    },
+    {
+      id: 'img-3',
+      businessId: 'biz-123',
+      imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/kasicircle/food.jpg',
+      storageId: 'kasicircle/food',
+      fileName: 'signature-dish.jpg',
+      contentType: 'image/jpeg',
+      fileSize: 980000,
+      isCover: false,
+      sortOrder: 0,
+      createdAt: '2026-10-03T10:00:00Z',
+    },
+  ];
 
   beforeEach(() => {
     vi.clearAllMocks();
+    businessService.getBusinessImages.mockResolvedValue([]);
   });
 
   const renderComponent = (businessId = 'biz-123') =>
@@ -226,5 +268,173 @@ describe('BusinessDetail (Dedicated Business Detail Page)', () => {
     await user.click(backBtn);
 
     expect(mockNavigate).toHaveBeenCalledWith('/businesses');
+  });
+
+  it('renders prominent cover image when business has a cover photo', async () => {
+    const businessWithCover = {
+      ...mockBusiness,
+      coverImageUrl: mockImages[0].imageUrl,
+    };
+    businessService.getBusinessById.mockResolvedValue(businessWithCover);
+    businessService.getBusinessImages.mockResolvedValue([mockImages[0]]);
+
+    renderComponent('biz-123');
+
+    const coverContainer = await screen.findByTestId('business-cover-image');
+    expect(coverContainer).toBeInTheDocument();
+
+    const coverImg = screen.getByAltText('Kasi Fresh Cafe cover photo');
+    expect(coverImg).toHaveAttribute('src', mockImages[0].imageUrl);
+    expect(screen.getByText('Cover Photo')).toBeInTheDocument();
+  });
+
+  it('renders multiple gallery images in a responsive grid with appropriate alt text', async () => {
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessImages.mockResolvedValue(mockImages);
+
+    renderComponent('biz-123');
+
+    const gallery = await screen.findByTestId('business-image-gallery');
+    expect(gallery).toBeInTheDocument();
+
+    // 3 gallery thumbnails
+    expect(screen.getByTestId('gallery-image-img-1')).toBeInTheDocument();
+    expect(screen.getByTestId('gallery-image-img-2')).toBeInTheDocument();
+    expect(screen.getByTestId('gallery-image-img-3')).toBeInTheDocument();
+
+    // Appropriate alt text for accessibility
+    expect(screen.getByAltText('Kasi Fresh Cafe - storefront.jpg')).toBeInTheDocument();
+    expect(screen.getByAltText('Kasi Fresh Cafe - dining-area.jpg')).toBeInTheDocument();
+    expect(screen.getByAltText('Kasi Fresh Cafe - signature-dish.jpg')).toBeInTheDocument();
+
+    // Cover badge on first image
+    expect(screen.getByText('Cover')).toBeInTheDocument();
+    expect(screen.getAllByText('3 photos').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders professional placeholders when business has no uploaded images', async () => {
+    const businessWithoutCover = { ...mockBusiness, coverImageUrl: null };
+    businessService.getBusinessById.mockResolvedValue(businessWithoutCover);
+    businessService.getBusinessImages.mockResolvedValue([]);
+
+    renderComponent('biz-123');
+
+    // Cover placeholder
+    expect(await screen.findByTestId('business-cover-placeholder')).toBeInTheDocument();
+    expect(screen.getByText('Township Enterprise')).toBeInTheDocument();
+    expect(screen.getByText('Verified Business Listing')).toBeInTheDocument();
+
+    // Gallery empty state
+    expect(screen.getByTestId('gallery-empty')).toBeInTheDocument();
+    expect(screen.getByText('No photos uploaded yet')).toBeInTheDocument();
+    expect(screen.queryByTestId('business-image-gallery')).not.toBeInTheDocument();
+  });
+
+  it('displays gallery loading spinner while image API request is pending', async () => {
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessImages.mockImplementation(() => new Promise(() => {}));
+
+    renderComponent('biz-123');
+
+    expect(await screen.findByTestId('gallery-loading')).toBeInTheDocument();
+    expect(screen.getByText('Loading photos...')).toBeInTheDocument();
+  });
+
+  it('handles image API error gracefully and allows user to retry loading photos', async () => {
+    const user = userEvent.setup();
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessImages.mockRejectedValueOnce(new Error('Gallery server offline'));
+
+    renderComponent('biz-123');
+
+    // Gallery error is rendered
+    expect(await screen.findByTestId('gallery-error')).toBeInTheDocument();
+    expect(screen.getByText('Failed to load gallery photos')).toBeInTheDocument();
+    expect(screen.getByText('Gallery server offline')).toBeInTheDocument();
+
+    // Main business details are still completely intact
+    expect(screen.getByRole('heading', { level: 1, name: 'Kasi Fresh Cafe' })).toBeInTheDocument();
+    expect(screen.getByText('Serving delicious township meals and refreshments daily.')).toBeInTheDocument();
+
+    // Retry gallery images
+    businessService.getBusinessImages.mockResolvedValueOnce(mockImages);
+    const retryBtn = screen.getByRole('button', { name: /retry photos/i });
+    await user.click(retryBtn);
+
+    expect(await screen.findByTestId('business-image-gallery')).toBeInTheDocument();
+    expect(screen.queryByTestId('gallery-error')).not.toBeInTheDocument();
+  });
+
+  it('supports public viewing of images without authentication', async () => {
+    localStorage.clear();
+
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessImages.mockResolvedValue(mockImages);
+
+    renderComponent('biz-123');
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Kasi Fresh Cafe' })).toBeInTheDocument();
+    expect(screen.getByTestId('business-cover-image')).toBeInTheDocument();
+    expect(screen.getByTestId('business-image-gallery')).toBeInTheDocument();
+    expect(screen.queryByText(/sign in/i)).not.toBeInTheDocument();
+  });
+
+  it('opens lightbox when clicking gallery image and supports next/prev navigation and close', async () => {
+    const user = userEvent.setup();
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessImages.mockResolvedValue(mockImages);
+
+    renderComponent('biz-123');
+
+    await screen.findByTestId('business-image-gallery');
+
+    // Click second thumbnail
+    const thumb2 = screen.getByTestId('gallery-image-img-2');
+    await user.click(thumb2);
+
+    // Lightbox opens showing 2 of 3
+    const lightbox = screen.getByTestId('image-lightbox');
+    expect(lightbox).toBeInTheDocument();
+    expect(screen.getByTestId('lightbox-counter')).toHaveTextContent('2 of 3');
+    expect(screen.getByTestId('lightbox-image')).toHaveAttribute('src', mockImages[1].imageUrl);
+
+    // Click Next -> moves to image 3
+    const nextBtn = screen.getByTestId('lightbox-next');
+    await user.click(nextBtn);
+    expect(screen.getByTestId('lightbox-counter')).toHaveTextContent('3 of 3');
+    expect(screen.getByTestId('lightbox-image')).toHaveAttribute('src', mockImages[2].imageUrl);
+
+    // Click Next on last image -> wraps to image 1 (Cover photo)
+    await user.click(nextBtn);
+    expect(screen.getByTestId('lightbox-counter')).toHaveTextContent('1 of 3');
+    expect(screen.getByTestId('lightbox-image')).toHaveAttribute('src', mockImages[0].imageUrl);
+
+    // Click Prev -> wraps back to image 3
+    const prevBtn = screen.getByTestId('lightbox-prev');
+    await user.click(prevBtn);
+    expect(screen.getByTestId('lightbox-counter')).toHaveTextContent('3 of 3');
+
+    // Close lightbox
+    const closeBtn = screen.getByTestId('lightbox-close');
+    await user.click(closeBtn);
+    expect(screen.queryByTestId('image-lightbox')).not.toBeInTheDocument();
+  });
+
+  it('opens lightbox when clicking the cover hero image and closes on Escape key', async () => {
+    const user = userEvent.setup();
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessImages.mockResolvedValue(mockImages);
+
+    renderComponent('biz-123');
+
+    const coverContainer = await screen.findByTestId('business-cover-image');
+    await user.click(coverContainer);
+
+    expect(screen.getByTestId('image-lightbox')).toBeInTheDocument();
+    expect(screen.getByTestId('lightbox-counter')).toHaveTextContent('1 of 3');
+
+    // Press Escape
+    await user.keyboard('{Escape}');
+    expect(screen.queryByTestId('image-lightbox')).not.toBeInTheDocument();
   });
 });
