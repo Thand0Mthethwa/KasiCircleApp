@@ -18,6 +18,10 @@ vi.mock('../services/api', () => ({
     getMyBusinesses: vi.fn(),
     createBusiness: vi.fn(),
     updateBusiness: vi.fn(),
+    getBusinessImages: vi.fn(),
+    uploadBusinessImage: vi.fn(),
+    setCoverImage: vi.fn(),
+    deleteBusinessImage: vi.fn(),
   },
 }));
 
@@ -70,8 +74,36 @@ describe('BusinessProfile Page', () => {
     createdAt: '2026-10-01T10:00:00Z',
   };
 
+  const mockImages = [
+    {
+      id: 'img-1',
+      businessId: 'biz-123',
+      imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/kasicircle/cover.jpg',
+      storageId: 'kasicircle/cover',
+      fileName: 'storefront.jpg',
+      contentType: 'image/jpeg',
+      fileSize: 1548290,
+      isCover: true,
+      sortOrder: 0,
+      createdAt: '2026-10-01T10:00:00Z',
+    },
+    {
+      id: 'img-2',
+      businessId: 'biz-123',
+      imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/kasicircle/interior.jpg',
+      storageId: 'kasicircle/interior',
+      fileName: 'dining-area.jpg',
+      contentType: 'image/jpeg',
+      fileSize: 1200000,
+      isCover: false,
+      sortOrder: 0,
+      createdAt: '2026-10-02T10:00:00Z',
+    },
+  ];
+
   beforeEach(() => {
     vi.clearAllMocks();
+    businessService.getBusinessImages.mockResolvedValue([]);
   });
 
   const renderComponent = () =>
@@ -631,5 +663,324 @@ describe('BusinessProfile Page', () => {
     await user.click(viewPublicButton);
 
     expect(mockNavigate).toHaveBeenCalledWith('/businesses/biz-123');
+  });
+
+  describe('Business Owner Image Management', () => {
+    it('allows BUSINESS owner to see image management controls', async () => {
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [mockExistingBusiness],
+        totalElements: 1,
+      });
+      businessService.getBusinessImages.mockResolvedValueOnce(mockImages);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('business-images-card')).toBeInTheDocument();
+      });
+
+      expect(screen.getByRole('heading', { name: /photos & gallery/i })).toBeInTheDocument();
+      expect(screen.getByTestId('image-quota-counter')).toHaveTextContent('2/10 photos');
+      expect(screen.getByTestId('upload-photo-btn')).toBeInTheDocument();
+      expect(screen.getByTestId('owner-image-grid')).toBeInTheDocument();
+    });
+
+    it('prevents non-BUSINESS users from accessing image management controls', async () => {
+      // Resident account
+      useAuth.mockReturnValue({
+        user: residentUser,
+        isLoading: false,
+      });
+
+      renderComponent();
+
+      expect(await screen.findByRole('heading', { name: 'Business Account Required' })).toBeInTheDocument();
+      expect(screen.queryByTestId('business-images-card')).not.toBeInTheDocument();
+      expect(businessService.getBusinessImages).not.toHaveBeenCalled();
+
+      // Worker account
+      useAuth.mockReturnValue({
+        user: workerUser,
+        isLoading: false,
+      });
+
+      renderComponent();
+      expect(screen.queryByTestId('business-images-card')).not.toBeInTheDocument();
+    });
+
+    it('loads and displays existing photos with cover photo badge and controls', async () => {
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [mockExistingBusiness],
+        totalElements: 1,
+      });
+      businessService.getBusinessImages.mockResolvedValueOnce(mockImages);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('owner-image-grid')).toBeInTheDocument();
+      });
+
+      // Both images rendered
+      expect(screen.getByTestId('owner-image-card-img-1')).toBeInTheDocument();
+      expect(screen.getByTestId('owner-image-card-img-2')).toBeInTheDocument();
+
+      // Cover badge on image 1
+      expect(screen.getByTestId('cover-badge-img-1')).toBeInTheDocument();
+      expect(screen.getByTestId('current-cover-indicator-img-1')).toHaveTextContent('Current Cover');
+
+      // Make Cover button available on non-cover image 2
+      expect(screen.getByTestId('set-cover-img-2')).toBeInTheDocument();
+
+      // Delete buttons available on both
+      expect(screen.getByTestId('delete-image-img-1')).toBeInTheDocument();
+      expect(screen.getByTestId('delete-image-img-2')).toBeInTheDocument();
+    });
+
+    it('displays empty gallery state when no photos exist', async () => {
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [mockExistingBusiness],
+        totalElements: 1,
+      });
+      businessService.getBusinessImages.mockResolvedValueOnce([]);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('images-empty')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('No photos uploaded yet')).toBeInTheDocument();
+      expect(screen.getByTestId('image-quota-counter')).toHaveTextContent('0/10 photos');
+      expect(screen.queryByTestId('owner-image-grid')).not.toBeInTheDocument();
+    });
+
+    it('uploads an image successfully and refreshes the gallery', async () => {
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [mockExistingBusiness],
+        totalElements: 1,
+      });
+      businessService.getBusinessImages.mockResolvedValueOnce([mockImages[0]]);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('business-images-card')).toBeInTheDocument();
+      });
+
+      const newUploadedImage = {
+        id: 'img-new',
+        businessId: 'biz-123',
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/new.jpg',
+        isCover: false,
+        fileName: 'brand-new.jpg',
+      };
+
+      businessService.uploadBusinessImage.mockResolvedValueOnce(newUploadedImage);
+      businessService.getBusinessImages.mockResolvedValueOnce([mockImages[0], newUploadedImage]);
+
+      const file = new File(['dummy-content'], 'brand-new.jpg', { type: 'image/jpeg' });
+      const fileInput = screen.getByTestId('photo-upload-input');
+      await fireEvent.change(fileInput, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(businessService.uploadBusinessImage).toHaveBeenCalledWith('biz-123', file, false);
+      });
+
+      expect(await screen.findByText('Photo uploaded successfully!')).toBeInTheDocument();
+      expect(businessService.getBusinessImages).toHaveBeenCalledTimes(2);
+    });
+
+    it('validates file size and format before upload and displays backend errors', async () => {
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [mockExistingBusiness],
+        totalElements: 1,
+      });
+      businessService.getBusinessImages.mockResolvedValueOnce([]);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('business-images-card')).toBeInTheDocument();
+      });
+
+      const fileInput = screen.getByTestId('photo-upload-input');
+
+      // 1. Oversized file (> 5MB)
+      const oversizedFile = new File(['x'.repeat(100)], 'huge.jpg', { type: 'image/jpeg' });
+      Object.defineProperty(oversizedFile, 'size', { value: 6 * 1024 * 1024 });
+      await fireEvent.change(fileInput, { target: { files: [oversizedFile] } });
+
+      expect(await screen.findByText(/exceeds the 5MB limit/i)).toBeInTheDocument();
+      expect(businessService.uploadBusinessImage).not.toHaveBeenCalled();
+
+      // 2. Invalid format (.pdf)
+      const invalidFile = new File(['%PDF'], 'document.pdf', { type: 'application/pdf' });
+      await fireEvent.change(fileInput, { target: { files: [invalidFile] } });
+
+      expect(await screen.findByText(/Invalid image format/i)).toBeInTheDocument();
+      expect(businessService.uploadBusinessImage).not.toHaveBeenCalled();
+
+      // 3. Backend error handling
+      businessService.uploadBusinessImage.mockRejectedValueOnce(new Error('Cloud storage failure'));
+      const validFile = new File(['image-bytes'], 'valid.png', { type: 'image/png' });
+      await fireEvent.change(fileInput, { target: { files: [validFile] } });
+
+      expect(await screen.findByText('Cloud storage failure')).toBeInTheDocument();
+    });
+
+    it('sets a new cover photo and prevents duplicate requests when already cover', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [mockExistingBusiness],
+        totalElements: 1,
+      });
+      businessService.getBusinessImages.mockResolvedValueOnce(mockImages);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('owner-image-grid')).toBeInTheDocument();
+      });
+
+      businessService.setCoverImage.mockResolvedValueOnce({
+        ...mockImages[1],
+        isCover: true,
+      });
+      businessService.getBusinessImages.mockResolvedValueOnce([
+        { ...mockImages[1], isCover: true },
+        { ...mockImages[0], isCover: false },
+      ]);
+
+      const setCoverBtn = screen.getByTestId('set-cover-img-2');
+      await user.click(setCoverBtn);
+
+      expect(businessService.setCoverImage).toHaveBeenCalledWith('biz-123', 'img-2');
+      expect(await screen.findByText('Cover photo updated successfully!')).toBeInTheDocument();
+
+      // Verified image 2 is now the cover and does not have a "Make Cover" button
+      expect(screen.queryByTestId('set-cover-img-2')).not.toBeInTheDocument();
+      expect(screen.getByTestId('current-cover-indicator-img-2')).toHaveTextContent('Current Cover');
+    });
+
+    it('deletes an image after confirmation and refreshes the gallery', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [mockExistingBusiness],
+        totalElements: 1,
+      });
+      businessService.getBusinessImages.mockResolvedValueOnce(mockImages);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('owner-image-grid')).toBeInTheDocument();
+      });
+
+      // Click delete on image 2
+      const deleteBtn = screen.getByTestId('delete-image-img-2');
+      await user.click(deleteBtn);
+
+      // Confirmation dialog appears
+      expect(screen.getByTestId('delete-confirmation-dialog')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /delete photo\?/i })).toBeInTheDocument();
+
+      // Confirm deletion
+      businessService.deleteBusinessImage.mockResolvedValueOnce(null);
+      businessService.getBusinessImages.mockResolvedValueOnce([mockImages[0]]);
+
+      const confirmBtn = screen.getByTestId('confirm-delete-btn');
+      await user.click(confirmBtn);
+
+      expect(businessService.deleteBusinessImage).toHaveBeenCalledWith('biz-123', 'img-2');
+      expect(await screen.findByText('Photo deleted successfully!')).toBeInTheDocument();
+      expect(screen.queryByTestId('delete-confirmation-dialog')).not.toBeInTheDocument();
+      expect(businessService.getBusinessImages).toHaveBeenCalledTimes(2);
+    });
+
+    it('cancels deletion when user clicks cancel in the dialog', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [mockExistingBusiness],
+        totalElements: 1,
+      });
+      businessService.getBusinessImages.mockResolvedValueOnce(mockImages);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('owner-image-grid')).toBeInTheDocument();
+      });
+
+      const deleteBtn = screen.getByTestId('delete-image-img-2');
+      await user.click(deleteBtn);
+
+      expect(screen.getByTestId('delete-confirmation-dialog')).toBeInTheDocument();
+
+      const cancelBtn = screen.getByTestId('cancel-delete-btn');
+      await user.click(cancelBtn);
+
+      expect(screen.queryByTestId('delete-confirmation-dialog')).not.toBeInTheDocument();
+      expect(businessService.deleteBusinessImage).not.toHaveBeenCalled();
+    });
+
+    it('handles image loading and failure states with retry option', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [mockExistingBusiness],
+        totalElements: 1,
+      });
+      businessService.getBusinessImages.mockRejectedValueOnce(new Error('Network error loading photos'));
+
+      renderComponent();
+
+      expect(await screen.findByTestId('images-error')).toBeInTheDocument();
+      expect(screen.getByText('Failed to load business photos')).toBeInTheDocument();
+      expect(screen.getByText('Network error loading photos')).toBeInTheDocument();
+
+      // Retry
+      businessService.getBusinessImages.mockResolvedValueOnce(mockImages);
+      const retryBtn = screen.getByTestId('retry-images-btn');
+      await user.click(retryBtn);
+
+      expect(await screen.findByTestId('owner-image-grid')).toBeInTheDocument();
+      expect(screen.queryByTestId('images-error')).not.toBeInTheDocument();
+    });
   });
 });

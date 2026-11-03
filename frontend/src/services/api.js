@@ -181,6 +181,59 @@ export const businessService = {
     return handleResponse(response);
   },
 
+  uploadBusinessImage: async (businessId, file, isCover = false) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (isCover) {
+      formData.append('isCover', 'true');
+    }
+
+    const headers = {};
+    const token = getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/businesses/${businessId}/images`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    return handleResponse(response);
+  },
+
+  setCoverImage: async (businessId, imageId) => {
+    const response = await fetch(`${API_BASE_URL}/api/businesses/${businessId}/images/${imageId}/cover`, {
+      method: 'PUT',
+      headers: getHeaders(true),
+    });
+
+    return handleResponse(response);
+  },
+
+  deleteBusinessImage: async (businessId, imageId) => {
+    const response = await fetch(`${API_BASE_URL}/api/businesses/${businessId}/images/${imageId}`, {
+      method: 'DELETE',
+      headers: getHeaders(true),
+    });
+
+    if (!response.ok) {
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        // ignore json parse failure
+      }
+      const error = new Error(data?.message || `HTTP Error: ${response.status}`);
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
+
+    return null;
+  },
+
   getMyBusinesses: async (page = 0, size = 10) => {
     const response = await fetch(
       `${API_BASE_URL}/api/users/me/businesses?page=${page}&size=${size}`,

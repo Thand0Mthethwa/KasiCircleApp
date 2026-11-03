@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Card, Header, BottomNavigation, LoadingSpinner } from '../components';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +16,12 @@ import {
   ShieldCheck,
   Edit3,
   ExternalLink,
+  Image as ImageIcon,
+  Upload,
+  Trash2,
+  Star,
+  RotateCcw,
+  X,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -98,6 +104,186 @@ export default function BusinessProfile() {
       loadMyBusiness();
     }
   }, [user, isAuthLoading, loadMyBusiness]);
+
+  // Image management state
+  const [images, setImages] = useState([]);
+  const [isImagesLoading, setIsImagesLoading] = useState(false);
+  const [imagesError, setImagesError] = useState(null);
+  const [imageActionMessage, setImageActionMessage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadCoverOption, setUploadCoverOption] = useState(false);
+  const [actionInProgressId, setActionInProgressId] = useState(null);
+  const [imageToDelete, setImageToDelete] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const loadBusinessImages = useCallback(async (businessId) => {
+    if (!businessId || typeof businessService.getBusinessImages !== 'function') {
+      return;
+    }
+
+    setIsImagesLoading(true);
+    setImagesError(null);
+
+    try {
+      const data = await businessService.getBusinessImages(businessId);
+      setImages(Array.isArray(data) ? data : []);
+    } catch (err) {
+      const message =
+        err.data?.message ||
+        err.message ||
+        'Unable to load business photos.';
+      setImagesError(message);
+      setImages([]);
+    } finally {
+      setIsImagesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (business?.id && !isEditing) {
+      loadBusinessImages(business.id);
+    }
+  }, [business?.id, isEditing, loadBusinessImages]);
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+
+    if (!file || !business?.id) return;
+
+    setImageActionMessage(null);
+
+    // 1. Quota check (max 10 photos)
+    if (images.length >= 10) {
+      setImageActionMessage({
+        type: 'error',
+        text: 'Maximum limit of 10 photos reached for this business. Delete an existing photo before uploading a new one.',
+      });
+      return;
+    }
+
+    // 2. File size check (max 5 MB)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      setImageActionMessage({
+        type: 'error',
+        text: 'Image file size exceeds the 5MB limit. Please choose a smaller photo.',
+      });
+      return;
+    }
+
+    // 3. File type check (JPEG, PNG, WebP)
+    const validMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const validExtensions = /\.(jpe?g|png|webp)$/i;
+    if (!validMimeTypes.includes(file.type.toLowerCase()) && !validExtensions.test(file.name)) {
+      setImageActionMessage({
+        type: 'error',
+        text: 'Invalid image format. Only JPG, PNG, and WebP images are allowed.',
+      });
+      return;
+    }
+
+    if (typeof businessService.uploadBusinessImage !== 'function') {
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      await businessService.uploadBusinessImage(business.id, file, uploadCoverOption);
+      setImageActionMessage({
+        type: 'success',
+        text: 'Photo uploaded successfully!',
+      });
+      setUploadCoverOption(false);
+      await loadBusinessImages(business.id);
+    } catch (err) {
+      const message =
+        err.data?.message ||
+        err.message ||
+        'Failed to upload image. Please check your connection and try again.';
+      setImageActionMessage({
+        type: 'error',
+        text: message,
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSetCover = async (image) => {
+    if (!business?.id || !image?.id) return;
+
+    // Prevent unnecessary API calls when already cover
+    if (image.isCover) return;
+
+    if (actionInProgressId || typeof businessService.setCoverImage !== 'function') return;
+
+    setActionInProgressId(image.id);
+    setImageActionMessage(null);
+
+    try {
+      await businessService.setCoverImage(business.id, image.id);
+      setImageActionMessage({
+        type: 'success',
+        text: 'Cover photo updated successfully!',
+      });
+      await loadBusinessImages(business.id);
+    } catch (err) {
+      const message =
+        err.data?.message ||
+        err.message ||
+        'Failed to set cover photo. Please try again.';
+      setImageActionMessage({
+        type: 'error',
+        text: message,
+      });
+    } finally {
+      setActionInProgressId(null);
+    }
+  };
+
+  const handleInitiateDelete = (image) => {
+    setImageActionMessage(null);
+    setImageToDelete(image);
+  };
+
+  const handleCancelDelete = () => {
+    setImageToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!business?.id || !imageToDelete?.id) return;
+
+    if (typeof businessService.deleteBusinessImage !== 'function') return;
+
+    const targetId = imageToDelete.id;
+    setActionInProgressId(targetId);
+    setImageActionMessage(null);
+
+    try {
+      await businessService.deleteBusinessImage(business.id, targetId);
+      setImageActionMessage({
+        type: 'success',
+        text: 'Photo deleted successfully!',
+      });
+      setImageToDelete(null);
+      await loadBusinessImages(business.id);
+    } catch (err) {
+      const message =
+        err.data?.message ||
+        err.message ||
+        'Failed to delete photo. Please try again.';
+      setImageActionMessage({
+        type: 'error',
+        text: message,
+      });
+    } finally {
+      setActionInProgressId(null);
+    }
+  };
 
   const handleStartEdit = () => {
     if (!business) return;
@@ -437,6 +623,260 @@ export default function BusinessProfile() {
               </div>
             </Card>
 
+            {/* Business Photos & Image Management Card */}
+            <Card className="p-6 shadow-sm border-neutral-200 space-y-4" data-testid="business-images-card">
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-kasi-green" />
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider">
+                      Photos & Gallery
+                    </h3>
+                    <p className="text-xs text-neutral-500">
+                      Showcase your storefront and products
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className="px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 text-neutral-700"
+                  data-testid="image-quota-counter"
+                >
+                  {images.length}/10 photos
+                </span>
+              </div>
+
+              {/* Action feedback message */}
+              {imageActionMessage && (
+                <div
+                  className={`p-3 rounded-xl flex items-start gap-2.5 text-xs ${
+                    imageActionMessage.type === 'success'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-red-50 text-red-800 border border-red-200'
+                  }`}
+                  role="status"
+                  data-testid="image-action-status"
+                >
+                  {imageActionMessage.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600 mt-0.5" />
+                  )}
+                  <span className="font-medium flex-1">{imageActionMessage.text}</span>
+                  <button
+                    type="button"
+                    onClick={() => setImageActionMessage(null)}
+                    className="text-neutral-400 hover:text-neutral-600 p-0.5 focus:outline-none"
+                    aria-label="Dismiss message"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Upload Section */}
+              <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200 space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-neutral-800">Add Business Photo</p>
+                    <p className="text-[11px] text-neutral-500">
+                      JPEG, PNG, or WebP up to 5 MB
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileSelect}
+                      accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                      className="hidden"
+                      id="photo-upload-input"
+                      data-testid="photo-upload-input"
+                      disabled={isUploading || images.length >= 10}
+                    />
+                    <label
+                      htmlFor="photo-upload-input"
+                      className={`btn-primary py-2 px-4 text-xs font-semibold rounded-full flex items-center justify-center gap-1.5 cursor-pointer text-center flex-1 sm:flex-initial transition-all ${
+                        isUploading || images.length >= 10
+                          ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                          : 'hover:bg-kasi-green-dark'
+                      }`}
+                      data-testid="upload-photo-btn"
+                    >
+                      {isUploading ? (
+                        <>
+                          <LoadingSpinner size="sm" />
+                          <span>Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>{images.length >= 10 ? 'Limit Reached (10/10)' : 'Upload Photo'}</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                {images.length > 0 && images.length < 10 && (
+                  <label className="flex items-center gap-2 text-xs text-neutral-600 cursor-pointer select-none pt-1 border-t border-neutral-200/60">
+                    <input
+                      type="checkbox"
+                      checked={uploadCoverOption}
+                      onChange={(e) => setUploadCoverOption(e.target.checked)}
+                      disabled={isUploading}
+                      className="rounded border-neutral-300 text-kasi-green focus:ring-kasi-green"
+                      data-testid="upload-as-cover-checkbox"
+                    />
+                    <span>Set as cover photo when uploaded</span>
+                  </label>
+                )}
+              </div>
+
+              {/* Images Loading State */}
+              {isImagesLoading && (
+                <div
+                  className="py-8 flex flex-col items-center justify-center gap-2 text-neutral-500"
+                  data-testid="images-loading"
+                >
+                  <LoadingSpinner size="md" />
+                  <p className="text-xs font-medium">Loading photos...</p>
+                </div>
+              )}
+
+              {/* Images Error State */}
+              {!isImagesLoading && imagesError && (
+                <div
+                  className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2"
+                  data-testid="images-error"
+                >
+                  <div className="flex items-center justify-center gap-1.5 text-amber-700 text-xs font-semibold">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>Failed to load business photos</span>
+                  </div>
+                  <p className="text-xs text-neutral-600 max-w-xs mx-auto">{imagesError}</p>
+                  <button
+                    type="button"
+                    onClick={() => loadBusinessImages(business.id)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-kasi-green hover:underline focus:outline-none focus:ring-2 focus:ring-kasi-green rounded px-2 py-1"
+                    data-testid="retry-images-btn"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Retry loading photos</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Images Empty State */}
+              {!isImagesLoading && !imagesError && images.length === 0 && (
+                <div
+                  className="p-6 text-center bg-neutral-50 rounded-xl border border-dashed border-neutral-300 space-y-2"
+                  data-testid="images-empty"
+                >
+                  <div className="w-10 h-10 rounded-full bg-neutral-200/60 text-neutral-400 mx-auto flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs font-bold text-neutral-800">No photos uploaded yet</p>
+                  <p className="text-[11px] text-neutral-500 max-w-xs mx-auto leading-relaxed">
+                    Upload storefront, product, or team photos to make your business stand out in Explore and search results.
+                  </p>
+                </div>
+              )}
+
+              {/* Photos Grid */}
+              {!isImagesLoading && !imagesError && images.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" data-testid="owner-image-grid">
+                  {images.map((img, index) => {
+                    const isCurrentAction = actionInProgressId === img.id;
+                    const isCover = Boolean(img.isCover);
+                    const altText = img.fileName || `${business.name} photo ${index + 1}`;
+
+                    return (
+                      <div
+                        key={img.id || index}
+                        className={`group relative rounded-xl overflow-hidden border bg-white flex flex-col shadow-xs transition-all ${
+                          isCover ? 'border-kasi-green ring-2 ring-kasi-green/20' : 'border-neutral-200'
+                        }`}
+                        data-testid={`owner-image-card-${img.id || index}`}
+                      >
+                        {/* Thumbnail View */}
+                        <div className="relative aspect-square w-full bg-neutral-100 overflow-hidden">
+                          <img
+                            src={img.imageUrl}
+                            alt={altText}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+
+                          {/* Cover Badge */}
+                          {isCover && (
+                            <span
+                              className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-kasi-green text-white shadow-xs flex items-center gap-1"
+                              data-testid={`cover-badge-${img.id || index}`}
+                            >
+                              <Star className="w-2.5 h-2.5 fill-current" />
+                              <span>Cover</span>
+                            </span>
+                          )}
+
+                          {/* Delete Action Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleInitiateDelete(img)}
+                            disabled={isCurrentAction || isUploading}
+                            className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-red-600 text-white backdrop-blur-xs transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                            aria-label={`Delete ${altText}`}
+                            data-testid={`delete-image-${img.id || index}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Controls & Filename */}
+                        <div className="p-2 bg-white flex flex-col gap-1.5 border-t border-neutral-100">
+                          <span
+                            className="text-[11px] font-medium text-neutral-600 truncate"
+                            title={img.fileName || `Photo ${index + 1}`}
+                          >
+                            {img.fileName || `Photo ${index + 1}`}
+                          </span>
+
+                          {isCover ? (
+                            <span
+                              className="text-[11px] font-bold text-kasi-green text-center py-1 bg-kasi-green-light rounded-md"
+                              data-testid={`current-cover-indicator-${img.id || index}`}
+                            >
+                              Current Cover
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleSetCover(img)}
+                              disabled={isCurrentAction || isUploading}
+                              className="text-[11px] font-semibold text-neutral-700 hover:text-kasi-green hover:bg-neutral-50 border border-neutral-200 rounded-md py-1 px-2 transition-all flex items-center justify-center gap-1 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-kasi-green"
+                              data-testid={`set-cover-${img.id || index}`}
+                              aria-label={`Set ${altText} as cover`}
+                            >
+                              {isCurrentAction ? (
+                                <>
+                                  <LoadingSpinner size="sm" />
+                                  <span>Updating...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Star className="w-3 h-3 text-neutral-400" />
+                                  <span>Make Cover</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+
             {/* Actions: Edit & View Public */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
@@ -658,6 +1098,71 @@ export default function BusinessProfile() {
       </div>
 
       <BottomNavigation active="profile" onNavigate={(path) => navigate(path)} />
+
+      {/* Delete Confirmation Modal */}
+      {imageToDelete && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirm image deletion"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          data-testid="delete-confirmation-dialog"
+        >
+          <Card className="p-6 max-w-sm w-full space-y-4 shadow-xl border-neutral-200 bg-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-neutral-900 text-sm">Delete Photo?</h4>
+                <p className="text-xs text-neutral-500">
+                  {imageToDelete.isCover
+                    ? 'This is your cover photo. A remaining photo will be assigned as cover.'
+                    : 'This action cannot be undone.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="aspect-video w-full rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200">
+              <img
+                src={imageToDelete.imageUrl}
+                alt={imageToDelete.fileName || 'Photo to delete'}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleCancelDelete}
+                disabled={Boolean(actionInProgressId)}
+                className="flex-1 text-xs py-2"
+                data-testid="cancel-delete-btn"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleConfirmDelete}
+                disabled={Boolean(actionInProgressId)}
+                className="flex-1 text-xs py-2 bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-1.5"
+                data-testid="confirm-delete-btn"
+              >
+                {actionInProgressId ? (
+                  <>
+                    <LoadingSpinner size="sm" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Delete Photo</span>
+                )}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
