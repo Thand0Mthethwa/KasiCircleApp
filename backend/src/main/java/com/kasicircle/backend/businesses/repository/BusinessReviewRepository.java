@@ -3,7 +3,10 @@ package com.kasicircle.backend.businesses.repository;
 import com.kasicircle.backend.businesses.domain.BusinessReview;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -32,6 +35,7 @@ public interface BusinessReviewRepository extends JpaRepository<BusinessReview, 
      * @param authorId The UUID of the authoring user.
      * @return An Optional containing the review if found.
      */
+    @EntityGraph(attributePaths = {"author"})
     Optional<BusinessReview> findByBusinessIdAndAuthorId(UUID businessId, UUID authorId);
 
     /**
@@ -40,6 +44,7 @@ public interface BusinessReviewRepository extends JpaRepository<BusinessReview, 
      * @param businessId The UUID of the business.
      * @return A list of reviews for the business.
      */
+    @EntityGraph(attributePaths = {"author"})
     List<BusinessReview> findByBusinessId(UUID businessId);
 
     /**
@@ -49,6 +54,7 @@ public interface BusinessReviewRepository extends JpaRepository<BusinessReview, 
      * @param pageable Pagination and sorting information.
      * @return A page of reviews for the business.
      */
+    @EntityGraph(attributePaths = {"author"})
     Page<BusinessReview> findByBusinessId(UUID businessId, Pageable pageable);
 
     /**
@@ -57,6 +63,7 @@ public interface BusinessReviewRepository extends JpaRepository<BusinessReview, 
      * @param businessId The UUID of the business.
      * @return A list of reviews ordered newest first.
      */
+    @EntityGraph(attributePaths = {"author"})
     List<BusinessReview> findByBusinessIdOrderByCreatedAtDesc(UUID businessId);
 
     /**
@@ -91,5 +98,14 @@ public interface BusinessReviewRepository extends JpaRepository<BusinessReview, 
      * @return The count of reviews for the business.
      */
     long countByBusinessId(UUID businessId);
+
+    /**
+     * Aggregates review counts grouped by rating value (1 to 5) for a given business.
+     *
+     * @param businessId The UUID of the business.
+     * @return A list of Object arrays where each row contains [rating (Integer), count (Long)].
+     */
+    @Query("SELECT r.rating, COUNT(r.id) FROM BusinessReview r WHERE r.business.id = :businessId GROUP BY r.rating")
+    List<Object[]> countReviewsGroupedByRating(@Param("businessId") UUID businessId);
 }
 

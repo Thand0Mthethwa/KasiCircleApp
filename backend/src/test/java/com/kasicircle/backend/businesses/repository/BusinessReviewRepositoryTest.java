@@ -396,5 +396,36 @@ class BusinessReviewRepositoryTest {
             assertThat(rs.next()).isTrue();
         }
     }
+
+    @Test
+    @DisplayName("12. Aggregating review counts grouped by rating returns correct distributions")
+    void countReviewsGroupedByRating_shouldReturnCorrectDistribution() {
+        reviewRepository.save(BusinessReview.builder()
+                .business(business1)
+                .author(reviewer1)
+                .rating(5)
+                .comment("Excellent!")
+                .build());
+
+        reviewRepository.save(BusinessReview.builder()
+                .business(business1)
+                .author(reviewer2)
+                .rating(4)
+                .comment("Good!")
+                .build());
+
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Object[]> rows = reviewRepository.countReviewsGroupedByRating(business1.getId());
+        assertThat(rows).hasSize(2);
+
+        var map = rows.stream().collect(java.util.stream.Collectors.toMap(
+                r -> ((Number) r[0]).intValue(),
+                r -> ((Number) r[1]).longValue()
+        ));
+        assertThat(map).containsEntry(5, 1L);
+        assertThat(map).containsEntry(4, 1L);
+    }
 }
 
