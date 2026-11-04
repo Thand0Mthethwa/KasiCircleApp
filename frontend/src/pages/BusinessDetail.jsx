@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Header, BottomNavigation, LoadingSpinner } from '../components';
 import { businessService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Building2,
   MapPin,
@@ -22,6 +23,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Star,
+  Edit3,
+  Trash2,
 } from 'lucide-react';
 
 const renderStarRating = (rating, starSize = 'w-4 h-4', labelSuffix = '') => {
@@ -51,6 +54,7 @@ const renderStarRating = (rating, starSize = 'w-4 h-4', labelSuffix = '') => {
 export default function BusinessDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
 
   const [business, setBusiness] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,6 +76,23 @@ export default function BusinessDetail() {
   const [reviewTotalElements, setReviewTotalElements] = useState(0);
   const [isReviewsLoading, setIsReviewsLoading] = useState(true);
   const [reviewsError, setReviewsError] = useState(null);
+
+  // Review management state
+  const [myReview, setMyReview] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formRating, setFormRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [formComment, setFormComment] = useState('');
+  const [formValidationErrors, setFormValidationErrors] = useState({});
+  const [formApiError, setFormApiError] = useState(null);
+  const [formSuccessMessage, setFormSuccessMessage] = useState(null);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  // Review delete state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeletingReview, setIsDeletingReview] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   const fetchBusiness = useCallback(async () => {
     if (!id) {
@@ -215,11 +236,165 @@ export default function BusinessDetail() {
     };
   }, [activeLightboxIndex, images.length]);
 
+  const fetchMyReview = useCallback(async () => {
+    if (!id || !isAuthenticated || !business || typeof businessService.getMyReview !== 'function') {
+      if (!isAuthenticated) setMyReview(null);
+      return;
+    }
+
+    if (business.ownerId && user?.id && String(business.ownerId) === String(user.id)) {
+      setMyReview(null);
+      return;
+    }
+
+    try {
+      const data = await businessService.getMyReview(id);
+      setMyReview(data || null);
+    } catch (err) {
+      setMyReview(null);
+    }
+  }, [id, isAuthenticated, business, user?.id]);
+
+  useEffect(() => {
+    fetchMyReview();
+  }, [fetchMyReview]);
+
+  const handleOpenCreateForm = () => {
+    setFormRating(0);
+    setHoverRating(0);
+    setFormComment('');
+    setFormValidationErrors({});
+    setFormApiError(null);
+    setFormSuccessMessage(null);
+    setIsEditing(false);
+    setIsFormOpen(true);
+  };
+
+  const handleOpenEditForm = () => {
+    if (!myReview) return;
+    setFormRating(myReview.rating || 0);
+    setHoverRating(0);
+    setFormComment(myReview.comment || '');
+    setFormValidationErrors({});
+    setFormApiError(null);
+    setFormSuccessMessage(null);
+    setIsEditing(true);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setFormRating(0);
+    setHoverRating(0);
+    setFormComment('');
+    setFormValidationErrors({});
+    setFormApiError(null);
+    setIsEditing(false);
+  };
+
+  const handleSubmitReview = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setFormValidationErrors({});
+    setFormApiError(null);
+    setFormSuccessMessage(null);
+
+    const errors = {};
+    if (!formRating || formRating < 1 || formRating > 5) {
+      errors.rating = 'Please select a rating between 1 and 5 stars.';
+    }
+    if (formComment && formComment.length > 1000) {
+      errors.comment = 'Comment cannot exceed 1000 characters.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormValidationErrors(errors);
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      const payload = {
+        rating: Number(formRating),
+        comment: formComment.trim() ? formComment.trim() : null,
+      };
+
+      let result;
+      if (isEditing && myReview?.id) {
+        result = await businessService.updateReview(id, myReview.id, payload);
+        setFormSuccessMessage('Your review has been updated successfully.');
+      } else {
+        result = await businessService.createReview(id, payload);
+        setFormSuccessMessage('Your review has been submitted successfully.');
+      }
+
+      setMyReview(result);
+      setIsFormOpen(false);
+
+      fetchReviewsAndSummary(reviewPage);
+      fetchBusiness();
+    } catch (err) {
+      const message =
+        err.data?.message ||
+        err.message ||
+        'Failed to save your review. Please try again.';
+      setFormApiError(message);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleOpenDeleteDialog = () => {
+    setDeleteError(null);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    if (isDeletingReview) return;
+    setIsDeleteDialogOpen(false);
+    setDeleteError(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!myReview?.id) return;
+    setIsDeletingReview(true);
+    setDeleteError(null);
+
+    try {
+      await businessService.deleteReview(id, myReview.id);
+      setMyReview(null);
+      setIsDeleteDialogOpen(false);
+      setFormSuccessMessage('Your review has been deleted.');
+
+      if (reviews.length === 1 && reviewPage > 0) {
+        setReviewPage((prev) => Math.max(0, prev - 1));
+      } else {
+        fetchReviewsAndSummary(reviewPage);
+      }
+      fetchBusiness();
+    } catch (err) {
+      const message =
+        err.data?.message ||
+        err.message ||
+        'Failed to delete your review. Please try again.';
+      setDeleteError(message);
+    } finally {
+      setIsDeletingReview(false);
+    }
+  };
+
   const handleRetryAll = () => {
     fetchBusiness();
     fetchImages();
     fetchReviewsAndSummary(reviewPage);
+    fetchMyReview();
   };
+
+  const isOwner = Boolean(
+    isAuthenticated &&
+    user?.id &&
+    business?.ownerId &&
+    String(user.id) === String(business.ownerId)
+  );
 
   const effectiveAverageRating =
     reviewSummary?.averageRating != null
@@ -670,11 +845,25 @@ export default function BusinessDetail() {
                     Ratings & Reviews
                   </h2>
                 </div>
-                {effectiveTotalReviews > 0 && (
-                  <span className="text-xs text-neutral-500 font-medium" data-testid="total-reviews-count">
-                    {effectiveTotalReviews} {effectiveTotalReviews === 1 ? 'review' : 'reviews'}
-                  </span>
-                )}
+                <div className="flex items-center gap-3">
+                  {effectiveTotalReviews > 0 && (
+                    <span className="text-xs text-neutral-500 font-medium" data-testid="total-reviews-count">
+                      {effectiveTotalReviews} {effectiveTotalReviews === 1 ? 'review' : 'reviews'}
+                    </span>
+                  )}
+                  {isAuthenticated && !isOwner && !myReview && !isFormOpen && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleOpenCreateForm}
+                      className="text-xs py-1.5 px-3 flex items-center gap-1.5"
+                      data-testid="write-review-btn"
+                    >
+                      <Star className="w-3.5 h-3.5 fill-current" />
+                      <span>Write a Review</span>
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Overall Rating Summary & Star Distribution */}
@@ -745,6 +934,266 @@ export default function BusinessDetail() {
                   </div>
                 )}
               </div>
+
+              {/* Anonymous Visitor Login Prompt */}
+              {!isAuthenticated && (
+                <div
+                  className="bg-amber-50/80 border border-amber-200/70 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs"
+                  data-testid="review-login-prompt"
+                >
+                  <div className="flex items-center gap-2 text-neutral-800">
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
+                    <span>Have you visited this business? Please log in to share your review and rating.</span>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigate('/login')}
+                    className="text-xs py-1.5 px-3 font-semibold whitespace-nowrap"
+                    data-testid="review-login-btn"
+                  >
+                    Log In to Review
+                  </Button>
+                </div>
+              )}
+
+              {/* Success Notification */}
+              {formSuccessMessage && (
+                <div
+                  className="p-3 bg-green-50 border border-green-200 rounded-xl text-xs text-green-800 flex items-center justify-between gap-2"
+                  data-testid="review-success-message"
+                >
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span>{formSuccessMessage}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormSuccessMessage(null)}
+                    className="text-neutral-400 hover:text-neutral-600"
+                    aria-label="Dismiss message"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* User's Own Review Display */}
+              {myReview && !isFormOpen && (
+                <div
+                  className="p-4 rounded-xl border border-kasi-green/40 bg-kasi-green-light/20 space-y-2.5 text-left"
+                  data-testid="my-review-card"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold bg-kasi-green text-white px-2 py-0.5 rounded-full">
+                        Your Review
+                      </span>
+                      {myReview.createdAt && (
+                        <span className="text-[10px] text-neutral-500">
+                          {new Date(myReview.createdAt).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleOpenEditForm}
+                        className="text-xs py-1 px-2.5 flex items-center gap-1 text-neutral-700"
+                        data-testid="edit-review-btn"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        <span>Edit</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleOpenDeleteDialog}
+                        className="text-xs py-1 px-2.5 flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        data-testid="delete-review-btn"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Delete</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {renderStarRating(myReview.rating, 'w-3.5 h-3.5')}
+                    <span className="text-xs font-semibold text-neutral-800">
+                      {myReview.rating} of 5 stars
+                    </span>
+                  </div>
+
+                  {myReview.comment ? (
+                    <p className="text-xs text-neutral-700 leading-relaxed whitespace-pre-line" data-testid="my-review-comment">
+                      {myReview.comment}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-neutral-400 italic">No comment provided.</p>
+                  )}
+                </div>
+              )}
+
+              {/* Review Form (Create or Edit) */}
+              {isFormOpen && (
+                <form
+                  onSubmit={handleSubmitReview}
+                  className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/80 space-y-3.5 text-left"
+                  data-testid="review-form"
+                >
+                  <div className="flex items-center justify-between border-b border-neutral-200/60 pb-2">
+                    <h3 className="text-xs font-bold text-neutral-800 uppercase tracking-wide">
+                      {isEditing ? 'Edit Your Review' : 'Write a Review'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={handleCloseForm}
+                      className="text-neutral-400 hover:text-neutral-600"
+                      aria-label="Close review form"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Interactive 1-5 Star Selector */}
+                  <div className="space-y-1.5" data-testid="star-rating-selector">
+                    <label className="block text-xs font-semibold text-neutral-700">
+                      Your Rating <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      {[1, 2, 3, 4, 5].map((star) => {
+                        const isFilled = star <= (hoverRating || formRating);
+                        return (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => {
+                              setFormRating(star);
+                              if (formValidationErrors.rating) {
+                                setFormValidationErrors((prev) => ({ ...prev, rating: null }));
+                              }
+                            }}
+                            onMouseEnter={() => setHoverRating(star)}
+                            onMouseLeave={() => setHoverRating(0)}
+                            className="p-1 rounded-sm hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            aria-label={`${star} star${star > 1 ? 's' : ''}`}
+                            data-testid={`star-select-${star}`}
+                          >
+                            <Star
+                              className={`w-7 h-7 ${
+                                isFilled
+                                  ? 'fill-amber-400 text-amber-400'
+                                  : 'text-neutral-300 fill-neutral-100 hover:text-amber-300'
+                              }`}
+                            />
+                          </button>
+                        );
+                      })}
+                      <span className="ml-2 text-xs font-semibold text-neutral-600" data-testid="selected-rating-label">
+                        {formRating > 0 ? `${formRating} of 5 stars` : 'Select rating'}
+                      </span>
+                    </div>
+                    {formValidationErrors.rating && (
+                      <p className="text-xs text-red-600 font-medium" data-testid="review-rating-error">
+                        {formValidationErrors.rating}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Comment Textarea & Character Counter */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="review-comment" className="block text-xs font-semibold text-neutral-700">
+                        Review Comment <span className="text-neutral-400 font-normal">(optional)</span>
+                      </label>
+                      <span
+                        className={`text-xs ${
+                          formComment.length > 1000 ? 'text-red-600 font-bold' : 'text-neutral-400'
+                        }`}
+                        data-testid="character-counter"
+                      >
+                        {formComment.length}/1000 characters
+                      </span>
+                    </div>
+                    <textarea
+                      id="review-comment"
+                      rows={4}
+                      value={formComment}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormComment(val);
+                        if (formValidationErrors.comment && val.length <= 1000) {
+                          setFormValidationErrors((prev) => ({ ...prev, comment: null }));
+                        }
+                      }}
+                      placeholder="Share details of your experience with this business..."
+                      className={`w-full text-xs p-3 rounded-lg border bg-white focus:outline-none focus:ring-2 transition-all ${
+                        formValidationErrors.comment
+                          ? 'border-red-300 focus:ring-red-500'
+                          : 'border-neutral-200 focus:ring-kasi-green'
+                      }`}
+                      data-testid="review-comment-input"
+                    />
+                    {formValidationErrors.comment && (
+                      <p className="text-xs text-red-600 font-medium" data-testid="review-comment-error">
+                        {formValidationErrors.comment}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Error message alert */}
+                  {(formApiError || formValidationErrors.rating || formValidationErrors.comment) && (
+                    <div
+                      className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2"
+                      data-testid="review-form-error"
+                    >
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span>{formApiError || formValidationErrors.rating || formValidationErrors.comment}</span>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-200/60">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleCloseForm}
+                      disabled={isSubmittingReview}
+                      className="text-xs py-2 px-3.5"
+                      data-testid="cancel-review-btn"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      disabled={isSubmittingReview}
+                      className="text-xs py-2 px-4 flex items-center gap-1.5"
+                      data-testid="submit-review-btn"
+                    >
+                      {isSubmittingReview ? (
+                        <>
+                          <LoadingSpinner size="sm" />
+                          <span>{isEditing ? 'Updating...' : 'Submitting...'}</span>
+                        </>
+                      ) : (
+                        <span>{isEditing ? 'Update Review' : 'Submit Review'}</span>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              )}
 
               {/* Review List Section */}
               {isReviewsLoading && (
@@ -1095,6 +1544,70 @@ export default function BusinessDetail() {
           >
             {currentLightboxImage.fileName || business?.name}
           </div>
+        </div>
+      )}
+
+      {/* Review Delete Confirmation Dialog */}
+      {isDeleteDialogOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirm review deletion"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          data-testid="delete-review-dialog"
+        >
+          <Card className="p-6 max-w-sm w-full space-y-4 shadow-xl border-neutral-200 bg-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-neutral-900 text-sm">Delete Review?</h4>
+                <p className="text-xs text-neutral-500">
+                  Are you sure you want to delete your review? This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            {deleteError && (
+              <div
+                className="p-2.5 bg-red-50 border border-red-200 rounded text-xs text-red-700"
+                data-testid="delete-review-error"
+              >
+                {deleteError}
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-1">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleCloseDeleteDialog}
+                disabled={isDeletingReview}
+                className="flex-1 text-xs py-2"
+                data-testid="cancel-delete-review-btn"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleConfirmDelete}
+                disabled={isDeletingReview}
+                className="flex-1 text-xs py-2 bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-1.5"
+                data-testid="confirm-delete-review-btn"
+              >
+                {isDeletingReview ? (
+                  <>
+                    <LoadingSpinner size="sm" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Delete Review</span>
+                )}
+              </Button>
+            </div>
+          </Card>
         </div>
       )}
     </div>

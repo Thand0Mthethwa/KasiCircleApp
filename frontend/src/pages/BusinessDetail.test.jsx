@@ -1,10 +1,16 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import BusinessDetail from './BusinessDetail';
 import { businessService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+
+// Mock AuthContext
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: vi.fn(),
+}));
 
 // Mock businessService
 vi.mock('../services/api', () => ({
@@ -13,6 +19,10 @@ vi.mock('../services/api', () => ({
     getBusinessImages: vi.fn(),
     getBusinessReviews: vi.fn(),
     getBusinessReviewSummary: vi.fn(),
+    getMyReview: vi.fn(),
+    createReview: vi.fn(),
+    updateReview: vi.fn(),
+    deleteReview: vi.fn(),
   },
 }));
 
@@ -83,6 +93,11 @@ describe('BusinessDetail (Dedicated Business Detail Page)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useAuth.mockReturnValue({
+      isAuthenticated: false,
+      user: null,
+      isLoading: false,
+    });
     businessService.getBusinessImages.mockResolvedValue([]);
     businessService.getBusinessReviews.mockResolvedValue({
       content: [],
@@ -100,6 +115,10 @@ describe('BusinessDetail (Dedicated Business Detail Page)', () => {
       twoStarCount: 0,
       oneStarCount: 0,
     });
+    businessService.getMyReview.mockResolvedValue(null);
+    businessService.createReview.mockResolvedValue({});
+    businessService.updateReview.mockResolvedValue({});
+    businessService.deleteReview.mockResolvedValue(null);
   });
 
   const renderComponent = (businessId = 'biz-123') =>
@@ -729,6 +748,482 @@ describe('BusinessDetail (Dedicated Business Detail Page)', () => {
     await waitFor(() => {
       expect(businessService.getBusinessReviews).toHaveBeenCalledWith('test-biz-uuid-999', 0, 10);
       expect(businessService.getBusinessReviewSummary).toHaveBeenCalledWith('test-biz-uuid-999');
+    });
+  });
+
+  describe('Customer Review Submission & Management', () => {
+    const mockCustomerUser = {
+      id: 'cust-101',
+      firstName: 'Sipho',
+      lastName: 'Zulu',
+      email: 'sipho@example.com',
+      accountType: 'RESIDENT',
+    };
+
+    const mockMyReview = {
+      id: 'rev-me-1',
+      businessId: 'biz-123',
+      rating: 4,
+      comment: 'Great service and fresh food!',
+      authorName: 'Sipho Z.',
+      createdAt: '2026-10-15T10:00:00Z',
+      updatedAt: '2026-10-15T10:00:00Z',
+    };
+
+    it('1. allows authenticated user to open and close the review form', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(null);
+
+      renderComponent('biz-123');
+
+      const writeBtn = await screen.findByTestId('write-review-btn');
+      expect(writeBtn).toBeInTheDocument();
+
+      // Open form
+      await user.click(writeBtn);
+
+      const reviewForm = await screen.findByTestId('review-form');
+      expect(reviewForm).toBeInTheDocument();
+      expect(screen.getByTestId('star-rating-selector')).toBeInTheDocument();
+      expect(screen.getByTestId('review-comment-input')).toBeInTheDocument();
+      expect(screen.getByTestId('character-counter')).toHaveTextContent('0/1000 characters');
+      expect(screen.getByTestId('submit-review-btn')).toBeInTheDocument();
+
+      // Close form
+      await user.click(screen.getByTestId('cancel-review-btn'));
+      expect(screen.queryByTestId('review-form')).not.toBeInTheDocument();
+    });
+
+    it('2. displays a login prompt for anonymous users without write controls', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: false,
+        user: null,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+
+      renderComponent('biz-123');
+
+      const loginPrompt = await screen.findByTestId('review-login-prompt');
+      expect(loginPrompt).toBeInTheDocument();
+      expect(loginPrompt).toHaveTextContent(/Please log in to share your review/i);
+      expect(screen.queryByTestId('write-review-btn')).not.toBeInTheDocument();
+
+      // Click login button
+      const loginBtn = screen.getByTestId('review-login-btn');
+      await user.click(loginBtn);
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
+    });
+
+    it('3. allows user to select a 1-5 star rating in the review form', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(null);
+
+      renderComponent('biz-123');
+
+      await user.click(await screen.findByTestId('write-review-btn'));
+
+      expect(screen.getByTestId('selected-rating-label')).toHaveTextContent('Select rating');
+
+      // Click star 4
+      await user.click(screen.getByTestId('star-select-4'));
+      expect(screen.getByTestId('selected-rating-label')).toHaveTextContent('4 of 5 stars');
+
+      // Click star 5
+      await user.click(screen.getByTestId('star-select-5'));
+      expect(screen.getByTestId('selected-rating-label')).toHaveTextContent('5 of 5 stars');
+    });
+
+    it('4. validates that a star rating is selected before submission', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(null);
+
+      renderComponent('biz-123');
+
+      await user.click(await screen.findByTestId('write-review-btn'));
+
+      // Click submit without choosing stars
+      await user.click(screen.getByTestId('submit-review-btn'));
+
+      expect(await screen.findByTestId('review-form-error')).toHaveTextContent(
+        /Please select a rating between 1 and 5 stars/i
+      );
+      expect(businessService.createReview).not.toHaveBeenCalled();
+    });
+
+    it('5. allows submitting a review with rating only and optional empty comment', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(null);
+      businessService.createReview.mockResolvedValue({
+        id: 'rev-created-1',
+        businessId: 'biz-123',
+        rating: 5,
+        comment: null,
+        authorName: 'Sipho Z.',
+      });
+
+      renderComponent('biz-123');
+
+      await user.click(await screen.findByTestId('write-review-btn'));
+
+      await user.click(screen.getByTestId('star-select-5'));
+      await user.click(screen.getByTestId('submit-review-btn'));
+
+      await waitFor(() => {
+        expect(businessService.createReview).toHaveBeenCalledWith('biz-123', {
+          rating: 5,
+          comment: null,
+        });
+      });
+      expect(await screen.findByTestId('review-success-message')).toBeInTheDocument();
+    });
+
+    it('6. validates comment length constraint (maximum 1000 characters)', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(null);
+
+      renderComponent('biz-123');
+
+      await user.click(await screen.findByTestId('write-review-btn'));
+      await user.click(screen.getByTestId('star-select-4'));
+
+      const commentInput = screen.getByTestId('review-comment-input');
+      const longComment = 'a'.repeat(1001);
+      fireEvent.change(commentInput, { target: { value: longComment } });
+
+      expect(screen.getByTestId('character-counter')).toHaveTextContent('1001/1000 characters');
+
+      await user.click(screen.getByTestId('submit-review-btn'));
+
+      expect(await screen.findByTestId('review-form-error')).toHaveTextContent(
+        /cannot exceed 1000 characters/i
+      );
+      expect(businessService.createReview).not.toHaveBeenCalled();
+    });
+
+    it('7. submits a new review successfully with rating and comment', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(null);
+      businessService.createReview.mockResolvedValue({
+        id: 'rev-new-1',
+        businessId: 'biz-123',
+        rating: 5,
+        comment: 'Warm welcome and authentic flavours.',
+        authorName: 'Sipho Z.',
+      });
+
+      renderComponent('biz-123');
+
+      await user.click(await screen.findByTestId('write-review-btn'));
+      await user.click(screen.getByTestId('star-select-5'));
+
+      const commentInput = screen.getByTestId('review-comment-input');
+      await user.type(commentInput, 'Warm welcome and authentic flavours.');
+
+      await user.click(screen.getByTestId('submit-review-btn'));
+
+      await waitFor(() => {
+        expect(businessService.createReview).toHaveBeenCalledWith('biz-123', {
+          rating: 5,
+          comment: 'Warm welcome and authentic flavours.',
+        });
+      });
+
+      expect(await screen.findByTestId('review-success-message')).toHaveTextContent(
+        /submitted successfully/i
+      );
+      expect(screen.queryByTestId('review-form')).not.toBeInTheDocument();
+    });
+
+    it('8. handles duplicate review API error and displays message without closing form', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(null);
+      businessService.createReview.mockRejectedValue({
+        status: 409,
+        message: 'You have already reviewed this business. You can update your existing review.',
+      });
+
+      renderComponent('biz-123');
+
+      await user.click(await screen.findByTestId('write-review-btn'));
+      await user.click(screen.getByTestId('star-select-4'));
+      await user.click(screen.getByTestId('submit-review-btn'));
+
+      const formError = await screen.findByTestId('review-form-error');
+      expect(formError).toHaveTextContent(
+        /You have already reviewed this business/i
+      );
+      expect(screen.getByTestId('review-form')).toBeInTheDocument();
+    });
+
+    it('9. loads existing customer review through /me and displays "Your Review" card', async () => {
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(mockMyReview);
+
+      renderComponent('biz-123');
+
+      expect(await screen.findByTestId('my-review-card')).toBeInTheDocument();
+      expect(screen.getByTestId('my-review-comment')).toHaveTextContent('Great service and fresh food!');
+      expect(screen.getByTestId('edit-review-btn')).toBeInTheDocument();
+      expect(screen.getByTestId('delete-review-btn')).toBeInTheDocument();
+      // Write review button is not shown when user already reviewed
+      expect(screen.queryByTestId('write-review-btn')).not.toBeInTheDocument();
+    });
+
+    it('10. allows user to edit their existing review with prepopulated values', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(mockMyReview);
+      businessService.updateReview.mockResolvedValue({
+        ...mockMyReview,
+        rating: 5,
+        comment: 'Updated: absolutely superb experience!',
+      });
+
+      renderComponent('biz-123');
+
+      await screen.findByTestId('my-review-card');
+
+      // Click Edit
+      await user.click(screen.getByTestId('edit-review-btn'));
+
+      // Form opens pre-populated
+      expect(await screen.findByTestId('review-form')).toBeInTheDocument();
+      expect(screen.getByTestId('selected-rating-label')).toHaveTextContent('4 of 5 stars');
+      expect(screen.getByTestId('review-comment-input')).toHaveValue('Great service and fresh food!');
+
+      // Update values
+      await user.click(screen.getByTestId('star-select-5'));
+      const commentInput = screen.getByTestId('review-comment-input');
+      await user.clear(commentInput);
+      await user.type(commentInput, 'Updated: absolutely superb experience!');
+
+      await user.click(screen.getByTestId('submit-review-btn'));
+
+      await waitFor(() => {
+        expect(businessService.updateReview).toHaveBeenCalledWith('biz-123', 'rev-me-1', {
+          rating: 5,
+          comment: 'Updated: absolutely superb experience!',
+        });
+      });
+
+      expect(await screen.findByTestId('review-success-message')).toHaveTextContent(
+        /updated successfully/i
+      );
+    });
+
+    it('11. allows user to delete existing review after confirmation dialog', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(mockMyReview);
+      businessService.deleteReview.mockResolvedValue(null);
+
+      renderComponent('biz-123');
+
+      await screen.findByTestId('my-review-card');
+
+      // Open Delete Dialog
+      await user.click(screen.getByTestId('delete-review-btn'));
+
+      const dialog = await screen.findByTestId('delete-review-dialog');
+      expect(dialog).toBeInTheDocument();
+      expect(dialog).toHaveTextContent(/Are you sure you want to delete your review/i);
+
+      // Cancel first
+      await user.click(screen.getByTestId('cancel-delete-review-btn'));
+      expect(screen.queryByTestId('delete-review-dialog')).not.toBeInTheDocument();
+      expect(businessService.deleteReview).not.toHaveBeenCalled();
+
+      // Open Delete Dialog again and confirm
+      await user.click(screen.getByTestId('delete-review-btn'));
+      await user.click(screen.getByTestId('confirm-delete-review-btn'));
+
+      await waitFor(() => {
+        expect(businessService.deleteReview).toHaveBeenCalledWith('biz-123', 'rev-me-1');
+      });
+
+      expect(await screen.findByTestId('review-success-message')).toHaveTextContent(
+        /deleted/i
+      );
+      expect(screen.queryByTestId('my-review-card')).not.toBeInTheDocument();
+    });
+
+    it('12. ensures another customer review does not expose edit or delete controls', async () => {
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(null);
+      businessService.getBusinessReviews.mockResolvedValue({
+        content: [
+          {
+            id: 'rev-other-99',
+            businessId: 'biz-123',
+            rating: 5,
+            comment: 'Review by someone else.',
+            authorName: 'Lerato K.',
+            createdAt: '2026-10-10T10:00:00Z',
+          },
+        ],
+        totalPages: 1,
+        totalElements: 1,
+        number: 0,
+      });
+
+      renderComponent('biz-123');
+
+      const otherReviewItem = await screen.findByTestId('review-item-rev-other-99');
+      expect(otherReviewItem).toBeInTheDocument();
+
+      // Confirm no edit/delete buttons exist inside other user's review
+      expect(within(otherReviewItem).queryByTestId('edit-review-btn')).not.toBeInTheDocument();
+      expect(within(otherReviewItem).queryByTestId('delete-review-btn')).not.toBeInTheDocument();
+      expect(within(otherReviewItem).queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
+      expect(within(otherReviewItem).queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
+    });
+
+    it('13. prevents business owners from reviewing their own business', async () => {
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: { id: 'owner-1', accountType: 'BUSINESS' }, // Matches mockBusiness.ownerId
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+
+      renderComponent('biz-123');
+
+      await screen.findByRole('heading', { level: 1, name: 'Kasi Fresh Cafe' });
+
+      // Neither write review button nor review form should be rendered
+      expect(screen.queryByTestId('write-review-btn')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('review-form')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('review-login-prompt')).not.toBeInTheDocument();
+      expect(businessService.getMyReview).not.toHaveBeenCalled();
+    });
+
+    it('14. refreshes reviews list, rating summary and business info after review mutation', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(null);
+      businessService.createReview.mockResolvedValue({
+        id: 'rev-10',
+        businessId: 'biz-123',
+        rating: 5,
+        comment: 'Fresh & tasty',
+        authorName: 'Sipho Z.',
+      });
+
+      renderComponent('biz-123');
+
+      // Clear call counts from initial mount
+      await screen.findByTestId('write-review-btn');
+      businessService.getBusinessReviews.mockClear();
+      businessService.getBusinessReviewSummary.mockClear();
+      businessService.getBusinessById.mockClear();
+
+      // Submit review
+      await user.click(screen.getByTestId('write-review-btn'));
+      await user.click(screen.getByTestId('star-select-5'));
+      await user.click(screen.getByTestId('submit-review-btn'));
+
+      await waitFor(() => {
+        expect(businessService.createReview).toHaveBeenCalled();
+        expect(businessService.getBusinessReviews).toHaveBeenCalled();
+        expect(businessService.getBusinessReviewSummary).toHaveBeenCalled();
+        expect(businessService.getBusinessById).toHaveBeenCalled();
+      });
+    });
+
+    it('15. handles loading and error states during submission and deletion', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: mockCustomerUser,
+        isLoading: false,
+      });
+      businessService.getBusinessById.mockResolvedValue(mockBusiness);
+      businessService.getMyReview.mockResolvedValue(mockMyReview);
+
+      // Delete error handling
+      businessService.deleteReview.mockRejectedValueOnce(new Error('Network error deleting review'));
+
+      renderComponent('biz-123');
+
+      await screen.findByTestId('my-review-card');
+      await user.click(screen.getByTestId('delete-review-btn'));
+
+      await user.click(screen.getByTestId('confirm-delete-review-btn'));
+
+      expect(await screen.findByTestId('delete-review-error')).toHaveTextContent(
+        /Network error deleting review/i
+      );
+      // Dialog remains open
+      expect(screen.getByTestId('delete-review-dialog')).toBeInTheDocument();
     });
   });
 });

@@ -302,6 +302,58 @@ export const businessService = {
 
     return handleResponse(response);
   },
+
+  createReview: async (businessId, reviewData) => {
+    const response = await fetch(`${API_BASE_URL}/api/businesses/${businessId}/reviews`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: JSON.stringify(reviewData),
+    });
+
+    return handleResponse(response);
+  },
+
+  updateReview: async (businessId, reviewId, reviewData) => {
+    const response = await fetch(
+      `${API_BASE_URL}/api/businesses/${businessId}/reviews/${reviewId}`,
+      {
+        method: 'PUT',
+        headers: getHeaders(true),
+        body: JSON.stringify(reviewData),
+      }
+    );
+
+    return handleResponse(response);
+  },
+
+  deleteReview: async (businessId, reviewId) => {
+    const response = await fetch(
+      `${API_BASE_URL}/api/businesses/${businessId}/reviews/${reviewId}`,
+      {
+        method: 'DELETE',
+        headers: getHeaders(true),
+      }
+    );
+
+    if (response.status === 204) {
+      return null;
+    }
+
+    return handleResponse(response);
+  },
+
+  getMyReview: async (businessId) => {
+    const response = await fetch(`${API_BASE_URL}/api/businesses/${businessId}/reviews/me`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    if (response.status === 204) {
+      return null;
+    }
+
+    return handleResponse(response);
+  },
 };
 
 export const reviewService = {
@@ -309,6 +361,14 @@ export const reviewService = {
     businessService.getBusinessReviews(businessId, page, size),
   getSummary: (businessId) =>
     businessService.getBusinessReviewSummary(businessId),
+  getMyReview: (businessId) =>
+    businessService.getMyReview(businessId),
+  createReview: (businessId, reviewData) =>
+    businessService.createReview(businessId, reviewData),
+  updateReview: (businessId, reviewId, reviewData) =>
+    businessService.updateReview(businessId, reviewId, reviewData),
+  deleteReview: (businessId, reviewId) =>
+    businessService.deleteReview(businessId, reviewId),
 };
 
 export default {
