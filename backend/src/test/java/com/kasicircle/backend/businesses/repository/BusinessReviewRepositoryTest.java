@@ -427,5 +427,86 @@ class BusinessReviewRepositoryTest {
         assertThat(map).containsEntry(5, 1L);
         assertThat(map).containsEntry(4, 1L);
     }
+
+    @Test
+    @DisplayName("13. Batch querying rating stats groups results by business ID and calculates averages correctly")
+    void findRatingStatsByBusinessIds_shouldReturnAggregatedStatsPerBusiness() {
+        // Business 1 reviews: 5 and 4 -> Avg 4.5, Count 2
+        reviewRepository.save(BusinessReview.builder()
+                .business(business1)
+                .author(reviewer1)
+                .rating(5)
+                .comment("Excellent!")
+                .build());
+
+        reviewRepository.save(BusinessReview.builder()
+                .business(business1)
+                .author(reviewer2)
+                .rating(4)
+                .comment("Good!")
+                .build());
+
+        // Business 2 reviews: 3 -> Avg 3.0, Count 1
+        reviewRepository.save(BusinessReview.builder()
+                .business(business2)
+                .author(reviewer1)
+                .rating(3)
+                .comment("Average")
+                .build());
+
+        // Create owner3 and business 3 with NO reviews
+        User owner3 = userRepository.save(User.builder()
+                .firstName("Sindi")
+                .lastName("Zulu")
+                .email("sindi.owner@kasicircle.co.za")
+                .phoneNumber("+27825556677")
+                .password("Password123!")
+                .role(Role.USER)
+                .accountType(AccountType.BUSINESS)
+                .enabled(true)
+                .build());
+
+        Business business3 = businessRepository.save(Business.builder()
+                .name("No Reviews Business")
+                .description("No reviews yet")
+                .category("Services")
+                .phoneNumber("+27829990000")
+                .email("noreviews@kasicircle.co.za")
+                .address("10 Main")
+                .city("Soweto")
+                .province("Gauteng")
+                .owner(owner3)
+                .build());
+
+        entityManager.flush();
+        entityManager.clear();
+
+        List<com.kasicircle.backend.businesses.dto.BusinessRatingStats> statsList =
+                reviewRepository.findRatingStatsByBusinessIds(List.of(business1.getId(), business2.getId(), business3.getId()));
+
+        assertThat(statsList).hasSize(2);
+
+        var statsMap = statsList.stream().collect(java.util.stream.Collectors.toMap(
+                com.kasicircle.backend.businesses.dto.BusinessRatingStats::businessId,
+                s -> s
+        ));
+
+        // Business 1 stats
+        assertThat(statsMap).containsKey(business1.getId());
+        var b1Stats = statsMap.get(business1.getId());
+        assertThat(b1Stats.reviewCount()).isEqualTo(2L);
+        assertThat(b1Stats.averageRating()).isEqualTo(4.5);
+        assertThat(b1Stats.getRoundedAverageRating()).isEqualTo(4.5);
+
+        // Business 2 stats
+        assertThat(statsMap).containsKey(business2.getId());
+        var b2Stats = statsMap.get(business2.getId());
+        assertThat(b2Stats.reviewCount()).isEqualTo(1L);
+        assertThat(b2Stats.averageRating()).isEqualTo(3.0);
+        assertThat(b2Stats.getRoundedAverageRating()).isEqualTo(3.0);
+
+        // Business 3 has no reviews so it should not be in the grouped aggregate result
+        assertThat(statsMap).doesNotContainKey(business3.getId());
+    }
 }
 

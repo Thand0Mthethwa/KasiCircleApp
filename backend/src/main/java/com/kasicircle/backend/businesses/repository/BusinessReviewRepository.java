@@ -1,6 +1,7 @@
 package com.kasicircle.backend.businesses.repository;
 
 import com.kasicircle.backend.businesses.domain.BusinessReview;
+import com.kasicircle.backend.businesses.dto.BusinessRatingStats;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -107,5 +109,18 @@ public interface BusinessReviewRepository extends JpaRepository<BusinessReview, 
      */
     @Query("SELECT r.rating, COUNT(r.id) FROM BusinessReview r WHERE r.business.id = :businessId GROUP BY r.rating")
     List<Object[]> countReviewsGroupedByRating(@Param("businessId") UUID businessId);
+
+    /**
+     * Retrieves aggregated rating statistics (average rating and review count) for a collection of business IDs.
+     * Groups results by business ID in a single query to prevent N+1 query performance issues.
+     *
+     * @param businessIds Collection of business UUIDs.
+     * @return List of {@link BusinessRatingStats} containing business ID, average rating, and review count.
+     */
+    @Query("SELECT new com.kasicircle.backend.businesses.dto.BusinessRatingStats(r.business.id, AVG(r.rating), COUNT(r.id)) " +
+           "FROM BusinessReview r " +
+           "WHERE r.business.id IN :businessIds " +
+           "GROUP BY r.business.id")
+    List<BusinessRatingStats> findRatingStatsByBusinessIds(@Param("businessIds") Collection<UUID> businessIds);
 }
 

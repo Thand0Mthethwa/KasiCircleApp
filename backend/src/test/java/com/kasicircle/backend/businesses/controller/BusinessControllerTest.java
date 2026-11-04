@@ -212,7 +212,50 @@ class BusinessControllerTest {
                 .andExpect(jsonPath("$.address").value("10 Vilakazi St"))
                 .andExpect(jsonPath("$.city").value("Soweto"))
                 .andExpect(jsonPath("$.province").value("Gauteng"))
-                .andExpect(jsonPath("$.ownerId").value(ownerId.toString()));
+                .andExpect(jsonPath("$.ownerId").value(ownerId.toString()))
+                .andExpect(jsonPath("$.averageRating").value(0.0))
+                .andExpect(jsonPath("$.reviewCount").value(0));
+    }
+
+    @Test
+    @WithAnonymousUser
+    void getBusinessById_withRatings_shouldReturnRatingAndReviewCount() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        BusinessResponse response = BusinessResponse.builder()
+                .id(businessId)
+                .name("Rated Business")
+                .averageRating(4.5)
+                .reviewCount(18L)
+                .build();
+
+        when(businessService.getBusinessById(businessId)).thenReturn(response);
+
+        mockMvc.perform(get("/api/businesses/{id}", businessId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(businessId.toString()))
+                .andExpect(jsonPath("$.averageRating").value(4.5))
+                .andExpect(jsonPath("$.reviewCount").value(18));
+    }
+
+    @Test
+    @WithAnonymousUser
+    void getAllBusinesses_withRatings_shouldIncludeRatingsInListResponse() throws Exception {
+        UUID businessId = UUID.randomUUID();
+        BusinessResponse response = BusinessResponse.builder()
+                .id(businessId)
+                .name("Top Cafe")
+                .averageRating(4.8)
+                .reviewCount(25L)
+                .build();
+        Page<BusinessResponse> page = new PageImpl<>(Collections.singletonList(response));
+
+        when(businessService.getAllBusinesses(any(), any(), any(), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/api/businesses?page=0&size=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(businessId.toString()))
+                .andExpect(jsonPath("$.content[0].averageRating").value(4.8))
+                .andExpect(jsonPath("$.content[0].reviewCount").value(25));
     }
 
     @Test
