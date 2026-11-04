@@ -278,10 +278,42 @@ export const businessService = {
 
     return null;
   },
+
+  getBusinessReviews: async (businessId, page = 0, size = 10) => {
+    const response = await fetch(
+      `${API_BASE_URL}/api/businesses/${businessId}/reviews?page=${page}&size=${size}`,
+      {
+        method: 'GET',
+        headers: getHeaders(false),
+      }
+    );
+
+    return handleResponse(response);
+  },
+
+  getBusinessReviewSummary: async (businessId) => {
+    const response = await fetch(
+      `${API_BASE_URL}/api/businesses/${businessId}/reviews/summary`,
+      {
+        method: 'GET',
+        headers: getHeaders(false),
+      }
+    );
+
+    return handleResponse(response);
+  },
+};
+
+export const reviewService = {
+  getReviews: (businessId, page = 0, size = 10) =>
+    businessService.getBusinessReviews(businessId, page, size),
+  getSummary: (businessId) =>
+    businessService.getBusinessReviewSummary(businessId),
 };
 
 export default {
   authService,
   userService,
   businessService,
+  reviewService,
 };

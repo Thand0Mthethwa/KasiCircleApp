@@ -21,7 +21,32 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Star,
 } from 'lucide-react';
+
+const renderStarRating = (rating, starSize = 'w-4 h-4', labelSuffix = '') => {
+  const roundedRating = Math.round(Number(rating) || 0);
+  const displayRating = Number(rating) ? Number(rating).toFixed(1) : '0.0';
+  return (
+    <div
+      className="flex items-center gap-0.5"
+      role="img"
+      aria-label={`${displayRating} out of 5 stars${labelSuffix ? ` - ${labelSuffix}` : ''}`}
+    >
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={`${starSize} ${
+            star <= roundedRating
+              ? 'fill-amber-400 text-amber-400'
+              : 'text-neutral-300 fill-neutral-100'
+          }`}
+          aria-hidden="true"
+        />
+      ))}
+    </div>
+  );
+};
 
 export default function BusinessDetail() {
   const { id } = useParams();
@@ -38,6 +63,15 @@ export default function BusinessDetail() {
   const [isImagesLoading, setIsImagesLoading] = useState(true);
   const [imagesError, setImagesError] = useState(null);
   const [activeLightboxIndex, setActiveLightboxIndex] = useState(null);
+
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewSummary, setReviewSummary] = useState(null);
+  const [reviewPage, setReviewPage] = useState(0);
+  const [reviewTotalPages, setReviewTotalPages] = useState(0);
+  const [reviewTotalElements, setReviewTotalElements] = useState(0);
+  const [isReviewsLoading, setIsReviewsLoading] = useState(true);
+  const [reviewsError, setReviewsError] = useState(null);
 
   const fetchBusiness = useCallback(async () => {
     if (!id) {
@@ -102,10 +136,61 @@ export default function BusinessDetail() {
     }
   }, [id]);
 
+  const fetchReviewsAndSummary = useCallback(async (pageToFetch = 0) => {
+    if (!id || typeof businessService.getBusinessReviews !== 'function') {
+      setIsReviewsLoading(false);
+      return;
+    }
+
+    setIsReviewsLoading(true);
+    setReviewsError(null);
+
+    try {
+      const [reviewsData, summaryData] = await Promise.all([
+        businessService.getBusinessReviews(id, pageToFetch, 10),
+        businessService.getBusinessReviewSummary(id).catch((err) => {
+          console.warn('Could not load review summary:', err);
+          return null;
+        }),
+      ]);
+
+      if (reviewsData && reviewsData.content) {
+        setReviews(reviewsData.content);
+        setReviewTotalPages(reviewsData.totalPages || 0);
+        setReviewTotalElements(reviewsData.totalElements || 0);
+      } else if (Array.isArray(reviewsData)) {
+        setReviews(reviewsData);
+        setReviewTotalPages(1);
+        setReviewTotalElements(reviewsData.length);
+      } else {
+        setReviews([]);
+        setReviewTotalPages(0);
+        setReviewTotalElements(0);
+      }
+
+      if (summaryData) {
+        setReviewSummary(summaryData);
+      }
+    } catch (err) {
+      const message =
+        err.data?.message ||
+        err.message ||
+        'Unable to load customer reviews.';
+      setReviewsError(message);
+      setReviews([]);
+    } finally {
+      setIsReviewsLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     fetchBusiness();
     fetchImages();
   }, [fetchBusiness, fetchImages]);
+
+  useEffect(() => {
+    fetchReviewsAndSummary(reviewPage);
+  }, [fetchReviewsAndSummary, reviewPage]);
 
   // Keyboard navigation and body scroll locking for lightbox
   useEffect(() => {
@@ -133,7 +218,26 @@ export default function BusinessDetail() {
   const handleRetryAll = () => {
     fetchBusiness();
     fetchImages();
+    fetchReviewsAndSummary(reviewPage);
   };
+
+  const effectiveAverageRating =
+    reviewSummary?.averageRating != null
+      ? Number(reviewSummary.averageRating)
+      : (business?.averageRating != null ? Number(business.averageRating) : 0.0);
+
+  const effectiveTotalReviews =
+    reviewSummary?.totalReviews != null
+      ? Number(reviewSummary.totalReviews)
+      : (business?.reviewCount != null ? Number(business.reviewCount) : reviewTotalElements);
+
+  const starLevels = [
+    { stars: 5, count: reviewSummary?.fiveStarCount ?? 0 },
+    { stars: 4, count: reviewSummary?.fourStarCount ?? 0 },
+    { stars: 3, count: reviewSummary?.threeStarCount ?? 0 },
+    { stars: 2, count: reviewSummary?.twoStarCount ?? 0 },
+    { stars: 1, count: reviewSummary?.oneStarCount ?? 0 },
+  ];
 
   const coverImage = images.find((img) => img.isCover) || (images.length > 0 ? images[0] : null);
   const effectiveCoverUrl = coverImage?.imageUrl || business?.coverImageUrl || null;
@@ -398,9 +502,32 @@ export default function BusinessDetail() {
                   <h1 className="text-2xl font-bold text-neutral-900 leading-tight">
                     {business.name}
                   </h1>
-                  <div className="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
-                    <Tag className="w-3 h-3" />
-                    <span>{business.category}</span>
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                      <Tag className="w-3 h-3" />
+                      <span>{business.category}</span>
+                    </div>
+
+                    {effectiveTotalReviews > 0 ? (
+                      <div
+                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200"
+                        data-testid="header-rating-badge"
+                      >
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                        <span>{effectiveAverageRating.toFixed(1)}</span>
+                        <span className="text-amber-700/80 font-normal">
+                          ({effectiveTotalReviews})
+                        </span>
+                      </div>
+                    ) : (
+                      <div
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600 border border-neutral-200"
+                        data-testid="header-rating-badge"
+                      >
+                        <Star className="w-3 h-3 text-neutral-400" />
+                        <span>No reviews yet</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-kasi-green to-kasi-green-dark text-white flex items-center justify-center shadow-md flex-shrink-0">
@@ -530,6 +657,221 @@ export default function BusinessDetail() {
                       </button>
                     );
                   })}
+                </div>
+              )}
+            </Card>
+
+            {/* Ratings & Customer Reviews Card */}
+            <Card className="p-6 shadow-sm border-neutral-200 space-y-5" data-testid="business-reviews-section">
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                    Ratings & Reviews
+                  </h2>
+                </div>
+                {effectiveTotalReviews > 0 && (
+                  <span className="text-xs text-neutral-500 font-medium" data-testid="total-reviews-count">
+                    {effectiveTotalReviews} {effectiveTotalReviews === 1 ? 'review' : 'reviews'}
+                  </span>
+                )}
+              </div>
+
+              {/* Overall Rating Summary & Star Distribution */}
+              <div
+                className="bg-neutral-50/70 p-4 rounded-xl border border-neutral-100 space-y-4"
+                data-testid="rating-summary-card"
+              >
+                {effectiveTotalReviews > 0 ? (
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-5">
+                    {/* Big Score Block */}
+                    <div className="text-center sm:text-left flex-shrink-0">
+                      <div className="text-3xl font-extrabold text-neutral-900 leading-none" data-testid="average-rating-value">
+                        {effectiveAverageRating.toFixed(1)}
+                        <span className="text-base font-medium text-neutral-500">/5</span>
+                      </div>
+                      <div className="mt-2 flex items-center justify-center sm:justify-start">
+                        {renderStarRating(effectiveAverageRating, 'w-4 h-4')}
+                      </div>
+                      <p className="text-xs text-neutral-500 mt-1.5">
+                        Based on {effectiveTotalReviews} {effectiveTotalReviews === 1 ? 'review' : 'reviews'}
+                      </p>
+                    </div>
+
+                    {/* 1-5 Star Breakdown Bars */}
+                    <div className="flex-1 w-full max-w-xs space-y-1.5" data-testid="rating-distribution">
+                      {starLevels.map((level) => {
+                        const percentage = effectiveTotalReviews > 0
+                          ? Math.round((level.count / effectiveTotalReviews) * 100)
+                          : 0;
+                        return (
+                          <div key={level.stars} className="flex items-center gap-2 text-xs">
+                            <span className="w-10 text-neutral-600 font-medium flex items-center gap-1">
+                              <span>{level.stars}</span>
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            </span>
+                            <div
+                              className="flex-1 h-2 bg-neutral-200/70 rounded-full overflow-hidden"
+                              role="progressbar"
+                              aria-valuenow={percentage}
+                              aria-valuemin="0"
+                              aria-valuemax="100"
+                              aria-label={`${level.stars} stars: ${level.count} reviews`}
+                            >
+                              <div
+                                className="h-full bg-amber-400 rounded-full transition-all duration-300"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                            <span className="w-8 text-right text-neutral-500 font-medium">
+                              {level.count}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-2 space-y-1.5" data-testid="rating-summary-empty">
+                    <div className="flex items-center justify-center gap-1 text-neutral-300">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className="w-5 h-5 fill-neutral-100 text-neutral-300" />
+                      ))}
+                    </div>
+                    <p className="text-xs font-semibold text-neutral-800">No ratings yet</p>
+                    <p className="text-[11px] text-neutral-500 max-w-xs mx-auto">
+                      This business does not have any customer ratings yet.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Review List Section */}
+              {isReviewsLoading && (
+                <div
+                  className="py-8 flex flex-col items-center justify-center gap-2 text-neutral-500"
+                  data-testid="reviews-loading"
+                >
+                  <LoadingSpinner size="md" />
+                  <p className="text-xs font-medium">Loading customer reviews...</p>
+                </div>
+              )}
+
+              {!isReviewsLoading && reviewsError && (
+                <div
+                  className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2"
+                  data-testid="reviews-error"
+                >
+                  <div className="flex items-center justify-center gap-1.5 text-amber-700 text-xs font-semibold">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>Failed to load customer reviews</span>
+                  </div>
+                  <p className="text-xs text-neutral-600 max-w-xs mx-auto">
+                    {reviewsError}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => fetchReviewsAndSummary(reviewPage)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-kasi-green hover:underline focus:outline-none focus:ring-2 focus:ring-kasi-green rounded px-2 py-1"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Retry reviews</span>
+                  </button>
+                </div>
+              )}
+
+              {!isReviewsLoading && !reviewsError && reviews.length === 0 && (
+                <div
+                  className="p-6 text-center bg-neutral-50 rounded-xl border border-dashed border-neutral-300 space-y-2"
+                  data-testid="reviews-empty"
+                >
+                  <div className="w-10 h-10 rounded-full bg-neutral-200/60 text-neutral-400 mx-auto flex items-center justify-center">
+                    <Star className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs font-bold text-neutral-800">No reviews yet</p>
+                  <p className="text-[11px] text-neutral-500 max-w-xs mx-auto leading-relaxed">
+                    Be the first to share your experience with {business.name}!
+                  </p>
+                </div>
+              )}
+
+              {!isReviewsLoading && !reviewsError && reviews.length > 0 && (
+                <div className="space-y-3" data-testid="customer-reviews-list">
+                  {reviews.map((rev) => (
+                    <div
+                      key={rev.id}
+                      className="p-4 rounded-xl border border-neutral-200/80 bg-white shadow-2xs space-y-2 text-left"
+                      data-testid={`review-item-${rev.id}`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-kasi-green-light text-kasi-green font-bold text-xs flex items-center justify-center flex-shrink-0">
+                            {rev.authorName ? rev.authorName.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-xs font-bold text-neutral-900 block truncate" data-testid="review-author-name">
+                              {rev.authorName || 'Anonymous Member'}
+                            </span>
+                            {rev.createdAt && (
+                              <span className="text-[10px] text-neutral-500 block" data-testid="review-created-at">
+                                {new Date(rev.createdAt).toLocaleDateString(undefined, {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center flex-shrink-0">
+                          {renderStarRating(rev.rating, 'w-3.5 h-3.5')}
+                        </div>
+                      </div>
+
+                      {rev.comment && (
+                        <p className="text-xs text-neutral-700 leading-relaxed whitespace-pre-line pt-1" data-testid="review-comment">
+                          {rev.comment}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Pagination Controls */}
+                  {reviewTotalPages > 1 && (
+                    <div
+                      className="flex items-center justify-between pt-3 border-t border-neutral-100 text-xs"
+                      data-testid="reviews-pagination"
+                    >
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={reviewPage === 0 || isReviewsLoading}
+                        onClick={() => setReviewPage((prev) => Math.max(0, prev - 1))}
+                        className="py-1.5 px-3 text-xs flex items-center gap-1"
+                        aria-label="Previous reviews page"
+                        data-testid="reviews-prev-page"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <span>Previous</span>
+                      </Button>
+                      <span className="text-neutral-500 font-medium" data-testid="reviews-page-indicator">
+                        Page {reviewPage + 1} of {reviewTotalPages}
+                      </span>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={reviewPage >= reviewTotalPages - 1 || isReviewsLoading}
+                        onClick={() => setReviewPage((prev) => prev + 1)}
+                        className="py-1.5 px-3 text-xs flex items-center gap-1"
+                        aria-label="Next reviews page"
+                        data-testid="reviews-next-page"
+                      >
+                        <span>Next</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </Card>

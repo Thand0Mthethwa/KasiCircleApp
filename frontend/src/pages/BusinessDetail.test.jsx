@@ -11,6 +11,8 @@ vi.mock('../services/api', () => ({
   businessService: {
     getBusinessById: vi.fn(),
     getBusinessImages: vi.fn(),
+    getBusinessReviews: vi.fn(),
+    getBusinessReviewSummary: vi.fn(),
   },
 }));
 
@@ -82,6 +84,22 @@ describe('BusinessDetail (Dedicated Business Detail Page)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     businessService.getBusinessImages.mockResolvedValue([]);
+    businessService.getBusinessReviews.mockResolvedValue({
+      content: [],
+      totalPages: 0,
+      totalElements: 0,
+      number: 0,
+    });
+    businessService.getBusinessReviewSummary.mockResolvedValue({
+      businessId: 'biz-123',
+      averageRating: 0.0,
+      totalReviews: 0,
+      fiveStarCount: 0,
+      fourStarCount: 0,
+      threeStarCount: 0,
+      twoStarCount: 0,
+      oneStarCount: 0,
+    });
   });
 
   const renderComponent = (businessId = 'biz-123') =>
@@ -436,5 +454,281 @@ describe('BusinessDetail (Dedicated Business Detail Page)', () => {
     // Press Escape
     await user.keyboard('{Escape}');
     expect(screen.queryByTestId('image-lightbox')).not.toBeInTheDocument();
+  });
+
+  const mockReviews = [
+    {
+      id: 'rev-1',
+      businessId: 'biz-123',
+      rating: 5,
+      comment: 'Best chisa nyama in Soweto! Friendly staff and vibrant atmosphere.',
+      authorName: 'Thabo M.',
+      createdAt: '2026-11-01T12:00:00Z',
+      updatedAt: '2026-11-01T12:00:00Z',
+    },
+    {
+      id: 'rev-2',
+      businessId: 'biz-123',
+      rating: 4,
+      comment: 'Great township experience. Quick service and reasonable prices.',
+      authorName: 'Lerato K.',
+      createdAt: '2026-11-02T14:30:00Z',
+      updatedAt: '2026-11-02T14:30:00Z',
+    },
+  ];
+
+  const mockReviewSummary = {
+    businessId: 'biz-123',
+    averageRating: 4.7,
+    totalReviews: 15,
+    fiveStarCount: 10,
+    fourStarCount: 3,
+    threeStarCount: 2,
+    twoStarCount: 0,
+    oneStarCount: 0,
+  };
+
+  it('renders rating summary, average score, and star distribution correctly', async () => {
+    businessService.getBusinessById.mockResolvedValue({
+      ...mockBusiness,
+      averageRating: 4.7,
+      reviewCount: 15,
+    });
+    businessService.getBusinessReviewSummary.mockResolvedValue(mockReviewSummary);
+    businessService.getBusinessReviews.mockResolvedValue({
+      content: mockReviews,
+      totalPages: 1,
+      totalElements: 15,
+      number: 0,
+    });
+
+    renderComponent('biz-123');
+
+    // Section exists
+    const reviewsSection = await screen.findByTestId('business-reviews-section');
+    expect(reviewsSection).toBeInTheDocument();
+
+    // Average rating
+    expect(screen.getByTestId('average-rating-value')).toHaveTextContent('4.7/5');
+
+    // Total review count
+    expect(screen.getByTestId('total-reviews-count')).toHaveTextContent('15 reviews');
+
+    // Header rating badge
+    const headerBadge = screen.getByTestId('header-rating-badge');
+    expect(headerBadge).toHaveTextContent('4.7');
+    expect(headerBadge).toHaveTextContent('(15)');
+
+    // Rating distribution
+    const distribution = screen.getByTestId('rating-distribution');
+    expect(distribution).toBeInTheDocument();
+    expect(distribution).toHaveTextContent('10'); // 5-star count
+    expect(distribution).toHaveTextContent('3');  // 4-star count
+    expect(distribution).toHaveTextContent('2');  // 3-star count
+  });
+
+  it('renders zero-review state gracefully without misleading ratings', async () => {
+    businessService.getBusinessById.mockResolvedValue({
+      ...mockBusiness,
+      averageRating: 0.0,
+      reviewCount: 0,
+    });
+    businessService.getBusinessReviewSummary.mockResolvedValue({
+      businessId: 'biz-123',
+      averageRating: 0.0,
+      totalReviews: 0,
+      fiveStarCount: 0,
+      fourStarCount: 0,
+      threeStarCount: 0,
+      twoStarCount: 0,
+      oneStarCount: 0,
+    });
+    businessService.getBusinessReviews.mockResolvedValue({
+      content: [],
+      totalPages: 0,
+      totalElements: 0,
+      number: 0,
+    });
+
+    renderComponent('biz-123');
+
+    await screen.findByTestId('business-reviews-section');
+
+    // Empty state container
+    expect(screen.getByTestId('reviews-empty')).toBeInTheDocument();
+    expect(screen.getByText(/Be the first to share your experience with Kasi Fresh Cafe!/i)).toBeInTheDocument();
+
+    // Rating summary empty state
+    expect(screen.getByTestId('rating-summary-empty')).toBeInTheDocument();
+    expect(screen.getAllByText('No reviews yet').length).toBeGreaterThan(0);
+    expect(screen.getByText('No ratings yet')).toBeInTheDocument();
+
+    // Ensure no misleading score like "5.0/5" is present
+    expect(screen.queryByTestId('average-rating-value')).not.toBeInTheDocument();
+  });
+
+  it('renders customer reviews with author name, star rating, comment, and formatted date', async () => {
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessReviews.mockResolvedValue({
+      content: mockReviews,
+      totalPages: 1,
+      totalElements: 2,
+      number: 0,
+    });
+
+    renderComponent('biz-123');
+
+    await screen.findByTestId('customer-reviews-list');
+
+    // First review
+    const rev1 = screen.getByTestId('review-item-rev-1');
+    expect(rev1).toBeInTheDocument();
+    expect(rev1).toHaveTextContent('Thabo M.');
+    expect(rev1).toHaveTextContent('Best chisa nyama in Soweto!');
+    expect(rev1.querySelector('[aria-label="5.0 out of 5 stars"]')).toBeInTheDocument();
+
+    // Second review
+    const rev2 = screen.getByTestId('review-item-rev-2');
+    expect(rev2).toBeInTheDocument();
+    expect(rev2).toHaveTextContent('Lerato K.');
+    expect(rev2).toHaveTextContent('Great township experience.');
+    expect(rev2.querySelector('[aria-label="4.0 out of 5 stars"]')).toBeInTheDocument();
+  });
+
+  it('does not display reviewer private information like email addresses or phone numbers', async () => {
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessReviews.mockResolvedValue({
+      content: [
+        {
+          id: 'rev-private',
+          businessId: 'biz-123',
+          rating: 5,
+          comment: 'Outstanding township hospitality.',
+          authorName: 'Kagiso M.',
+          createdAt: '2026-11-03T10:00:00Z',
+        },
+      ],
+      totalPages: 1,
+      totalElements: 1,
+      number: 0,
+    });
+
+    renderComponent('biz-123');
+
+    const reviewItem = await screen.findByTestId('review-item-rev-private');
+
+    // Confirm author name is displayed safely
+    expect(reviewItem).toHaveTextContent('Kagiso M.');
+
+    // Ensure no email or phone format appears in review content
+    expect(reviewItem).not.toHaveTextContent(/@kasicircle\.co\.za|@gmail\.com|@example\.com/i);
+    expect(reviewItem).not.toHaveTextContent(/\+27\d{9}|082\d{7}/);
+  });
+
+  it('handles review pagination with Previous and Next buttons', async () => {
+    const user = userEvent.setup();
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+
+    // Initial page 0
+    businessService.getBusinessReviews.mockResolvedValueOnce({
+      content: [mockReviews[0]],
+      totalPages: 2,
+      totalElements: 2,
+      number: 0,
+    });
+
+    renderComponent('biz-123');
+
+    await screen.findByTestId('review-item-rev-1');
+
+    // Pagination controls exist
+    expect(screen.getByTestId('reviews-page-indicator')).toHaveTextContent('Page 1 of 2');
+    const prevBtn = screen.getByTestId('reviews-prev-page');
+    const nextBtn = screen.getByTestId('reviews-next-page');
+
+    expect(prevBtn).toBeDisabled();
+    expect(nextBtn).toBeEnabled();
+
+    // Prepare page 1 response
+    businessService.getBusinessReviews.mockResolvedValueOnce({
+      content: [mockReviews[1]],
+      totalPages: 2,
+      totalElements: 2,
+      number: 1,
+    });
+
+    // Click Next
+    await user.click(nextBtn);
+
+    await waitFor(() => {
+      expect(businessService.getBusinessReviews).toHaveBeenCalledWith('biz-123', 1, 10);
+    });
+
+    expect(await screen.findByTestId('review-item-rev-2')).toBeInTheDocument();
+    expect(screen.getByTestId('reviews-page-indicator')).toHaveTextContent('Page 2 of 2');
+    expect(nextBtn).toBeDisabled();
+    expect(prevBtn).toBeEnabled();
+  });
+
+  it('displays reviews loading spinner while review request is in flight', async () => {
+    let resolveReviews;
+    const pendingReviewsPromise = new Promise((resolve) => {
+      resolveReviews = resolve;
+    });
+
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessReviews.mockReturnValue(pendingReviewsPromise);
+
+    renderComponent('biz-123');
+
+    expect(await screen.findByTestId('reviews-loading')).toBeInTheDocument();
+
+    resolveReviews({
+      content: [],
+      totalPages: 0,
+      totalElements: 0,
+      number: 0,
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('reviews-loading')).not.toBeInTheDocument();
+    });
+  });
+
+  it('handles reviews API error gracefully and allows user to retry', async () => {
+    const user = userEvent.setup();
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+    businessService.getBusinessReviews.mockRejectedValueOnce(new Error('Failed to fetch reviews'));
+
+    renderComponent('biz-123');
+
+    const errorContainer = await screen.findByTestId('reviews-error');
+    expect(errorContainer).toBeInTheDocument();
+    expect(errorContainer).toHaveTextContent(/Failed to load customer reviews/i);
+
+    // Mock successful retry
+    businessService.getBusinessReviews.mockResolvedValueOnce({
+      content: mockReviews,
+      totalPages: 1,
+      totalElements: 2,
+      number: 0,
+    });
+
+    const retryBtn = screen.getByRole('button', { name: /retry reviews/i });
+    await user.click(retryBtn);
+
+    expect(await screen.findByTestId('customer-reviews-list')).toBeInTheDocument();
+    expect(screen.queryByTestId('reviews-error')).not.toBeInTheDocument();
+  });
+
+  it('calls review APIs with correct business ID and default pagination parameters', async () => {
+    businessService.getBusinessById.mockResolvedValue(mockBusiness);
+
+    renderComponent('test-biz-uuid-999');
+
+    await waitFor(() => {
+      expect(businessService.getBusinessReviews).toHaveBeenCalledWith('test-biz-uuid-999', 0, 10);
+      expect(businessService.getBusinessReviewSummary).toHaveBeenCalledWith('test-biz-uuid-999');
+    });
   });
 });
