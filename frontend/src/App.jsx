@@ -13,6 +13,7 @@ import BusinessDetail from './pages/BusinessDetail';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import BusinessProfile from './pages/BusinessProfile';
+import BusinessReviews from './pages/BusinessReviews';
 import NotFound from './pages/NotFound';
 
 // Protected Route Component
@@ -119,6 +120,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <BusinessProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/business-reviews"
+        element={
+          <ProtectedRoute>
+            <BusinessReviews />
           </ProtectedRoute>
         }
       />
