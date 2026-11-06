@@ -37,6 +37,8 @@ describe('Explore (Public Business Directory) Page', () => {
       province: 'Gauteng',
       ownerId: 'owner-1',
       createdAt: '2026-10-01T10:00:00Z',
+      averageRating: 4.5,
+      reviewCount: 12,
     },
     {
       id: 'biz-2',
@@ -50,6 +52,8 @@ describe('Explore (Public Business Directory) Page', () => {
       province: 'Gauteng',
       ownerId: 'owner-2',
       createdAt: '2026-10-15T12:00:00Z',
+      averageRating: 0.0,
+      reviewCount: 0,
     },
   ];
 
@@ -334,6 +338,165 @@ describe('Explore (Public Business Directory) Page', () => {
     await user.click(viewDetailsButtons[0]);
 
     expect(mockNavigate).toHaveBeenCalledWith('/businesses/biz-1');
+  });
+
+  describe('Business Rating Badges', () => {
+    it('displays rating and review count for a business with multiple reviews', async () => {
+      const ratedBusiness = {
+        ...mockBusinesses[0],
+        averageRating: 4.5,
+        reviewCount: 12,
+      };
+      businessService.getAllBusinesses.mockResolvedValue({
+        ...mockPagedResponse,
+        content: [ratedBusiness],
+        totalElements: 1,
+      });
+
+      renderComponent();
+
+      const ratingBadge = await screen.findByTestId('business-rating-biz-1');
+      expect(ratingBadge).toBeInTheDocument();
+      expect(ratingBadge).toHaveTextContent('4.5');
+      expect(ratingBadge).toHaveTextContent('(12 reviews)');
+    });
+
+    it('displays singular "review" for a business with exactly one review', async () => {
+      const singleReviewBiz = {
+        ...mockBusinesses[0],
+        id: 'biz-single',
+        averageRating: 5.0,
+        reviewCount: 1,
+      };
+      businessService.getAllBusinesses.mockResolvedValue({
+        ...mockPagedResponse,
+        content: [singleReviewBiz],
+        totalElements: 1,
+      });
+
+      renderComponent();
+
+      const ratingBadge = await screen.findByTestId('business-rating-biz-single');
+      expect(ratingBadge).toHaveTextContent('5.0');
+      expect(ratingBadge).toHaveTextContent('(1 review)');
+      expect(ratingBadge).not.toHaveTextContent('reviews');
+    });
+
+    it('displays "No reviews yet" for a business with no reviews', async () => {
+      const noReviewsBiz = {
+        ...mockBusinesses[1],
+        averageRating: 0.0,
+        reviewCount: 0,
+      };
+      businessService.getAllBusinesses.mockResolvedValue({
+        ...mockPagedResponse,
+        content: [noReviewsBiz],
+        totalElements: 1,
+      });
+
+      renderComponent();
+
+      const ratingBadge = await screen.findByTestId('business-rating-biz-2');
+      expect(ratingBadge).toHaveTextContent('No reviews yet');
+      expect(ratingBadge).not.toHaveTextContent('4.');
+    });
+
+    it('displays different rating badges for businesses with different ratings', async () => {
+      businessService.getAllBusinesses.mockResolvedValue(mockPagedResponse);
+
+      renderComponent();
+
+      // biz-1 has averageRating=4.5, reviewCount=12
+      const badge1 = await screen.findByTestId('business-rating-biz-1');
+      expect(badge1).toHaveTextContent('4.5');
+      expect(badge1).toHaveTextContent('(12 reviews)');
+
+      // biz-2 has averageRating=0.0, reviewCount=0
+      const badge2 = screen.getByTestId('business-rating-biz-2');
+      expect(badge2).toHaveTextContent('No reviews yet');
+    });
+
+    it('handles missing or null rating fields without crashing', async () => {
+      const nullFieldsBiz = {
+        ...mockBusinesses[0],
+        id: 'biz-null',
+        averageRating: null,
+        reviewCount: null,
+      };
+      const undefinedFieldsBiz = {
+        ...mockBusinesses[1],
+        id: 'biz-undef',
+      };
+      // Remove rating fields entirely
+      delete undefinedFieldsBiz.averageRating;
+      delete undefinedFieldsBiz.reviewCount;
+
+      businessService.getAllBusinesses.mockResolvedValue({
+        ...mockPagedResponse,
+        content: [nullFieldsBiz, undefinedFieldsBiz],
+        totalElements: 2,
+      });
+
+      renderComponent();
+
+      const badge1 = await screen.findByTestId('business-rating-biz-null');
+      expect(badge1).toHaveTextContent('No reviews yet');
+
+      const badge2 = screen.getByTestId('business-rating-biz-undef');
+      expect(badge2).toHaveTextContent('No reviews yet');
+    });
+
+    it('preserves existing search, filter, and pagination functionality with ratings', async () => {
+      const user = userEvent.setup();
+      businessService.getAllBusinesses.mockResolvedValue(mockPagedResponse);
+
+      renderComponent();
+
+      await screen.findByTestId('business-rating-biz-1');
+
+      // Search still works
+      const searchInput = screen.getByPlaceholderText(/search businesses by name/i);
+      await user.type(searchInput, 'Cafe');
+      const searchBtn = screen.getByRole('button', { name: /^search$/i });
+      await user.click(searchBtn);
+
+      await waitFor(() => {
+        expect(businessService.getAllBusinesses).toHaveBeenLastCalledWith({
+          page: 0,
+          size: 8,
+          search: 'Cafe',
+          category: '',
+          city: '',
+        });
+      });
+
+      // Category filter still works
+      const foodCategoryBtn = screen.getByRole('button', { name: 'Food & Beverage' });
+      await user.click(foodCategoryBtn);
+
+      await waitFor(() => {
+        expect(businessService.getAllBusinesses).toHaveBeenLastCalledWith(
+          expect.objectContaining({
+            category: 'Food & Beverage',
+          })
+        );
+      });
+    });
+
+    it('does not make per-business review API requests from the Explore page', async () => {
+      businessService.getAllBusinesses.mockResolvedValue(mockPagedResponse);
+
+      renderComponent();
+
+      await screen.findByTestId('business-cards-list');
+
+      // Only getAllBusinesses should have been called
+      expect(businessService.getAllBusinesses).toHaveBeenCalled();
+
+      // No individual review API calls should exist on the mock
+      expect(businessService.getBusinessReviews).toBeUndefined();
+      expect(businessService.getBusinessReviewSummary).toBeUndefined();
+    });
   });
 });
 

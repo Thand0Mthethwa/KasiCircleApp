@@ -12,6 +12,7 @@ import {
   X,
   AlertCircle,
   RotateCcw,
+  Star,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -352,6 +353,38 @@ export default function Explore() {
                 <p className="mt-2.5 text-xs text-neutral-600 line-clamp-2 leading-relaxed">
                   {biz.description}
                 </p>
+
+                {/* Rating Badge */}
+                <div
+                  className="mt-2.5 flex items-center gap-1.5 text-xs"
+                  data-testid={`business-rating-${biz.id}`}
+                >
+                  {biz.averageRating != null && biz.averageRating > 0 && biz.reviewCount > 0 ? (
+                    <>
+                      <Star
+                        className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                      <span
+                        className="font-semibold text-neutral-800"
+                        aria-label={`Rated ${Number(biz.averageRating).toFixed(1)} out of 5 stars with ${biz.reviewCount} ${biz.reviewCount === 1 ? 'review' : 'reviews'}`}
+                      >
+                        {Number(biz.averageRating).toFixed(1)}
+                      </span>
+                      <span className="text-neutral-500">
+                        ({biz.reviewCount} {biz.reviewCount === 1 ? 'review' : 'reviews'})
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Star
+                        className="w-3.5 h-3.5 text-neutral-300 flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                      <span className="text-neutral-400 italic">No reviews yet</span>
+                    </>
+                  )}
+                </div>
 
                 {/* Location & Action */}
                 <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs">
