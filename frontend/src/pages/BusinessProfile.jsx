@@ -877,6 +877,92 @@ export default function BusinessProfile() {
               )}
             </Card>
 
+            {/* Customer Ratings & Reviews Summary Card */}
+            <Card className="p-6 shadow-sm border-neutral-200 space-y-4" data-testid="business-reviews-summary-card">
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider">
+                      Ratings & Reviews
+                    </h3>
+                    <p className="text-xs text-neutral-500">
+                      Customer ratings and community feedback
+                    </p>
+                  </div>
+                </div>
+                {business.reviewCount > 0 && (
+                  <span
+                    className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200"
+                    data-testid="business-profile-review-count-badge"
+                  >
+                    {business.reviewCount} {business.reviewCount === 1 ? 'review' : 'reviews'}
+                  </span>
+                )}
+              </div>
+
+              <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200">
+                {business.averageRating != null && business.averageRating > 0 && business.reviewCount > 0 ? (
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-2xl font-extrabold text-neutral-900"
+                          data-testid="business-profile-average-rating"
+                        >
+                          {Number(business.averageRating).toFixed(1)}
+                        </span>
+                        <div
+                          className="flex items-center gap-0.5"
+                          role="img"
+                          aria-label={`${Number(business.averageRating).toFixed(1)} out of 5 stars`}
+                        >
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-4 h-4 ${
+                                star <= Math.round(Number(business.averageRating))
+                                  ? 'fill-amber-400 text-amber-400'
+                                  : 'text-neutral-300 fill-neutral-100'
+                              }`}
+                              aria-hidden="true"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p
+                        className="text-xs text-neutral-500 mt-1"
+                        data-testid="business-profile-review-count"
+                      >
+                        Based on {business.reviewCount} customer {business.reviewCount === 1 ? 'review' : 'reviews'}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-2 text-center sm:text-left space-y-1" data-testid="business-profile-no-reviews">
+                    <div className="flex items-center gap-1.5 text-neutral-400">
+                      <Star className="w-4 h-4 text-neutral-300" />
+                      <span className="text-xs font-semibold text-neutral-700">No customer reviews yet</span>
+                    </div>
+                    <p className="text-[11px] text-neutral-500">
+                      Your business listing has not received any customer reviews yet. Once customers review your listing, their feedback will appear on your dashboard.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <Button
+                variant="primary"
+                onClick={() => navigate('/business-reviews')}
+                className="w-full flex items-center justify-center gap-2 text-xs py-2.5"
+                data-testid="view-review-dashboard-btn"
+                aria-label="View Review Dashboard"
+              >
+                <Star className="w-3.5 h-3.5 fill-current" />
+                <span>View Review Dashboard</span>
+              </Button>
+            </Card>
+
             {/* Actions: Edit & View Public */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Button

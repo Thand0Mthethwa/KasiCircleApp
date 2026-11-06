@@ -983,4 +983,169 @@ describe('BusinessProfile Page', () => {
       expect(screen.queryByTestId('images-error')).not.toBeInTheDocument();
     });
   });
+
+  describe('Business Owner Review Dashboard Integration', () => {
+    it('displays review summary card with average rating and review count for rated business', async () => {
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [
+          {
+            ...mockExistingBusiness,
+            averageRating: 4.8,
+            reviewCount: 15,
+          },
+        ],
+        totalElements: 1,
+      });
+
+      renderComponent();
+
+      const summaryCard = await screen.findByTestId('business-reviews-summary-card');
+      expect(summaryCard).toBeInTheDocument();
+
+      // Check average rating
+      const ratingEl = screen.getByTestId('business-profile-average-rating');
+      expect(ratingEl).toHaveTextContent('4.8');
+
+      // Check review count
+      const countEl = screen.getByTestId('business-profile-review-count');
+      expect(countEl).toHaveTextContent('Based on 15 customer reviews');
+
+      // Check badge
+      const badgeEl = screen.getByTestId('business-profile-review-count-badge');
+      expect(badgeEl).toHaveTextContent('15 reviews');
+
+      // Check button exists
+      const dashboardBtn = screen.getByTestId('view-review-dashboard-btn');
+      expect(dashboardBtn).toBeInTheDocument();
+      expect(dashboardBtn).toHaveTextContent('View Review Dashboard');
+    });
+
+    it('displays singular "review" label when business has exactly 1 review', async () => {
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [
+          {
+            ...mockExistingBusiness,
+            averageRating: 5.0,
+            reviewCount: 1,
+          },
+        ],
+        totalElements: 1,
+      });
+
+      renderComponent();
+
+      await screen.findByTestId('business-reviews-summary-card');
+
+      const countEl = screen.getByTestId('business-profile-review-count');
+      expect(countEl).toHaveTextContent('Based on 1 customer review');
+
+      const badgeEl = screen.getByTestId('business-profile-review-count-badge');
+      expect(badgeEl).toHaveTextContent('1 review');
+    });
+
+    it('shows appropriate empty message for businesses with zero reviews', async () => {
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [
+          {
+            ...mockExistingBusiness,
+            averageRating: 0.0,
+            reviewCount: 0,
+          },
+        ],
+        totalElements: 1,
+      });
+
+      renderComponent();
+
+      await screen.findByTestId('business-reviews-summary-card');
+
+      const noReviewsEl = screen.getByTestId('business-profile-no-reviews');
+      expect(noReviewsEl).toBeInTheDocument();
+      expect(noReviewsEl).toHaveTextContent('No customer reviews yet');
+      expect(screen.queryByTestId('business-profile-average-rating')).not.toBeInTheDocument();
+
+      // Dashboard button is still available
+      const dashboardBtn = screen.getByTestId('view-review-dashboard-btn');
+      expect(dashboardBtn).toBeInTheDocument();
+    });
+
+    it('navigates to /business-reviews when clicking View Review Dashboard', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [
+          {
+            ...mockExistingBusiness,
+            averageRating: 4.5,
+            reviewCount: 8,
+          },
+        ],
+        totalElements: 1,
+      });
+
+      renderComponent();
+
+      const dashboardBtn = await screen.findByTestId('view-review-dashboard-btn');
+      await user.click(dashboardBtn);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/business-reviews');
+    });
+
+    it('does not display review summary card to non-BUSINESS users', async () => {
+      useAuth.mockReturnValue({
+        user: residentUser,
+        isLoading: false,
+      });
+
+      renderComponent();
+
+      await screen.findByText('Business Account Required');
+      expect(screen.queryByTestId('business-reviews-summary-card')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('view-review-dashboard-btn')).not.toBeInTheDocument();
+    });
+
+    it('does not display review summary card while editing business profile', async () => {
+      const user = userEvent.setup();
+      useAuth.mockReturnValue({
+        user: businessUser,
+        isLoading: false,
+      });
+      businessService.getMyBusinesses.mockResolvedValueOnce({
+        content: [
+          {
+            ...mockExistingBusiness,
+            averageRating: 4.8,
+            reviewCount: 15,
+          },
+        ],
+        totalElements: 1,
+      });
+
+      renderComponent();
+
+      await screen.findByTestId('business-reviews-summary-card');
+
+      // Click Edit Business Profile
+      const editBtn = screen.getByRole('button', { name: 'Edit Business Profile' });
+      await user.click(editBtn);
+
+      expect(screen.getByTestId('business-edit-form')).toBeInTheDocument();
+      expect(screen.queryByTestId('business-reviews-summary-card')).not.toBeInTheDocument();
+    });
+  });
 });
