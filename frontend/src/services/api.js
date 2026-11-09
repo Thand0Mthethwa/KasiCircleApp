@@ -423,10 +423,104 @@ export const workerService = {
   },
 };
 
+export const jobService = {
+  getJobs: async ({ page = 0, size = 10, search = '', category = '', city = '', status = 'OPEN' } = {}) => {
+    const queryParams = new URLSearchParams({ page, size, status });
+    if (search.trim()) queryParams.set('search', search.trim());
+    if (category.trim()) queryParams.set('category', category.trim());
+    if (city.trim()) queryParams.set('city', city.trim());
+
+    const response = await fetch(`${API_BASE_URL}/api/jobs?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: getHeaders(false),
+    });
+
+    return handleResponse(response);
+  },
+
+  getJobById: async (jobId) => {
+    const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}`, {
+      method: 'GET',
+      headers: getHeaders(false),
+    });
+
+    return handleResponse(response);
+  },
+
+  createJob: async (job) => {
+    const response = await fetch(`${API_BASE_URL}/api/jobs`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: JSON.stringify(job),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  updateJob: async (jobId, job) => {
+    const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}`, {
+      method: 'PUT',
+      headers: getHeaders(true),
+      body: JSON.stringify(job),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  updateJobStatus: async (jobId, status) => {
+    const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}/status`, {
+      method: 'PATCH',
+      headers: getHeaders(true),
+      body: JSON.stringify({ status }),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  applyForJob: async (jobId, message) => {
+    const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}/applications`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: JSON.stringify({ message }),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  getMyApplications: async (page = 0, size = 10) => {
+    const response = await fetch(`${API_BASE_URL}/api/jobs/me/applications?page=${page}&size=${size}`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  getApplicationsForJob: async (jobId) => {
+    const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}/applications`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  updateApplicationStatus: async (jobId, applicationId, status) => {
+    const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}/applications/${applicationId}`, {
+      method: 'PATCH',
+      headers: getHeaders(true),
+      body: JSON.stringify({ status }),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+};
+
 export default {
   authService,
   userService,
   businessService,
   reviewService,
   workerService,
+  jobService,
 };

@@ -9,6 +9,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import Jobs from './pages/Jobs';
+import JobDetail from './pages/JobDetail';
+import JobForm from './pages/JobForm';
+import MyJobApplications from './pages/MyJobApplications';
 import Explore from './pages/Explore';
 import BusinessDetail from './pages/BusinessDetail';
 import Messages from './pages/Messages';
@@ -113,13 +116,19 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/jobs" element={<Jobs />} />
+      <Route path="/jobs/:id" element={<JobDetail />} />
       <Route
-        path="/jobs"
-        element={
-          <ProtectedRoute>
-            <Jobs />
-          </ProtectedRoute>
-        }
+        path="/jobs/new"
+        element={<ProtectedRoute><JobForm /></ProtectedRoute>}
+      />
+      <Route
+        path="/jobs/:id/edit"
+        element={<ProtectedRoute><JobForm /></ProtectedRoute>}
+      />
+      <Route
+        path="/my-applications"
+        element={<ProtectedRoute><MyJobApplications /></ProtectedRoute>}
       />
       <Route
         path="/messages"

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { businessService, userService, workerService } from './api';
+import { businessService, jobService, userService, workerService } from './api';
 
 const response = (status, data) => ({
   ok: status >= 200 && status < 300,
@@ -86,6 +86,37 @@ describe('API session handling', () => {
         method: 'PUT',
         headers: expect.objectContaining({ Authorization: 'Bearer worker-token' }),
         body: JSON.stringify(profile),
+      })
+    );
+  });
+
+  it('requests the public job directory with filters and without authentication', async () => {
+    localStorage.setItem('kasicircle_token', 'active-token');
+    fetch.mockResolvedValueOnce(response(200, { content: [] }));
+
+    await jobService.getJobs({ search: 'electrician', category: 'Electrical', city: 'Soweto' });
+
+    const [url, options] = fetch.mock.calls[0];
+    expect(url).toContain('/api/jobs?');
+    expect(url).toContain('status=OPEN');
+    expect(url).toContain('search=electrician');
+    expect(url).toContain('category=Electrical');
+    expect(url).toContain('city=Soweto');
+    expect(options.headers.Authorization).toBeUndefined();
+  });
+
+  it('submits job applications through the authenticated endpoint', async () => {
+    localStorage.setItem('kasicircle_token', 'active-token');
+    fetch.mockResolvedValueOnce(response(201, { id: 'application-1' }));
+
+    await jobService.applyForJob('job-1', 'I have relevant experience.');
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/jobs/job-1/applications'),
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ Authorization: expect.any(String) }),
+        body: JSON.stringify({ message: 'I have relevant experience.' }),
       })
     );
   });

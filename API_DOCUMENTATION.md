@@ -426,6 +426,52 @@ Responses:
 - 403 Forbidden for accounts other than WORKER
 - 404 Not Found if no profile has been created
 
+## Job marketplace endpoints
+
+Job listings are public. Creating and managing listings and applications requires authentication. The employer is always derived from the authenticated account; clients cannot choose an employer ID. Public job responses contain employer display names but no email or phone details.
+
+### Search open jobs
+
+- Method: GET
+- URL: `/api/jobs`
+- Auth required: No
+- Query parameters: `search` (job title, description, or employer name), `category` (exact category), `city` (partial city match), `status` (`OPEN` by default, or `CLOSED`), `page` (default `0`), `size` (default `20`), and standard Spring `sort` parameters.
+
+Returns a paginated job response.
+
+### Get a job
+
+- Method: GET
+- URL: `/api/jobs/{jobId}`
+- Auth required: No
+
+Returns job details and employer display name. Employer contact information is not included.
+
+### Create, edit, or close a job
+
+- Methods and URLs: `POST /api/jobs`, `PUT /api/jobs/{jobId}`, `PATCH /api/jobs/{jobId}/status`
+- Auth required: Yes
+- Authorization: The creator owns the job; only that account can edit, close, or reopen it. Closed listings cannot be edited.
+- Validation: title (120 chars), description (4000), category (60), city/province (100 each); employment type is `FULL_TIME`, `PART_TIME`, `CONTRACT`, or `TEMPORARY`; status is `OPEN` or `CLOSED`.
+
+### Apply to a job
+
+- Method: POST
+- URL: `/api/jobs/{jobId}/applications`
+- Auth required: Yes
+- Request: optional `message` (up to 1000 characters)
+- Authorization: The job must be open; employers cannot apply to their own jobs; each account may apply once per job.
+
+The response contains the applicant's name and application message, not email or phone.
+
+### Read applications
+
+- Applicant's own applications: `GET /api/jobs/me/applications` (authenticated, paginated)
+- Employer's applications for a listing: `GET /api/jobs/{jobId}/applications` (authenticated job owner only)
+- Review an application: `PATCH /api/jobs/{jobId}/applications/{applicationId}` with `{"status":"ACCEPTED"}` or `{"status":"REJECTED"}` (authenticated job owner only; pending applications only)
+
+Applicant/employer contact information is not returned in application responses. Cross-user and cross-employer access is denied.
+
 ## Business image endpoints
 
 Business images are stored in Cloudinary and their metadata is persisted in PostgreSQL.
