@@ -25,7 +25,13 @@ const getHeaders = (includeAuth = true) => {
 };
 
 // Helper to handle API responses
-const handleResponse = async (response) => {
+const handleResponse = async (response, { authenticated = false } = {}) => {
+  if (response.status === 401 && authenticated && getAuthToken()) {
+    localStorage.removeItem('kasicircle_token');
+    localStorage.removeItem('kasicircle_user');
+    window.dispatchEvent(new Event('kasicircle:unauthorized'));
+  }
+
   const contentType = response.headers.get('content-type');
   let data = null;
 
@@ -95,7 +101,7 @@ export const userService = {
       headers: getHeaders(true),
     });
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   updateProfile: async (updates) => {
@@ -105,7 +111,7 @@ export const userService = {
       body: JSON.stringify(updates),
     });
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   changePassword: async (currentPassword, newPassword, confirmPassword) => {
@@ -119,7 +125,7 @@ export const userService = {
       }),
     });
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 };
 
@@ -200,7 +206,7 @@ export const businessService = {
       body: formData,
     });
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   setCoverImage: async (businessId, imageId) => {
@@ -209,7 +215,7 @@ export const businessService = {
       headers: getHeaders(true),
     });
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   deleteBusinessImage: async (businessId, imageId) => {
@@ -219,16 +225,7 @@ export const businessService = {
     });
 
     if (!response.ok) {
-      let data = null;
-      try {
-        data = await response.json();
-      } catch {
-        // ignore json parse failure
-      }
-      const error = new Error(data?.message || `HTTP Error: ${response.status}`);
-      error.status = response.status;
-      error.data = data;
-      throw error;
+      return handleResponse(response, { authenticated: true });
     }
 
     return null;
@@ -243,7 +240,7 @@ export const businessService = {
       }
     );
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   createBusiness: async (businessData) => {
@@ -253,7 +250,7 @@ export const businessService = {
       body: JSON.stringify(businessData),
     });
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   updateBusiness: async (id, businessData) => {
@@ -263,7 +260,7 @@ export const businessService = {
       body: JSON.stringify(businessData),
     });
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   deleteBusiness: async (id) => {
@@ -273,7 +270,7 @@ export const businessService = {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP Error: ${response.status}`);
+      return handleResponse(response, { authenticated: true });
     }
 
     return null;
@@ -310,7 +307,7 @@ export const businessService = {
       body: JSON.stringify(reviewData),
     });
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   updateReview: async (businessId, reviewId, reviewData) => {
@@ -323,7 +320,7 @@ export const businessService = {
       }
     );
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   deleteReview: async (businessId, reviewId) => {
@@ -339,7 +336,7 @@ export const businessService = {
       return null;
     }
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 
   getMyReview: async (businessId) => {
@@ -352,7 +349,7 @@ export const businessService = {
       return null;
     }
 
-    return handleResponse(response);
+    return handleResponse(response, { authenticated: true });
   },
 };
 

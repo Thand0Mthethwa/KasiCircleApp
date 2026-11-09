@@ -160,6 +160,24 @@ describe('AuthContext', () => {
     expect(localStorage.getItem('kasicircle_user')).toBeNull();
   });
 
+  it('clears authenticated state when the API reports an expired session', async () => {
+    localStorage.setItem('kasicircle_token', 'expired-token');
+    userService.getCurrentUser.mockResolvedValueOnce(mockUser);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+
+    act(() => {
+      window.dispatchEvent(new Event('kasicircle:unauthorized'));
+    });
+
+    expect(authService.logout).toHaveBeenCalledTimes(1);
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.user).toBeNull();
+  });
+
   it('synchronizes user information in state and localStorage when updateUser is called', async () => {
     localStorage.setItem('kasicircle_token', 'active-token');
     userService.getCurrentUser.mockResolvedValueOnce(mockUser);

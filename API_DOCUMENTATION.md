@@ -248,6 +248,105 @@ Responses:
 - 403 Forbidden if the user is not a BUSINESS account or does not own the listing
 - 404 Not Found if the business does not exist
 
+## Business review endpoints
+
+Reviews are public to read. Creating, updating, deleting, or retrieving the authenticated user's review requires a valid JWT. Each user may submit one review per business; the business owner cannot review their own business.
+
+Review request bodies use a `rating` from 1 to 5 and an optional `comment` of up to 1000 characters:
+
+```json
+{
+  "rating": 5,
+  "comment": "Friendly service and excellent food."
+}
+```
+
+Public review responses include the author's display name, but never their email address or phone number:
+
+```json
+{
+  "id": "8e3b5e43-85b9-4a9f-9a1b-3fbb13854123",
+  "businessId": "7f6aba4b-643f-41ec-a509-94b8f4381404",
+  "rating": 5,
+  "comment": "Friendly service and excellent food.",
+  "authorName": "Jane D.",
+  "createdAt": "2026-11-02T22:00:00Z",
+  "updatedAt": "2026-11-02T22:00:00Z"
+}
+```
+
+### List business reviews
+
+- Method: GET
+- URL: `/api/businesses/{businessId}/reviews`
+- Auth required: No
+- Pagination: `page` (default `0`), `size` (default `10`), and standard Spring `sort` parameters. Results default to newest first.
+
+Returns a paginated list of review responses.
+
+### Get a business rating summary
+
+- Method: GET
+- URL: `/api/businesses/{businessId}/reviews/summary`
+- Auth required: No
+
+Returns `businessId`, `averageRating` (rounded to two decimal places, or `0.0` without reviews), `totalReviews`, and `fiveStarCount` through `oneStarCount`.
+
+### Get the authenticated user's review
+
+- Method: GET
+- URL: `/api/businesses/{businessId}/reviews/me`
+- Auth required: Yes
+
+Responses:
+- 200 OK with the user's review
+- 204 No Content if the user has not reviewed the business
+- 401 Unauthorized when JWT is missing or invalid
+- 404 Not Found if the business does not exist
+
+### Create a business review
+
+- Method: POST
+- URL: `/api/businesses/{businessId}/reviews`
+- Auth required: Yes
+
+Responses:
+- 201 Created with the created review
+- 400 Bad Request for an invalid rating or comment
+- 401 Unauthorized when JWT is missing or invalid
+- 403 Forbidden if the authenticated user owns the business
+- 404 Not Found if the business does not exist
+- 409 Conflict if the user has already reviewed the business
+
+### Update a business review
+
+- Method: PUT
+- URL: `/api/businesses/{businessId}/reviews/{reviewId}`
+- Auth required: Yes
+- Authorization: The review author only
+
+Uses the same request body as review creation.
+
+Responses:
+- 200 OK with the updated review
+- 400 Bad Request for an invalid rating or comment
+- 401 Unauthorized when JWT is missing or invalid
+- 403 Forbidden if the authenticated user is not the review author
+- 404 Not Found if the business or review does not exist
+
+### Delete a business review
+
+- Method: DELETE
+- URL: `/api/businesses/{businessId}/reviews/{reviewId}`
+- Auth required: Yes
+- Authorization: The review author or an ADMIN
+
+Responses:
+- 204 No Content on success
+- 401 Unauthorized when JWT is missing or invalid
+- 403 Forbidden if the authenticated user cannot delete the review
+- 404 Not Found if the business or review does not exist
+
 ## Business image endpoints
 
 Business images are stored in Cloudinary and their metadata is persisted in PostgreSQL.

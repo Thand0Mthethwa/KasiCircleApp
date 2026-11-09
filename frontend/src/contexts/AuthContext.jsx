@@ -43,6 +43,17 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      authService.logout();
+      setUser(null);
+      setIsAuthenticated(false);
+    };
+
+    window.addEventListener('kasicircle:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('kasicircle:unauthorized', handleUnauthorized);
+  }, []);
+
   const login = useCallback(async (email, password) => {
     setIsLoading(true);
     setError(null);

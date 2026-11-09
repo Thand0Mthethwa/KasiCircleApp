@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Pages
@@ -47,6 +48,14 @@ function PublicRoute({ children }) {
 }
 
 function AppRoutes() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const redirectToWelcome = () => navigate('/welcome', { replace: true });
+    window.addEventListener('kasicircle:unauthorized', redirectToWelcome);
+    return () => window.removeEventListener('kasicircle:unauthorized', redirectToWelcome);
+  }, [navigate]);
+
   return (
     <Routes>
       {/* Splash/Onboarding Routes */}
