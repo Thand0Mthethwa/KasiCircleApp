@@ -1,36 +1,25 @@
 # KasiCircle MVP Sprint Progress
 
-Progress is evidence-based and reconciled with [MVP_FEATURE_VERIFICATION.md](./MVP_FEATURE_VERIFICATION.md) and [SPRINT_EXECUTION_PLAN.md](./SPRINT_EXECUTION_PLAN.md). “Complete” means code and corresponding tests were verified; absence of a test or implementation is not inferred complete from old audit text.
+Evidence and worktree discrepancies are detailed in [MVP_FEATURE_VERIFICATION.md](./MVP_FEATURE_VERIFICATION.md). “Recorded” results are earlier checkpoints, not newly executed results against the current worktree.
 
-## Completed and retained work
-
-| Scope | Status | Evidence / checkpoint |
+| Sprint | Status | Progress |
 |---|---|---|
-| Authentication, account types, user profile/password | Complete | Existing implementations and tests; last recorded full backend suite 181 passed |
-| Business management, directory, images | Complete | Existing backend and frontend implementations/tests |
-| Sprint 5.4.7.6 customer review submission and review UI | Complete | `BusinessReviewServiceTest`, `BusinessReviewControllerTest`, `BusinessReviewRepositoryTest`, `BusinessDetail.test.jsx`; last recorded backend/frontend suites passed |
-| Prior session-expiry handling and release docs | Complete | Commit `54ba7b7`; focused tests passed |
-| Prior full verification | Complete | Commit `327b700`; backend 181 tests/package, frontend 134 serialized tests, ESLint, Vite build passed |
-
-## Current sequence
-
-| Sprint | Status | Next verified task |
-|---|---|---|
-| 6 — Worker marketplace | Complete | V7 migration, WORKER-only profile CRUD, privacy-safe public directory/search/detail, React pages, and backend/frontend tests; backend 194 / frontend 144 tests passed, lint/build passed |
-| 7 — Job marketplace | Complete | V8 job/application migration; public directory/detail/filtering; authenticated job posting and owner-only edits/status; applicant submission/history; employer-only application review; privacy-safe DTOs. Backend 214 / frontend 157 tests passed; lint/build passed. |
-| 8 — Messaging | Not started | Implement participant-only conversations/messages and UI |
-| 9 — Notifications | Not started | Implement persistent notifications, unread/read state and event delivery |
-| 10 — Trust and moderation | Not started | Implement reporting and backend-enforced admin moderation |
-| 11 — UI/UX and accessibility | Not started | Replace marketplace placeholders/mocks and validate responsive/accessibility states |
-| 12 — Production readiness | Not started | Security/migration audit, CI, and deployment documentation |
-| 13 — End-to-end QA | Not started | Add integrated browser journeys and privacy/authorization verification |
-| 14 — Documentation/release readiness | Not started | Complete API/architecture/deployment/limitations docs and final gates |
+| Sprints 1–4 | COMPLETE (previous checkpoint) | Authentication/profile/business foundations, session recovery, release docs, and original Phase 4 package verification. Earlier result: backend 181 tests, frontend 134 tests, lint/build pass. |
+| Sprint 5.4.7.6 — Customer Review Submission | COMPLETE (source/test evidence) | Review API, validation, duplicate/self-review checks, and frontend review flow are present. Reverify in final full suite. |
+| Sprint 6 — Worker Marketplace | BLOCKED | `HEAD` has the committed implementation (`954be3c`), but current unstaged worktree has emptied implementation and test files. Stop before changing or restoring them; clarify whether deletions are intentional. |
+| Sprint 7 — Job Marketplace | BLOCKED | `HEAD` has the committed implementation (`cf418eb`), but current unstaged worktree has emptied implementation and test files. Stop before changing or restoring them; clarify whether deletions are intentional. |
+| Sprint 8 — Messaging | NOT STARTED / BLOCKED BY SPRINT 6 WORKTREE STATE | New untracked backend files and migration are zero bytes; frontend remains a placeholder. |
+| Sprint 9 — Notifications | NOT STARTED | No implementation found. |
+| Sprint 10 — Trust and Moderation | NOT STARTED | No report/moderation implementation found. |
+| Sprint 11 — UI/UX | NOT STARTED | Marketplace scope requires audit after the current worktree conflict is resolved. |
+| Sprint 12 — Production Readiness | NOT STARTED | Security, migrations, CI, and deployment review remain. |
+| Sprint 13 — End-to-End QA | NOT STARTED | No E2E harness/journeys found. |
+| Sprint 14 — Documentation and Release | NOT STARTED | API docs currently omit committed Worker/Job endpoint sections in the worktree; architecture/deployment/limitations/release docs remain incomplete. |
 
 ## Current checkpoint
 
-- Feature matrix and full-scope roadmap were created from current repository evidence.
-- Sprint 7 is verified complete. Review submission Sprint 5.4.7.6, worker marketplace Sprint 6, and the job marketplace are implemented and covered by service, controller, repository, and frontend tests. The next incomplete feature sprint is Sprint 8 — Messaging.
-- Sprint 6 validation: `cd backend && mvn clean package` — 194 passed; `cd frontend && npx vitest run --maxWorkers=1 --minWorkers=1` — 144 passed; `npm run lint` and `npm run build` passed.
-- Sprint 7 validation: `cd backend && mvn clean package` — 214 passed; `cd frontend && npm test -- --maxWorkers=1 --minWorkers=1` — 157 passed; `npm run lint` and `npm run build` passed.
-- Existing unrelated untracked file preserved: `backend/src/main/java/com/kasicircle/backend/KasiCircleApp.code-workspace`.
-- Do not push, merge, or deploy. Add a focused local commit and update this file after each verified sprint.
+- Branch: `Feature/Authentication`; `HEAD` is `cf418eb`.
+- A pre-existing dirty worktree contains 65 modified paths and approximately 4,065 removed lines; affected marketplace source/test files are zero bytes. Messaging additions and its V9 migration are zero bytes as well.
+- No restoration, staging, or commit of those changes was performed.
+- Current Maven/frontend verification is not claimed: implementation and test sources for Sprints 6–8 are empty.
+- First safe next step: establish whether the large zero-byte deletions are intentional or should be discarded in favor of the existing committed Worker/Job implementation. Continue Sprint 6 only after that conflict is resolved.

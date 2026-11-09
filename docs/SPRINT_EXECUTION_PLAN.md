@@ -1,75 +1,92 @@
-# KasiCircle Full MVP Sprint Execution Plan
+# KasiCircle MVP Sprint Execution Plan
 
-This roadmap reconciles the requested marketplace scope with the evidence in [MVP_FEATURE_VERIFICATION.md](./MVP_FEATURE_VERIFICATION.md). Completed work is preserved and not repeated. Build changes incrementally, keep changes local, and update [SPRINT_PROGRESS.md](./SPRINT_PROGRESS.md) at every sprint checkpoint.
+## Scope
 
-## Verified completed foundation
+This roadmap expands the previously completed foundation and the full marketplace scope specified in the current Master Development Prompt. Feature status and exact worktree discrepancies are maintained in [MVP_FEATURE_VERIFICATION.md](./MVP_FEATURE_VERIFICATION.md). Do not infer completion from an older audit alone. Existing work is preserved; do not push, merge, or deploy.
 
-- Sprints 1–5: authentication, account/profile management, business listing/discovery/media management, and ratings/reviews are implemented.
-- Sprint 5.4.7.6 customer review submission: verified complete with backend service/controller/repository tests and frontend interaction tests.
-- The previously completed session-expiry handling and final package/test validation are recorded in progress.
+## Completed foundation (preserve)
 
-## Remaining requested MVP sprints
+- Sprint 1: Authentication and security foundation.
+- Sprint 2: User profile and password management.
+- Sprint 3: Business listings, directory, ownership, and image management.
+- Sprint 4: Stabilization, session recovery, release docs, and original Phase 4 package verification. The recorded 181 backend / 134 frontend results predate marketplace sprints.
+- Sprint 5.4.7.6: Customer review submission, moderation by authors, and rating summaries; source and tests exist. Reverify as part of final integration.
 
-### Sprint 6 — Worker marketplace
+## Marketplace and release sprints
 
-- Add a worker profile linked to a WORKER account, with validated editable bio/headline, skills/service categories, and location.
-- Add owner-only profile creation/editing and safe public profile responses.
-- Add a paginated public worker directory with keyword, skill/category, and location filters.
-- Add directory and public worker-detail pages, routes, API integration, loading/error/empty states, and mobile/accessibility support.
-- Test account-type restriction, ownership, validation, public field privacy, filtering, and frontend journeys.
+### Sprint 6 — Worker Marketplace
 
-**Done when:** database migration, API and UI are complete and tests cover permissions/privacy as well as normal behavior.
+- Restore/reconcile the committed implementation against the current zero-byte worktree files only after the unexpected deletion diff is clarified.
+- Worker profile create/edit; skills and service categories.
+- Public directory, search/filter, profile details, ownership/privacy/security.
+- Run backend and frontend worker suites, lint, and build.
 
-### Sprint 7 — Job marketplace
+**Exit:** no zero-byte Worker implementation/tests; authenticated users can only change their own Worker profile; public DTOs omit contact data; verified APIs and tests.
 
-- Add job persistence and employer-owned create/edit/close operations.
-- Add public search/filter, job detail, and job application.
-- Add employer application review/management with strict applicant privacy.
-- Test employer boundaries, unauthorized applications, validation, applicant privacy, and UI/API flows.
+### Sprint 7 — Job Marketplace
+
+- Job create/edit/close, public search/detail, employer ownership.
+- Apply to jobs, applicant-owned application view, employer-owned application management.
+- Ensure closed/self/duplicate applications are rejected and applicant email/phone are withheld.
+- Verify backend/frontend tests, lint, and build.
+
+**Exit:** employer and applicant authorization tests pass; public listing/detail and complete application workflows pass.
 
 ### Sprint 8 — Messaging
 
-- Add persistent conversations/messages, participant authorization, send/receive, and ordered history.
-- Add conversation UI with loading/empty/error states.
-- Test participant-only access, nonparticipant denial, and message persistence.
+- Persist secure conversations and messages with an incremental Flyway migration.
+- Create/list conversations; send and retrieve paginated/history messages.
+- Enforce participant-only access in backend services/controllers; do not return unnecessary contact data.
+- Build connected messaging UI and API integration; add backend and frontend tests.
+
+**Exit:** cross-participant access is denied; history and send flows work; migration, tests, lint, and build pass.
 
 ### Sprint 9 — Notifications
 
-- Add persistent in-app notifications, unread count, and mark-read operations.
-- Emit notifications for relevant implemented activity (initially job application and messaging events).
-- Add notification UI and navigation; test persistence, recipient isolation, count, and read state.
+- Persist notifications and unread counts; mark notifications read.
+- Generate notifications for relevant marketplace activity.
+- Add notification list/count UI, navigation, API integration, and tests.
 
-### Sprint 10 — Trust and moderation
+**Exit:** notification persistence and permissions are verified; relevant activity links navigate to the correct resource.
 
-- Add reporting for inappropriate businesses, worker profiles, jobs, reviews, and messages where supported.
-- Add admin-only moderation actions enforced on backend routes/services.
-- Protect reporter and moderation data; test user/admin authorization and state transitions.
+### Sprint 10 — Trust and Moderation
+
+- Support reports for inappropriate listings or content.
+- Add appropriately restricted moderation workflows and administrator actions.
+- Enforce admin-only actions on the backend, protect reporter data, and test authorization/validation.
+
+**Exit:** unauthorized moderation attempts are rejected and report lifecycle tests pass.
 
 ### Sprint 11 — UI/UX and accessibility
 
-- Review responsive behavior, accessibility, navigation, loading/error/empty states, and interaction consistency across all implemented flows.
-- Replace obsolete home-page marketplace mock data and links with real API-backed routes.
-- Add targeted component/accessibility coverage.
+- Reconcile visual patterns, responsive layouts, accessible labels/keyboard behavior, and navigation.
+- Verify loading, error, and empty states on all marketplace journeys.
+- Add targeted automated UI tests and accessibility checks where supported.
 
-### Sprint 12 — production readiness
+**Exit:** key pages work at narrow/mobile and wider viewports; forms/navigation are accessible; all relevant states are covered.
 
-- Audit security configuration, authorization, validation, information exposure, and rate/size constraints.
-- Verify migrations are incremental and safe for existing deployments.
+### Sprint 12 — Production readiness
+
+- Audit authentication, every API authorization rule, request validation, CORS, error responses, and sensitive data exposure.
+- Review all migrations for safe incremental upgrade behavior.
+- Remove unsafe production secret defaults; document environment configuration.
 - Add automated CI checks for backend tests/package, frontend tests/lint/build.
-- Document secure environment configuration, CORS, secrets, and production deployment without deploying.
+- Document secure production deployment configuration.
 
-### Sprint 13 — end-to-end QA
+**Exit:** security/permission regression tests and CI pass; no credentials are committed; migration and configuration checks pass.
 
-- Add browser journeys for customer, worker, employer, and administrator workflows.
-- Verify integrated API/database behavior and cross-account privacy boundaries.
-- Fix regressions and record tested browser/environment versions.
+### Sprint 13 — End-to-end QA
 
-### Sprint 14 — documentation and release readiness
+- Exercise customer, worker, employer, applicant, and administrator journeys against an integrated backend/frontend environment.
+- Add browser automation if supported in the repository environment; otherwise record the tested manual integration matrix and the missing automation limitation.
+- Include negative authorization/privacy cases.
 
-- Complete API and architecture documentation, setup/deployment guide, known limitations, and release readiness report.
-- Run the final test/build/security gates; document exact commands/results.
-- Create focused local commits; do not push, merge, or deploy.
+**Exit:** complete core journeys and denial cases are recorded with reproducible results.
 
-## Execution order
+### Sprint 14 — Documentation and release readiness
 
-Work in numeric order starting at Sprint 6. Keep each sprint's backend, frontend, integration, and tests together where they form a coherent independently verified change. If a sprint exceeds a session, commit a verified vertical slice and record the precise next task in `SPRINT_PROGRESS.md`.
+- Complete API and architecture documentation, setup/deployment guide, known limitations, and release checklist.
+- Re-run full backend/frontend tests, lint, production builds, CI, and E2E checks.
+- Update the feature matrix and progress log from executed evidence.
+
+**Exit:** all required MVP features are COMPLETE or explicitly BLOCKED with evidence and decision; local release commits are focused. No automatic push/deployment.
