@@ -63,6 +63,10 @@ Files must strictly follow Flyway's naming pattern:
 1. [`V1__initial_schema.sql`](file:///home/tsmthethwa/Projects/KasiCircle/KasiCircleApp/backend/src/main/resources/db/migration/V1__initial_schema.sql) — Baseline tables (`users`, `businesses`), indexes, and foreign keys with `IF NOT EXISTS`.
 2. [`V2__expand_user_field_lengths.sql`](file:///home/tsmthethwa/Projects/KasiCircle/KasiCircleApp/backend/src/main/resources/db/migration/V2__expand_user_field_lengths.sql) — Expands `first_name` (50), `last_name` (60), and `email` (254).
 3. [`V3__add_account_type_to_users.sql`](file:///home/tsmthethwa/Projects/KasiCircle/KasiCircleApp/backend/src/main/resources/db/migration/V3__add_account_type_to_users.sql) — Adds `account_type` column to `users` with default `'RESIDENT'` and check constraint (`RESIDENT`, `WORKER`, `BUSINESS`).
+4. `V4__add_unique_owner_to_businesses.sql` — Enforces one business listing per owner.
+5. `V5__create_business_images_table.sql` — Adds business image metadata.
+6. `V6__create_business_reviews_table.sql` — Adds business customer ratings and reviews.
+7. `V7__create_worker_profiles.sql` — Adds worker profiles, skills, and service categories.
 
 ---
 
@@ -122,4 +126,3 @@ If a migration script encounters a syntax error or constraint conflict during de
      DELETE FROM flyway_schema_history WHERE success = false;
      ```
 4. Restart the Spring Boot backend to re-run the corrected migration.
-

@@ -133,9 +133,11 @@ export const CategoryCard = ({ icon: Icon, label, onClick, isSelected = false })
 // Worker Card Component
 export const WorkerCard = ({ image, name, profession, isVerified = false, onClick }) => {
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col items-center gap-3 cursor-pointer hover:shadow-lg transition-shadow"
+      className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col items-center gap-3 cursor-pointer hover:shadow-lg transition-shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-kasi-green"
+      aria-label={`View ${name}, ${profession}`}
     >
       <div className="relative">
         <div className="w-20 h-20 bg-gradient-to-br from-kasi-green to-kasi-green-dark rounded-full flex items-center justify-center text-white font-bold text-2xl overflow-hidden">
@@ -155,7 +157,7 @@ export const WorkerCard = ({ image, name, profession, isVerified = false, onClic
       </div>
       <p className="font-semibold text-neutral-900 text-center">{name}</p>
       <p className="text-xs text-neutral-600 text-center">{profession}</p>
-    </div>
+    </button>
   );
 };
 

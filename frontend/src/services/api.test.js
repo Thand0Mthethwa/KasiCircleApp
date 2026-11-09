@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { businessService, userService } from './api';
+import { businessService, userService, workerService } from './api';
 
 const response = (status, data) => ({
   ok: status >= 200 && status < 300,
@@ -49,5 +49,44 @@ describe('API session handling', () => {
     expect(localStorage.getItem('kasicircle_token')).toBe('active-token');
     expect(unauthorizedListener).not.toHaveBeenCalled();
     window.removeEventListener('kasicircle:unauthorized', unauthorizedListener);
+  });
+
+  it('requests the public worker directory with filters and without an authorization header', async () => {
+    localStorage.setItem('kasicircle_token', 'active-token');
+    fetch.mockResolvedValueOnce(response(200, { content: [] }));
+
+    await workerService.getWorkers({ search: 'Amahle', skill: 'Wiring', category: 'Electrical', city: 'Soweto' });
+
+    const [url, options] = fetch.mock.calls[0];
+    expect(url).toContain('/api/workers?');
+    expect(url).toContain('search=Amahle');
+    expect(url).toContain('skill=Wiring');
+    expect(url).toContain('category=Electrical');
+    expect(url).toContain('city=Soweto');
+    expect(options.headers.Authorization).toBeUndefined();
+  });
+
+  it('sends authenticated worker profile updates', async () => {
+    localStorage.setItem('kasicircle_token', 'worker-token');
+    fetch.mockResolvedValueOnce(response(200, { headline: 'Electrician' }));
+    const profile = {
+      headline: 'Electrician',
+      bio: 'Home wiring',
+      skills: ['Wiring'],
+      serviceCategories: ['Electrical'],
+      city: 'Soweto',
+      province: 'Gauteng',
+    };
+
+    await workerService.updateMyProfile(profile);
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/workers/me'),
+      expect.objectContaining({
+        method: 'PUT',
+        headers: expect.objectContaining({ Authorization: 'Bearer worker-token' }),
+        body: JSON.stringify(profile),
+      })
+    );
   });
 });

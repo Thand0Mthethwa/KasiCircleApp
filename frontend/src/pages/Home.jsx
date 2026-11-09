@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StatCard, WorkerCard, BottomNavigation, SearchBar } from '../components';
 import { useAuth } from '../contexts/AuthContext';
+import { workerService } from '../services/api';
 import { Bell, MapPin, Zap, Wrench, Hammer, Scissors, Construction, Lightbulb } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeNav, setActiveNav] = useState('home');
+  const [workers, setWorkers] = useState([]);
+  const [workersLoading, setWorkersLoading] = useState(true);
+  const [workersError, setWorkersError] = useState('');
 
   // Mock data - in production would come from API
   const mockStats = [
@@ -24,22 +28,12 @@ export default function Home() {
     { id: 5, icon: Scissors, label: 'Stylists' },
   ];
 
-  const mockWorkers = [
-    {
-      id: 1,
-      name: 'Sipho Dlamini',
-      profession: 'Electrician',
-      isVerified: true,
-      image: null,
-    },
-    {
-      id: 2,
-      name: 'Nomsa Khumalo',
-      profession: 'Hairdresser',
-      isVerified: true,
-      image: null,
-    },
-  ];
+  useEffect(() => {
+    workerService.getWorkers({ page: 0, size: 2 })
+      .then((response) => setWorkers(response.content || []))
+      .catch((error) => setWorkersError(error.data?.message || error.message || 'Unable to load workers.'))
+      .finally(() => setWorkersLoading(false));
+  }, []);
 
   const handleSearch = (query) => {
     navigate('/explore?search=' + encodeURIComponent(query));
@@ -86,6 +80,11 @@ export default function Home() {
           {getGreeting()},<br />
           {displayName}! 👋
         </h1>
+        {user?.accountType === 'WORKER' && (
+          <button type="button" className="mt-3 rounded-full bg-white px-4 py-2 text-sm font-semibold text-kasi-green" onClick={() => navigate('/worker-profile')}>
+            Manage worker profile
+          </button>
+        )}
       </div>
 
       {/* Main Content */}
@@ -157,14 +156,15 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {mockWorkers.map((worker) => (
+            {workersLoading && <p className="col-span-2 text-sm text-neutral-500" role="status">Loading workers…</p>}
+            {workersError && <p className="col-span-2 text-sm text-red-700" role="alert">{workersError}</p>}
+            {!workersLoading && !workersError && workers.length === 0 && <p className="col-span-2 text-sm text-neutral-500">No worker profiles yet.</p>}
+            {workers.map((worker) => (
               <WorkerCard
                 key={worker.id}
-                image={worker.image}
-                name={worker.name}
-                profession={worker.profession}
-                isVerified={worker.isVerified}
-                onClick={() => handleNavigate(`/worker/${worker.id}`)}
+                name={worker.displayName}
+                profession={worker.headline}
+                onClick={() => handleNavigate(`/workers/${worker.id}`)}
               />
             ))}
           </div>

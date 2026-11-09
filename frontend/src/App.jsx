@@ -15,6 +15,9 @@ import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import BusinessProfile from './pages/BusinessProfile';
 import BusinessReviews from './pages/BusinessReviews';
+import Workers from './pages/Workers';
+import WorkerDetail from './pages/WorkerDetail';
+import WorkerProfile from './pages/WorkerProfile';
 import NotFound from './pages/NotFound';
 
 // Protected Route Component
@@ -100,6 +103,16 @@ function AppRoutes() {
       <Route path="/explore" element={<Explore />} />
       <Route path="/businesses" element={<Explore />} />
       <Route path="/businesses/:id" element={<BusinessDetail />} />
+      <Route path="/workers" element={<Workers />} />
+      <Route path="/workers/:id" element={<WorkerDetail />} />
+      <Route
+        path="/worker-profile"
+        element={
+          <ProtectedRoute>
+            <WorkerProfile />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/jobs"
         element={

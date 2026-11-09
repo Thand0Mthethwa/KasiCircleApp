@@ -368,9 +368,65 @@ export const reviewService = {
     businessService.deleteReview(businessId, reviewId),
 };
 
+export const workerService = {
+  getWorkers: async ({ page = 0, size = 10, search = '', category = '', skill = '', city = '' } = {}) => {
+    const queryParams = new URLSearchParams({ page, size });
+    if (search.trim()) queryParams.set('search', search.trim());
+    if (category.trim()) queryParams.set('category', category.trim());
+    if (skill.trim()) queryParams.set('skill', skill.trim());
+    if (city.trim()) queryParams.set('city', city.trim());
+
+    const response = await fetch(`${API_BASE_URL}/api/workers?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: getHeaders(false),
+    });
+
+    return handleResponse(response);
+  },
+
+  getWorkerById: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/api/workers/${id}`, {
+      method: 'GET',
+      headers: getHeaders(false),
+    });
+
+    return handleResponse(response);
+  },
+
+  getMyProfile: async () => {
+    const response = await fetch(`${API_BASE_URL}/api/workers/me`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  createMyProfile: async (profile) => {
+    const response = await fetch(`${API_BASE_URL}/api/workers/me`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: JSON.stringify(profile),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  updateMyProfile: async (profile) => {
+    const response = await fetch(`${API_BASE_URL}/api/workers/me`, {
+      method: 'PUT',
+      headers: getHeaders(true),
+      body: JSON.stringify(profile),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+};
+
 export default {
   authService,
   userService,
   businessService,
   reviewService,
+  workerService,
 };

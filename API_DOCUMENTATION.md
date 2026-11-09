@@ -347,6 +347,85 @@ Responses:
 - 403 Forbidden if the authenticated user cannot delete the review
 - 404 Not Found if the business or review does not exist
 
+## Worker profile endpoints
+
+Worker profile management is restricted to authenticated accounts with `accountType = WORKER`. Public worker profile responses intentionally omit email addresses and phone numbers.
+
+A worker profile request uses the following JSON shape:
+
+```json
+{
+  "headline": "Qualified Electrician",
+  "bio": "Residential wiring and repairs.",
+  "skills": ["Wiring", "Electrical repairs"],
+  "serviceCategories": ["Electrical"],
+  "city": "Soweto",
+  "province": "Gauteng"
+}
+```
+
+The headline is limited to 120 characters, bio to 2000, location fields to 100 each, and skills/categories to 20 entries of at most 60 characters each. Each WORKER account may have one profile.
+
+### Search public worker profiles
+
+- Method: GET
+- URL: `/api/workers`
+- Auth required: No
+- Query parameters: `search` (name, headline, or bio), `category` (exact service category), `skill` (partial skill match), `city` (partial city match), `page` (default `0`), `size` (default `20`), and standard Spring `sort` parameters.
+
+Returns paginated public worker profile responses.
+
+### Get a public worker profile
+
+- Method: GET
+- URL: `/api/workers/{profileId}`
+- Auth required: No
+
+Responses:
+- 200 OK with public profile fields and worker display name
+- 404 Not Found if the profile does not exist
+
+### Get the authenticated worker's profile
+
+- Method: GET
+- URL: `/api/workers/me`
+- Auth required: Yes
+- Authorization: `accountType = WORKER`
+
+Responses:
+- 200 OK with the worker's own profile
+- 401 Unauthorized when JWT is missing or invalid
+- 403 Forbidden for accounts other than WORKER
+- 404 Not Found if no profile has been created
+
+### Create the authenticated worker's profile
+
+- Method: POST
+- URL: `/api/workers/me`
+- Auth required: Yes
+- Authorization: `accountType = WORKER`
+
+Responses:
+- 201 Created with the profile
+- 400 Bad Request for invalid fields
+- 401 Unauthorized when JWT is missing or invalid
+- 403 Forbidden for accounts other than WORKER
+- 409 Conflict if the account already has a profile
+
+### Update the authenticated worker's profile
+
+- Method: PUT
+- URL: `/api/workers/me`
+- Auth required: Yes
+- Authorization: `accountType = WORKER`; the profile is selected by the authenticated user, never a caller-supplied owner ID
+
+Responses:
+- 200 OK with updated profile
+- 400 Bad Request for invalid fields
+- 401 Unauthorized when JWT is missing or invalid
+- 403 Forbidden for accounts other than WORKER
+- 404 Not Found if no profile has been created
+
 ## Business image endpoints
 
 Business images are stored in Cloudinary and their metadata is persisted in PostgreSQL.

@@ -16,8 +16,8 @@ Progress is evidence-based and reconciled with [MVP_FEATURE_VERIFICATION.md](./M
 
 | Sprint | Status | Next verified task |
 |---|---|---|
-| 6 — Worker marketplace | In progress | Add worker profile persistence and secure owner-managed/public read APIs, then directory/profile UI and tests |
-| 7 — Job marketplace | Not started | Implement job lifecycle, public discovery, applications, employer management and applicant privacy |
+| 6 — Worker marketplace | Complete | V7 migration, WORKER-only profile CRUD, privacy-safe public directory/search/detail, React pages, and backend/frontend tests; backend 194 / frontend 144 tests passed, lint/build passed |
+| 7 — Job marketplace | In progress | Implement job lifecycle, public discovery, applications, employer management and applicant privacy |
 | 8 — Messaging | Not started | Implement participant-only conversations/messages and UI |
 | 9 — Notifications | Not started | Implement persistent notifications, unread/read state and event delivery |
 | 10 — Trust and moderation | Not started | Implement reporting and backend-enforced admin moderation |
@@ -29,6 +29,7 @@ Progress is evidence-based and reconciled with [MVP_FEATURE_VERIFICATION.md](./M
 ## Current checkpoint
 
 - Feature matrix and full-scope roadmap were created from current repository evidence.
-- The next incomplete feature sprint is Sprint 6. Review submission Sprint 5.4.7.6 is implemented and has service, controller, repository, and frontend test coverage.
+- The next incomplete feature sprint is Sprint 7. Review submission Sprint 5.4.7.6 and worker marketplace Sprint 6 are implemented and covered by service, controller, repository, and frontend tests.
+- Sprint 6 validation: `cd backend && mvn clean package` — 194 passed; `cd frontend && npx vitest run --maxWorkers=1 --minWorkers=1` — 144 passed; `npm run lint` and `npm run build` passed.
 - Existing unrelated untracked file preserved: `backend/src/main/java/com/kasicircle/backend/KasiCircleApp.code-workspace`.
 - Do not push, merge, or deploy. Add a focused local commit and update this file after each verified sprint.
