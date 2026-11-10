@@ -493,6 +493,32 @@ Messaging endpoints require a valid authenticated account. Conversation and mess
 - Validation: message content must not be blank and may contain at most 4000 characters.
 - Authorization: Only one of the conversation participants may read history or send a message. Non-participant access is rejected.
 
+## Notification endpoints
+
+Notification endpoints require a valid authenticated account. The recipient is always determined from the JWT; callers cannot select or override it. Notifications currently cover job applications, application decisions, and incoming messages. Resource responses contain no email address or phone number.
+
+### List notifications
+
+- Method: GET
+- URL: `/api/notifications?page=0&size=20`
+- Auth required: Yes
+- Returns a paginated list ordered newest first, including each notification's type, title, message, resource type/ID, creation time, and read time.
+
+### Get unread notification count
+
+- Method: GET
+- URL: `/api/notifications/unread-count`
+- Auth required: Yes
+- Returns `{"count":0}` or the current user's unread notification count.
+
+### Mark a notification as read
+
+- Method: PATCH
+- URL: `/api/notifications/{notificationId}/read`
+- Auth required: Yes
+- Authorization: The notification recipient only. A notification owned by another user is returned as not found.
+- Returns the updated notification response.
+
 ## Business image endpoints
 
 Business images are stored in Cloudinary and their metadata is persisted in PostgreSQL.

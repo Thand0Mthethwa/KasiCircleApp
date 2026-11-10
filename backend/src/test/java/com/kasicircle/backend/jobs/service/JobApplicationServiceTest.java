@@ -11,6 +11,8 @@ import com.kasicircle.backend.jobs.dto.JobApplicationResponse;
 import com.kasicircle.backend.jobs.exception.JobApplicationNotFoundException;
 import com.kasicircle.backend.jobs.repository.JobApplicationRepository;
 import com.kasicircle.backend.jobs.repository.JobRepository;
+import com.kasicircle.backend.notifications.domain.NotificationType;
+import com.kasicircle.backend.notifications.service.NotificationService;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -47,6 +49,9 @@ class JobApplicationServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private NotificationService notificationService;
+
     private JobApplicationServiceImpl service;
     private User employer;
     private User applicant;
@@ -56,7 +61,8 @@ class JobApplicationServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new JobApplicationServiceImpl(applicationRepository, jobRepository, userRepository);
+        service = new JobApplicationServiceImpl(
+                applicationRepository, jobRepository, userRepository, notificationService);
         employer = User.builder().id(UUID.randomUUID()).firstName("Employer").lastName("Name")
                 .email("employer@example.com").build();
         applicant = User.builder().id(UUID.randomUUID()).firstName("Applicant").lastName("Name")
@@ -87,6 +93,9 @@ class JobApplicationServiceTest {
         assertEquals(applicationId, response.id());
         assertEquals("Electrician", response.jobTitle());
         assertEquals(ApplicationStatus.PENDING, response.status());
+        verify(notificationService).createNotification(
+                employer.getId(), NotificationType.JOB_APPLICATION, "New job application",
+                "Applicant Name applied to Electrician.", "JOB", jobId);
         org.junit.jupiter.api.Assertions.assertFalse(json.contains("applicant@example.com"));
         org.junit.jupiter.api.Assertions.assertFalse(json.contains("+27820000000"));
     }
@@ -145,6 +154,9 @@ class JobApplicationServiceTest {
         JobApplicationResponse response = service.updateApplicationStatus(
                 jobId, applicationId, ApplicationStatus.ACCEPTED);
         assertEquals(ApplicationStatus.ACCEPTED, response.status());
+        verify(notificationService).createNotification(
+                applicant.getId(), NotificationType.APPLICATION_STATUS, "Application update",
+                "Your application for Electrician was accepted.", "JOB", jobId);
 
         ResponseStatusException error = assertThrows(ResponseStatusException.class,
                 () -> service.updateApplicationStatus(jobId, applicationId, ApplicationStatus.REJECTED));

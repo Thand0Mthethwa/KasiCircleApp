@@ -8,6 +8,8 @@ import com.kasicircle.backend.messaging.dto.CreateConversationRequest;
 import com.kasicircle.backend.messaging.dto.SendMessageRequest;
 import com.kasicircle.backend.messaging.repository.ConversationMessageRepository;
 import com.kasicircle.backend.messaging.repository.ConversationRepository;
+import com.kasicircle.backend.notifications.domain.NotificationType;
+import com.kasicircle.backend.notifications.service.NotificationService;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.repository.UserRepository;
@@ -30,15 +32,18 @@ public class ConversationServiceImpl implements ConversationService {
     private final ConversationRepository conversationRepository;
     private final ConversationMessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public ConversationServiceImpl(
             ConversationRepository conversationRepository,
             ConversationMessageRepository messageRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            NotificationService notificationService
     ) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -99,6 +104,15 @@ public class ConversationServiceImpl implements ConversationService {
         message.setContent(request.content().trim());
         ConversationMessage savedMessage = messageRepository.save(message);
 
+        User otherParticipant = conversation.otherParticipant(currentUser.getId());
+        notificationService.createNotification(
+                otherParticipant.getId(),
+                NotificationType.MESSAGE,
+                "New message",
+                currentUser.getFirstName() + " " + currentUser.getLastName() + " sent you a message.",
+                "CONVERSATION",
+                conversation.getId()
+        );
         conversation.setUpdatedAt(Instant.now());
         conversationRepository.save(conversation);
         return toMessageResponse(savedMessage);

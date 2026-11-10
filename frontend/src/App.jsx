@@ -18,6 +18,7 @@ import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import BusinessProfile from './pages/BusinessProfile';
 import BusinessReviews from './pages/BusinessReviews';
+import Notifications from './pages/Notifications';
 import Workers from './pages/Workers';
 import WorkerDetail from './pages/WorkerDetail';
 import WorkerProfile from './pages/WorkerProfile';
@@ -135,6 +136,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Messages />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Notifications />
           </ProtectedRoute>
         }
       />

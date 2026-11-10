@@ -10,6 +10,8 @@ import com.kasicircle.backend.jobs.exception.JobApplicationNotFoundException;
 import com.kasicircle.backend.jobs.exception.JobNotFoundException;
 import com.kasicircle.backend.jobs.repository.JobApplicationRepository;
 import com.kasicircle.backend.jobs.repository.JobRepository;
+import com.kasicircle.backend.notifications.domain.NotificationType;
+import com.kasicircle.backend.notifications.service.NotificationService;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.exception.UserNotFoundException;
 import com.kasicircle.backend.users.repository.UserRepository;
@@ -31,15 +33,18 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     private final JobApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public JobApplicationServiceImpl(
             JobApplicationRepository applicationRepository,
             JobRepository jobRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            NotificationService notificationService
     ) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -61,7 +66,16 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         application.setJob(job);
         application.setApplicant(applicant);
         application.setMessage(request.message() == null ? null : request.message().trim());
-        return toResponse(applicationRepository.save(application));
+        JobApplication savedApplication = applicationRepository.save(application);
+        notificationService.createNotification(
+                job.getEmployer().getId(),
+                NotificationType.JOB_APPLICATION,
+                "New job application",
+                applicant.getFirstName() + " " + applicant.getLastName() + " applied to " + job.getTitle() + ".",
+                "JOB",
+                job.getId()
+        );
+        return toResponse(savedApplication);
     }
 
     @Override
@@ -100,7 +114,16 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Only pending applications can be reviewed.");
         }
         application.setStatus(status);
-        return toResponse(applicationRepository.save(application));
+        JobApplication savedApplication = applicationRepository.save(application);
+        notificationService.createNotification(
+                application.getApplicant().getId(),
+                NotificationType.APPLICATION_STATUS,
+                "Application update",
+                "Your application for " + job.getTitle() + " was " + status.name().toLowerCase() + ".",
+                "JOB",
+                job.getId()
+        );
+        return toResponse(savedApplication);
     }
 
     private Job getJob(UUID jobId) {

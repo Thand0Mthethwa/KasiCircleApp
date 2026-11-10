@@ -132,3 +132,4 @@ If a migration script encounters a syntax error or constraint conflict during de
 - `V8__create_jobs_and_applications.sql` adds the job marketplace and its applications.
 - `V9__create_conversations_and_messages.sql` adds one-to-one participant conversations and persisted messages. Both participants and senders reference `users`; deleting a user or conversation cascades to associated records.
 - `V9` is additive and uses unique participant pairs, a distinct-participant check, and indexes for conversation lists and chronological message history.
+- `V10__create_notifications.sql` adds persistent, recipient-owned notifications with constrained notification types, a user foreign key, and indexes for recipient timelines and unread-count queries. Deleting a recipient cascades to their notifications; no existing tables or columns are modified.

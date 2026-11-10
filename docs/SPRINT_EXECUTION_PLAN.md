@@ -45,11 +45,13 @@ This roadmap expands the previously completed foundation and the full marketplac
 
 ### Sprint 9 — Notifications
 
-- Persist notifications and unread counts; mark notifications read.
-- Generate notifications for relevant marketplace activity.
-- Add notification list/count UI, navigation, API integration, and tests.
+- Implemented persistent notifications and unread counts with additive Flyway V10.
+- Recipient-scoped list/count/read APIs derive identity from the authenticated principal; users cannot read another user's notification.
+- Create notifications for incoming job applications, application decisions, and incoming messages.
+- Implemented protected notification list/navigation and mark-read-before-navigation, with unread count displayed on the notification page.
+- Verified: 18 targeted backend tests and 5 focused frontend notification tests passed; targeted ESLint and frontend production build passed.
 
-**Exit:** notification persistence and permissions are verified; relevant activity links navigate to the correct resource.
+**Exit:** COMPLETE. Notification persistence, recipient permissions, event generation, UI, navigation, unread counts, and tests are implemented.
 
 ### Sprint 10 — Trust and Moderation
 

@@ -560,6 +560,35 @@ export const messagingService = {
   },
 };
 
+export const notificationService = {
+  getNotifications: async (page = 0, size = 20) => {
+    const response = await fetch(`${API_BASE_URL}/api/notifications?page=${page}&size=${size}`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  getUnreadCount: async () => {
+    const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  markAsRead: async (notificationId) => {
+    const response = await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
+      method: 'PATCH',
+      headers: getHeaders(true),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+};
+
 export default {
   authService,
   userService,

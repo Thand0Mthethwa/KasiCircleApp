@@ -6,6 +6,8 @@ import com.kasicircle.backend.messaging.dto.CreateConversationRequest;
 import com.kasicircle.backend.messaging.dto.SendMessageRequest;
 import com.kasicircle.backend.messaging.repository.ConversationMessageRepository;
 import com.kasicircle.backend.messaging.repository.ConversationRepository;
+import com.kasicircle.backend.notifications.domain.NotificationType;
+import com.kasicircle.backend.notifications.service.NotificationService;
 import com.kasicircle.backend.users.entity.User;
 import com.kasicircle.backend.users.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -46,6 +48,9 @@ class ConversationServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private NotificationService notificationService;
+
     private ConversationServiceImpl service;
     private final User currentUser = User.builder()
             .id(UUID.fromString("00000000-0000-0000-0000-000000000001"))
@@ -57,7 +62,8 @@ class ConversationServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new ConversationServiceImpl(conversationRepository, messageRepository, userRepository);
+        service = new ConversationServiceImpl(
+                conversationRepository, messageRepository, userRepository, notificationService);
         authenticate(currentUser.getEmail());
         when(userRepository.findByEmail(currentUser.getEmail())).thenReturn(Optional.of(currentUser));
     }
@@ -106,6 +112,7 @@ class ConversationServiceTest {
         assertEquals(HttpStatus.FORBIDDEN, sendError.getStatusCode());
         verify(messageRepository, never()).findByConversationId(any(), any());
         verify(messageRepository, never()).save(any(ConversationMessage.class));
+        verify(notificationService, never()).createNotification(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -124,6 +131,9 @@ class ConversationServiceTest {
         assertEquals("Hello there.", result.content());
         assertEquals(currentUser.getId(), result.senderId());
         assertEquals("Thando Mokoena", result.senderName());
+        verify(notificationService).createNotification(
+                otherUser.getId(), NotificationType.MESSAGE, "New message",
+                "Thando Mokoena sent you a message.", "CONVERSATION", conversationId);
         verify(conversationRepository).save(conversation);
     }
 
