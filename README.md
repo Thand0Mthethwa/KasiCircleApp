@@ -32,7 +32,7 @@ export CLOUDINARY_API_KEY=your_api_key
 export CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-Keep credentials in environment variables or an untracked local environment file; never commit secrets. Cloudinary settings can be omitted when image uploads are not needed.
+`DB_USERNAME`, `DB_PASSWORD`, and `JWT_SECRET` are required. Use a randomly generated JWT secret of at least 32 bytes; `JWT_EXPIRATION` defaults to 24 hours. Keep credentials in environment variables or an untracked local environment file; never commit secrets. Cloudinary settings can be omitted when image uploads are not needed.
 
 Start the backend in one terminal:
 
@@ -74,6 +74,8 @@ npm run build
 
 Frontend tests use the in-memory test configuration and do not require live database or Cloudinary credentials.
 
+GitHub Actions runs backend verification and PostgreSQL migration/startup checks, plus sequential frontend tests, lint, and production build, on pushes and pull requests.
+
 ## Production packaging
 
 Build the backend JAR and frontend assets:
@@ -87,7 +89,7 @@ npm ci
 npm run build
 ```
 
-The backend artifact is written to `backend/target/`; static frontend assets are written to `frontend/dist/`. Configure production database, JWT, and Cloudinary credentials through the hosting platform's secret manager. Set `VITE_API_BASE_URL` to the public HTTPS API origin before building the frontend and set the backend's `APP_CORS_ALLOWED_ORIGIN` to the exact deployed frontend origin. The current backend configuration accepts one frontend origin. Serve the frontend with SPA route fallback enabled and terminate TLS at the hosting platform or reverse proxy. Do not use the Vite development server as a production web server.
+The backend artifact is written to `backend/target/`; static frontend assets are written to `frontend/dist/`. Configure `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and a unique randomly generated `JWT_SECRET` (at least 32 bytes) through the hosting platform's secret manager. Do not reuse the CI/test key or rely on application defaults. Set `VITE_API_BASE_URL` to the public HTTPS API origin before building the frontend and set the backend's `APP_CORS_ALLOWED_ORIGIN` to the exact deployed frontend origin. The current backend configuration accepts one frontend origin. Serve the frontend with SPA route fallback enabled and terminate TLS at the hosting platform or reverse proxy. Do not use the Vite development server as a production web server.
 
 No deployment or cloud resources are created by these build commands.
 

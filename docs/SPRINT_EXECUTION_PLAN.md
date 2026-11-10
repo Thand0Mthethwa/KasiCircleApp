@@ -75,13 +75,13 @@ This roadmap expands the previously completed foundation and the full marketplac
 
 ### Sprint 12 — Production readiness
 
-- Audit authentication, every API authorization rule, request validation, CORS, error responses, and sensitive data exposure.
-- Review all migrations for safe incremental upgrade behavior.
-- Remove unsafe production secret defaults; document environment configuration.
-- Add automated CI checks for backend tests/package, frontend tests/lint/build.
-- Document secure production deployment configuration.
+- Audited stateless JWT authorization rules, authenticated owner/participant/admin service checks, request validation, exact-origin CORS, error responses, and DTO privacy. Existing controller/service tests exercise anonymous and unauthorized access; the full backend suite passed.
+- Reviewed Flyway V1–V11 for incremental schema changes; no table/column drops or data truncation operations were found. Added CI startup against an isolated PostgreSQL service to exercise Flyway plus Hibernate validation on a fresh database.
+- Removed default database credentials and the placeholder JWT signing key. Startup now requires `DB_USERNAME`, `DB_PASSWORD`, and `JWT_SECRET`; signing keys shorter than 32 bytes and non-positive expiration values are rejected. Disabled SQL/security debug logging and explicitly limited actuator exposure to health with hidden details.
+- Added GitHub Actions backend verification/package and PostgreSQL migration startup checks, plus sequential frontend tests, lint, and production build. Workflow YAML parsed locally; full backend suite passed (241 tests). Full frontend suite (192), lint, and production build passed in Sprint 11.
+- Updated setup/production configuration documentation. No push was made, so GitHub Actions has not yet been executed; local PostgreSQL accepts connections but test credentials are unavailable, so the real-PostgreSQL CI step remains unverified locally.
 
-**Exit:** security/permission regression tests and CI pass; no credentials are committed; migration and configuration checks pass.
+**Exit:** PARTIAL pending execution of the newly added CI workflow against its isolated PostgreSQL service. No insecure secret defaults remain; all other listed code/test and static workflow checks are complete.
 
 ### Sprint 13 — End-to-end QA
 

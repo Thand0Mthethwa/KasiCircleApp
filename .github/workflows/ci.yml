@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: kasicircle
+          POSTGRES_USER: kasicircle
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U kasicircle -d kasicircle"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/kasicircle
+      DB_USERNAME: kasicircle
+      DB_PASSWORD: ci-only-password
+      JWT_SECRET: CI-only-signing-key-not-used-for-production-123456
+      APP_CORS_ALLOWED_ORIGIN: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Run backend tests and package
+        working-directory: backend
+        run: mvn --batch-mode verify
+      - name: Verify PostgreSQL migrations and application startup
+        working-directory: backend
+        run: |
+          java -jar target/backend-0.0.1-SNAPSHOT.jar > /tmp/kasicircle-backend.log 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:8081/api/businesses > /dev/null; then
+              exit 0
+            fi
+            if ! kill -0 "$app_pid" 2>/dev/null; then
+              cat /tmp/kasicircle-backend.log
+              exit 1
+            fi
+            sleep 2
+          done
+          cat /tmp/kasicircle-backend.log
+          exit 1
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test -- --maxWorkers=1 --minWorkers=1
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
