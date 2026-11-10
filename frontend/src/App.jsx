@@ -19,6 +19,7 @@ import Profile from './pages/Profile';
 import BusinessProfile from './pages/BusinessProfile';
 import BusinessReviews from './pages/BusinessReviews';
 import Notifications from './pages/Notifications';
+import AdminReports from './pages/AdminReports';
 import Workers from './pages/Workers';
 import WorkerDetail from './pages/WorkerDetail';
 import WorkerProfile from './pages/WorkerProfile';
@@ -35,11 +36,25 @@ function ProtectedRoute({ children }) {
       </div>
     );
   }
-
   if (!isAuthenticated) {
     return <Navigate to="/welcome" replace />;
   }
 
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kasi-green"></div>
+      </div>
+    );
+  }
+  if (!isAuthenticated) return <Navigate to="/welcome" replace />;
+  if (user?.role !== 'ADMIN') return <Navigate to="/home" replace />;
   return children;
 }
 
@@ -145,6 +160,14 @@ function AppRoutes() {
           <ProtectedRoute>
             <Notifications />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <AdminRoute>
+            <AdminReports />
+          </AdminRoute>
         }
       />
       <Route

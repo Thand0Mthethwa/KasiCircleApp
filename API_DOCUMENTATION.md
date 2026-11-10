@@ -519,6 +519,53 @@ Notification endpoints require a valid authenticated account. The recipient is a
 - Authorization: The notification recipient only. A notification owned by another user is returned as not found.
 - Returns the updated notification response.
 
+## Content reporting and moderation endpoints
+
+Report submission requires authentication. A report may target a business, worker profile, job, or business review. The API validates that the target exists, accepts a reason (`SPAM`, `HARASSMENT`, `INAPPROPRIATE`, `FRAUD`, or `OTHER`) and optional details up to 1000 characters, and rejects duplicate open reports by the same reporter for the same target. Reporter identity is omitted from all report responses.
+
+### Submit a report
+
+- Method: POST
+- URL: `/api/reports`
+- Auth required: Yes
+
+```json
+{
+  "targetType": "JOB",
+  "targetId": "7f6aba4b-643f-41ec-a509-94b8f4381404",
+  "reason": "FRAUD",
+  "details": "The listing appears to request an upfront payment."
+}
+```
+
+Returns `201 Created` with the report ID, target, reason, details, status, and timestamps. Returns `400` for invalid fields, `404` when the target does not exist, and `409` for an existing open report by the same account.
+
+### List open reports
+
+- Method: GET
+- URL: `/api/reports?page=0&size=20`
+- Auth required: Yes
+- Authorization: `ROLE_ADMIN` only
+
+Returns a paginated queue ordered oldest first with a summary of the reported content. Reporter IDs, names, email addresses, and phone numbers are never returned.
+
+### Record a moderation decision
+
+- Method: PATCH
+- URL: `/api/reports/{reportId}/moderation`
+- Auth required: Yes
+- Authorization: `ROLE_ADMIN` only
+- Request status: `ACTIONED` or `DISMISSED`; optional moderation note up to 1000 characters. Open reports cannot be reopened through this endpoint.
+
+```json
+{
+  "status": "ACTIONED",
+  "moderationNote": "Reviewed and handled by a moderator."
+}
+```
+
+An actioned/dismissed decision closes the report and records the moderator and timestamp. The report workflow records the action but does not automatically hide or delete reported content.
+
 ## Business image endpoints
 
 Business images are stored in Cloudinary and their metadata is persisted in PostgreSQL.

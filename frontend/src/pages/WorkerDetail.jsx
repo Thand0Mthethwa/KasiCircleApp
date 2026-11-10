@@ -4,6 +4,7 @@ import { AlertCircle, MapPin } from 'lucide-react';
 import { Button, Card, Header, LoadingSpinner } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import { workerService } from '../services/api';
+import ReportForm from '../components/ReportForm';
 
 export default function WorkerDetail() {
   const { id } = useParams();
@@ -41,6 +42,7 @@ export default function WorkerDetail() {
               <ul className="mt-2 flex flex-wrap gap-2">{worker.serviceCategories.map((category) => <li key={category} className="rounded-full bg-kasi-green-light px-3 py-1 text-sm">{category}</li>)}</ul>
             </section>
             <p className="mt-6 text-sm text-neutral-600">Contact details are private. Send a message to connect securely.</p>
+            <ReportForm targetType="WORKER_PROFILE" targetId={worker.id} />
             {isAuthenticated && user?.id !== worker.ownerId && (
               <Button
                 type="button"

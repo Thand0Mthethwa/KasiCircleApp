@@ -589,6 +589,38 @@ export const notificationService = {
   },
 };
 
+export const reportService = {
+  createReport: async (report) => {
+    const response = await fetch(`${API_BASE_URL}/api/reports`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: JSON.stringify(report),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  getOpenReports: async (page = 0, size = 20) => {
+    const queryParams = new URLSearchParams({ page, size });
+    const response = await fetch(`${API_BASE_URL}/api/reports?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  moderateReport: async (reportId, decision) => {
+    const response = await fetch(`${API_BASE_URL}/api/reports/${reportId}/moderation`, {
+      method: 'PATCH',
+      headers: getHeaders(true),
+      body: JSON.stringify(decision),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+};
+
 export default {
   authService,
   userService,

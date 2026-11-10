@@ -4,6 +4,7 @@ import { AlertCircle, Briefcase, MapPin } from 'lucide-react';
 import { Button, Card, Header, LoadingSpinner } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import { jobService } from '../services/api';
+import ReportForm from '../components/ReportForm';
 
 export default function JobDetail() {
   const { id } = useParams();
@@ -92,6 +93,7 @@ export default function JobDetail() {
               <p className="mt-2 text-neutral-600">{job.employerName} · {job.category} · {job.employmentType.replaceAll('_', ' ').toLowerCase()}</p>
               <p className="mt-4 flex items-center gap-2 text-sm text-neutral-600"><MapPin size={16} />{job.city}, {job.province}</p>
               <p className="mt-5 whitespace-pre-wrap text-neutral-800">{job.description}</p>
+              <ReportForm targetType="JOB" targetId={job.id} />
               <p className="mt-5 text-sm text-neutral-600">Employer contact information is private. Applications are shared only with this job's employer.</p>
               {!isEmployer && isAuthenticated && (
                 <Button

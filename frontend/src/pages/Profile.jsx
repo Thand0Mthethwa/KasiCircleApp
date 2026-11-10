@@ -237,6 +237,11 @@ export default function Profile() {
               {accountInfo.emoji} {accountInfo.label}
             </span>
           </div>
+          {user.role === 'ADMIN' && (
+            <Button type="button" variant="secondary" className="mt-4 w-full" onClick={() => navigate('/admin/reports')}>
+              Review content reports
+            </Button>
+          )}
         </Card>
 
         {/* View Mode */}

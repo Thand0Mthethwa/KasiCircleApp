@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Header, BottomNavigation, LoadingSpinner } from '../components';
 import { businessService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import ReportForm from '../components/ReportForm';
 import {
   Building2,
   MapPin,
@@ -728,6 +729,7 @@ export default function BusinessDetail() {
                 {business.description}
               </p>
             </Card>
+            <ReportForm targetType="BUSINESS" targetId={business.id} />
 
             {/* Photos & Gallery Card */}
             <Card className="p-6 shadow-sm border-neutral-200 space-y-4">
@@ -1283,6 +1285,7 @@ export default function BusinessDetail() {
                           {rev.comment}
                         </p>
                       )}
+                      {isAuthenticated && <ReportForm targetType="BUSINESS_REVIEW" targetId={rev.id} />}
                     </div>
                   ))}
 
@@ -1613,4 +1616,3 @@ export default function BusinessDetail() {
     </div>
   );
 }
-

@@ -55,11 +55,13 @@ This roadmap expands the previously completed foundation and the full marketplac
 
 ### Sprint 10 — Trust and Moderation
 
-- Support reports for inappropriate listings or content.
-- Add appropriately restricted moderation workflows and administrator actions.
-- Enforce admin-only actions on the backend, protect reporter data, and test authorization/validation.
+- Added authenticated reports for business, worker profile, job, and business-review content, with reason/details validation and duplicate-open-report protection.
+- Added an administrator-only open-report queue and ACTIONED/DISMISSED decision workflow with optional moderation notes.
+- Validate target existence and omit reporter identity from all report DTOs; enforce `ROLE_ADMIN` on queue and decision endpoints.
+- Added migration V11, report forms on marketplace details, and an administrator report screen linked from Profile.
+- Verified: 7 backend moderation tests and 66 focused/moderation plus marketplace regression frontend tests passed; targeted ESLint and production build passed.
 
-**Exit:** unauthorized moderation attempts are rejected and report lifecycle tests pass.
+**Exit:** COMPLETE. Unauthorized report administration is rejected and report intake/decision flows are tested. ACTIONED decisions are recorded with notes; target removal is a manual moderator action, not an automatic side effect.
 
 ### Sprint 11 — UI/UX and accessibility
 
