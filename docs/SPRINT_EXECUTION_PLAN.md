@@ -65,11 +65,13 @@ This roadmap expands the previously completed foundation and the full marketplac
 
 ### Sprint 11 — UI/UX and accessibility
 
-- Reconcile visual patterns, responsive layouts, accessible labels/keyboard behavior, and navigation.
-- Verify loading, error, and empty states on all marketplace journeys.
-- Add targeted automated UI tests and accessibility checks where supported.
+- Widened the authenticated app shell and constrained auth/onboarding content so it remains readable on larger viewports while retaining mobile layouts.
+- Replaced fabricated Home marketplace statistics/worker cards with supported worker, job, and business directory navigation; Home worker search and skill shortcuts now open the real filtered worker directory.
+- Added visible keyboard focus treatments, accessible primary-navigation/current-page semantics, search labels and explicit search submission, worker-card keyboard interaction, and error/hint associations for inputs.
+- Added shared-component and Home navigation regression tests. Existing marketplace pages already expose loading, error, and empty states; retain their page-specific handling.
+- Verified at 375px mobile and 1440px desktop browser viewports. Full frontend suite: 192 tests across 32 files passed sequentially; full ESLint and production build passed.
 
-**Exit:** key pages work at narrow/mobile and wider viewports; forms/navigation are accessible; all relevant states are covered.
+**Exit:** COMPLETE. Home links to real marketplace flows rather than mock listings; key shell/form/navigation interactions have responsive and accessibility coverage. No automated WCAG audit is claimed.
 
 ### Sprint 12 — Production readiness
 

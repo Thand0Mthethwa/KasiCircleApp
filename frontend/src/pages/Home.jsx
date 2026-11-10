@@ -1,49 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import { createElement } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { StatCard, WorkerCard, BottomNavigation, SearchBar } from '../components';
+import { Bell, Briefcase, Building2, Scissors, Wrench, Zap } from 'lucide-react';
+import { BottomNavigation, SearchBar } from '../components';
 import { useAuth } from '../contexts/AuthContext';
-import { workerService } from '../services/api';
-import { Bell, MapPin, Zap, Wrench, Hammer, Scissors, Construction, Lightbulb } from 'lucide-react';
+
+const workerSkills = [
+  { label: 'Electrician', icon: Zap },
+  { label: 'Plumber', icon: Wrench },
+  { label: 'Mechanic', icon: Briefcase },
+  { label: 'Hairdresser', icon: Scissors },
+];
 
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [activeNav, setActiveNav] = useState('home');
-  const [workers, setWorkers] = useState([]);
-  const [workersLoading, setWorkersLoading] = useState(true);
-  const [workersError, setWorkersError] = useState('');
-
-  // Mock data - in production would come from API
-  const mockStats = [
-    { value: '1,240+', label: 'Workers', icon: Lightbulb, bgColor: 'bg-green-100' },
-    { value: '87', label: 'Active Jobs', icon: Hammer, bgColor: 'bg-orange-100' },
-    { value: '340+', label: 'Businesses', icon: Construction, bgColor: 'bg-blue-100' },
-  ];
-
-  const mockCategories = [
-    { id: 1, icon: Zap, label: 'Electricians' },
-    { id: 2, icon: Wrench, label: 'Plumbers' },
-    { id: 3, icon: Hammer, label: 'Mechanics' },
-    { id: 4, icon: Construction, label: 'Carpenters' },
-    { id: 5, icon: Scissors, label: 'Stylists' },
-  ];
-
-  useEffect(() => {
-    workerService.getWorkers({ page: 0, size: 2 })
-      .then((response) => setWorkers(response.content || []))
-      .catch((error) => setWorkersError(error.data?.message || error.message || 'Unable to load workers.'))
-      .finally(() => setWorkersLoading(false));
-  }, []);
 
   const handleSearch = (query) => {
-    navigate('/explore?search=' + encodeURIComponent(query));
+    const params = new URLSearchParams();
+    if (query) params.set('search', query);
+    const queryString = params.toString();
+    navigate(`/workers${queryString ? `?${queryString}` : ''}`);
   };
 
-  const handleNavigate = (path) => {
-    navigate(path);
-  };
-
-  // Get greeting based on time of day
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -51,137 +29,92 @@ export default function Home() {
     return 'Good evening';
   };
 
-  // Use mock name if not authenticated
-  const displayName = user?.firstName || 'Guest';
-
   return (
     <div className="page-wrapper pb-24">
-      {/* Green Header Section */}
-      <div className="bg-kasi-green text-white page-padding py-6">
-        {/* Header Top */}
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-sm opacity-90 flex items-center gap-1">
-              <MapPin className="w-4 h-4" />
-              Soweto, Gauteng
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/notifications')}
-            className="p-2 hover:bg-white/20 rounded-full transition-colors"
-            aria-label="Notifications"
-          >
-            <Bell className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Greeting */}
-        <h1 className="text-2xl font-bold mb-1">
-          {getGreeting()},<br />
-          {displayName}! 👋
-        </h1>
-        {user?.accountType === 'WORKER' && (
-          <button type="button" className="mt-3 rounded-full bg-white px-4 py-2 text-sm font-semibold text-kasi-green" onClick={() => navigate('/worker-profile')}>
-            Manage worker profile
-          </button>
-        )}
-      </div>
-
-      {/* Main Content */}
-      <div className="page-content page-padding py-6 space-y-6">
-        {/* Search Bar */}
-        <SearchBar
-          placeholder="Search workers, jobs, businesses..."
-          onSearch={handleSearch}
-        />
-
-        {/* Statistics Cards */}
-        <div>
-          <div className="grid grid-cols-3 gap-3">
-            {mockStats.map((stat, i) => (
-              <StatCard
-                key={i}
-                icon={stat.icon}
-                value={stat.value}
-                label={stat.label}
-                bgColor={stat.bgColor}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Categories Section */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-neutral-900">Categories</h2>
-            <button className="text-kasi-green text-sm font-semibold hover:opacity-75 transition-opacity">
-              All →
-            </button>
-          </div>
-
-          {/* Horizontally scrollable categories */}
-          <div className="overflow-x-auto pb-2">
-            <div className="flex gap-3 min-w-max">
-              {mockCategories.map((category) => {
-                const Icon = category.icon;
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => handleNavigate(`/category/${category.id}`)}
-                    className="flex flex-col items-center gap-2 p-3 bg-neutral-100 rounded-xl hover:bg-neutral-200 transition-colors flex-shrink-0"
-                  >
-                    <div className="w-10 h-10 flex items-center justify-center text-xl">
-                      <Icon className="w-6 h-6 text-kasi-green" />
-                    </div>
-                    <span className="text-xs font-semibold text-neutral-900 whitespace-nowrap">
-                      {category.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Nearby Workers Section */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-neutral-900">Nearby Workers</h2>
+      <header className="bg-kasi-green text-white page-padding py-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-start justify-between mb-4">
+            <p className="text-sm opacity-90">Your local marketplace</p>
             <button
-              onClick={() => handleNavigate('/workers')}
-              className="text-kasi-green text-sm font-semibold hover:opacity-75 transition-opacity"
+              type="button"
+              onClick={() => navigate('/notifications')}
+              className="p-2 hover:bg-white/20 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              aria-label="Notifications"
             >
-              See all →
+              <Bell className="w-5 h-5" />
             </button>
           </div>
+          <h1 className="text-2xl font-bold mb-1">
+            {getGreeting()}, {user?.firstName || 'Guest'}!
+          </h1>
+          <p className="text-sm opacity-90">Find trusted local workers, jobs, and businesses.</p>
+        </div>
+      </header>
 
-          <div className="grid grid-cols-2 gap-4">
-            {workersLoading && <p className="col-span-2 text-sm text-neutral-500" role="status">Loading workers…</p>}
-            {workersError && <p className="col-span-2 text-sm text-red-700" role="alert">{workersError}</p>}
-            {!workersLoading && !workersError && workers.length === 0 && <p className="col-span-2 text-sm text-neutral-500">No worker profiles yet.</p>}
-            {workers.map((worker) => (
-              <WorkerCard
-                key={worker.id}
-                name={worker.displayName}
-                profession={worker.headline}
-                onClick={() => handleNavigate(`/workers/${worker.id}`)}
-              />
+      <main className="page-content page-padding py-6 space-y-8 max-w-6xl w-full mx-auto">
+        <section aria-labelledby="worker-search-heading" className="space-y-3">
+          <h2 id="worker-search-heading" className="text-lg font-bold text-neutral-900">
+            Find a local worker
+          </h2>
+          <SearchBar
+            placeholder="Search workers by name or skill..."
+            onSearch={handleSearch}
+          />
+        </section>
+
+        <section aria-labelledby="marketplace-heading">
+          <h2 id="marketplace-heading" className="text-lg font-bold text-neutral-900 mb-4">
+            Explore the marketplace
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <button
+              type="button"
+              onClick={() => navigate('/workers')}
+              className="flex items-center gap-3 rounded-xl border border-neutral-200 p-4 text-left hover:border-kasi-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-kasi-green"
+            >
+              <Wrench aria-hidden="true" className="h-6 w-6 text-kasi-green" />
+              <span className="font-semibold">Browse workers</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/jobs')}
+              className="flex items-center gap-3 rounded-xl border border-neutral-200 p-4 text-left hover:border-kasi-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-kasi-green"
+            >
+              <Briefcase aria-hidden="true" className="h-6 w-6 text-kasi-green" />
+              <span className="font-semibold">Find local jobs</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/explore')}
+              className="flex items-center gap-3 rounded-xl border border-neutral-200 p-4 text-left hover:border-kasi-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-kasi-green"
+            >
+              <Building2 aria-hidden="true" className="h-6 w-6 text-kasi-green" />
+              <span className="font-semibold">Explore businesses</span>
+            </button>
+          </div>
+        </section>
+
+        <section aria-labelledby="skills-heading">
+          <h2 id="skills-heading" className="text-lg font-bold text-neutral-900 mb-4">
+            Find workers by skill
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {workerSkills.map(({ label, icon }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => navigate(`/workers?skill=${encodeURIComponent(label)}`)}
+                className="flex flex-col items-center gap-2 rounded-xl bg-neutral-100 p-4 hover:bg-neutral-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-kasi-green"
+              >
+                {createElement(icon, { 'aria-hidden': true, className: 'h-6 w-6 text-kasi-green' })}
+                <span className="text-sm font-semibold text-neutral-900">{label}</span>
+              </button>
             ))}
           </div>
-        </div>
+        </section>
+      </main>
 
-        {/* Additional spacing for bottom nav */}
-        <div className="h-4"></div>
-      </div>
-
-      {/* Bottom Navigation */}
-      <BottomNavigation
-        active={activeNav}
-        onNavigate={(path) => {
-          setActiveNav(path.split('/')[1]);
-          handleNavigate(path);
-        }}
-      />
+      <BottomNavigation active="home" onNavigate={navigate} />
     </div>
   );
 }

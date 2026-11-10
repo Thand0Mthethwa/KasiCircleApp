@@ -72,7 +72,7 @@ export default function Login() {
       />
 
       {/* Form Content */}
-      <div className="page-content page-padding py-8">
+      <div className="page-content page-padding py-8 max-w-md w-full mx-auto">
         {/* Heading */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-neutral-900 mb-2">

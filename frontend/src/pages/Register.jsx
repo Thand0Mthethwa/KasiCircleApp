@@ -128,7 +128,7 @@ export default function Register() {
       </div>
 
       {/* Form Content */}
-      <div className="page-content page-padding py-8 pb-20">
+      <div className="page-content page-padding py-8 pb-20 max-w-md w-full mx-auto">
         {/* Heading */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-neutral-900 mb-1">
@@ -153,6 +153,7 @@ export default function Register() {
             {accountTypes.map((type) => (
               <button
                 key={type.id}
+                type="button"
                 onClick={() => setAccountType(type.id)}
                 className={`p-4 rounded-xl border-2 transition-all text-center ${
                   accountType === type.id

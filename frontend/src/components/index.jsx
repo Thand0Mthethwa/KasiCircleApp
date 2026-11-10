@@ -10,7 +10,7 @@ export const Button = ({
   className = '',
   ...props
 }) => {
-  const baseClasses = 'font-semibold transition-all rounded-full focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'font-semibold transition-all rounded-full focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kasi-green disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variantClasses = {
     primary: 'btn-primary',
@@ -47,6 +47,9 @@ export const Input = ({
   ...props
 }) => {
   const inputId = id || props.name;
+  const { 'aria-describedby': ariaDescribedby, ...inputProps } = props;
+  const errorId = error ? `${inputId}-error` : undefined;
+  const hintId = hint && !error ? `${inputId}-hint` : undefined;
   return (
     <div className="w-full">
       {label && (
@@ -59,11 +62,13 @@ export const Input = ({
         <input
           id={inputId}
           className={`input-field ${Icon ? 'pl-12' : 'pl-4'} ${error ? 'ring-2 ring-red-500 border-red-500' : ''} ${className}`}
-          {...props}
+          {...inputProps}
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={errorId || hintId || ariaDescribedby}
         />
       </div>
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-      {hint && !error && <p className="text-neutral-500 text-xs mt-1">{hint}</p>}
+      {error && <p id={errorId} role="alert" className="text-red-500 text-xs mt-1">{error}</p>}
+      {hint && !error && <p id={hintId} className="text-neutral-500 text-xs mt-1">{hint}</p>}
     </div>
   );
 };
@@ -73,10 +78,11 @@ export const Header = ({ title, subtitle, showBack = true, onBack }) => {
   return (
     <div className="page-header page-padding py-6">
       <div className="flex items-center gap-3 mb-4">
-        {showBack && (
+        {showBack && onBack && (
           <button
+            type="button"
             onClick={onBack}
-            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+            className="p-2 hover:bg-white/20 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             aria-label="Go back"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -116,6 +122,7 @@ export const StatCard = ({ icon: Icon, value, label, bgColor = 'bg-kasi-green-li
 export const CategoryCard = ({ icon: Icon, label, onClick, isSelected = false }) => {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all ${
         isSelected
@@ -136,7 +143,7 @@ export const WorkerCard = ({ image, name, profession, isVerified = false, onClic
     <button
       type="button"
       onClick={onClick}
-      className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col items-center gap-3 cursor-pointer hover:shadow-lg transition-shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-kasi-green"
+      className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col items-center gap-3 cursor-pointer hover:shadow-lg transition-shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kasi-green"
       aria-label={`View ${name}, ${profession}`}
     >
       <div className="relative">
@@ -172,13 +179,14 @@ export const BottomNavigation = ({ active = 'home', onNavigate }) => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-4 py-3 flex justify-around max-w-md mx-auto">
+    <nav aria-label="Primary navigation" className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-4 py-3 flex justify-around max-w-md mx-auto">
       {items.map((item) => {
         const Icon = item.icon;
         const isActive = active === item.id;
         return (
           <button
             key={item.id}
+            type="button"
             onClick={() => onNavigate(item.path)}
             className={`flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors ${
               isActive
@@ -186,34 +194,48 @@ export const BottomNavigation = ({ active = 'home', onNavigate }) => {
                 : 'text-neutral-600 hover:text-neutral-900'
             }`}
             aria-label={item.label}
+            aria-current={isActive ? 'page' : undefined}
           >
             <Icon className="w-6 h-6" />
             <span className="text-xs font-semibold">{item.label}</span>
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 };
 
 // Search Bar Component
 export const SearchBar = ({ placeholder = 'Search...', onSearch, onFocus }) => {
+  const [query, setQuery] = React.useState('');
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    onSearch?.(query.trim());
+  };
+
   return (
-    <div className="flex gap-2">
+    <form className="flex gap-2" role="search" onSubmit={submitSearch}>
       <div className="flex-1 relative">
         <Search className="absolute left-4 top-3.5 w-5 h-5 text-neutral-400 pointer-events-none" />
         <input
-          type="text"
+          type="search"
           placeholder={placeholder}
-          onChange={(e) => onSearch?.(e.target.value)}
+          aria-label={placeholder}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           onFocus={onFocus}
           className="input-field pl-12 bg-neutral-100"
         />
       </div>
-      <button className="bg-kasi-green text-white p-3 rounded-full hover:bg-kasi-green-dark transition-colors">
+      <button
+        type="submit"
+        aria-label="Submit search"
+        className="bg-kasi-green text-white p-3 rounded-full hover:bg-kasi-green-dark transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kasi-green"
+      >
         <Search className="w-5 h-5" />
       </button>
-    </div>
+    </form>
   );
 };
 

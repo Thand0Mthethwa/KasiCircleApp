@@ -13,7 +13,7 @@ export default function Onboarding() {
 
   return (
     <div className="page-wrapper">
-      <div className="page-content page-padding flex flex-col justify-between pb-20">
+      <div className="page-content page-padding flex flex-col justify-between pb-20 max-w-md w-full mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-block bg-kasi-green text-white rounded-lg p-2 mb-3">

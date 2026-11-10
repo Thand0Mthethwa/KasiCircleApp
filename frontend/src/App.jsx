@@ -204,7 +204,7 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <div className="w-full max-w-md mx-auto bg-white min-h-screen relative">
+      <div className="w-full max-w-7xl mx-auto bg-white min-h-screen relative">
         <AppRoutes />
       </div>
     </AuthProvider>

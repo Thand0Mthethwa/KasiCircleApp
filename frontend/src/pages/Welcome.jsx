@@ -49,7 +49,7 @@ export default function Welcome() {
       </div>
 
       {/* White Content Section */}
-      <div className="page-content page-padding flex flex-col justify-between py-8 pb-20">
+      <div className="page-content page-padding flex flex-col justify-between py-8 pb-20 max-w-md w-full mx-auto">
         {/* Heading */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-neutral-900 mb-2">
@@ -77,6 +77,7 @@ export default function Welcome() {
           </Button>
 
           <button
+            type="button"
             onClick={() => navigate('/home')}
             className="w-full text-kasi-green font-semibold py-3 hover:opacity-75 transition-opacity"
           >
