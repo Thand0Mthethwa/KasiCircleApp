@@ -472,6 +472,27 @@ The response contains the applicant's name and application message, not email or
 
 Applicant/employer contact information is not returned in application responses. Cross-user and cross-employer access is denied.
 
+## Messaging endpoints
+
+Messaging endpoints require a valid authenticated account. Conversation and message responses contain display names and message content only; email addresses and phone numbers are never returned.
+
+### List or start a conversation
+
+- List: `GET /api/conversations`
+- Start or retrieve an existing one-to-one conversation: `POST /api/conversations`
+- Auth required: Yes
+- Request body: `{"participantId":"<user UUID>"}`
+- Authorization: The current account is derived from the JWT. A conversation cannot be started with the current user, and repeating a request returns the existing conversation.
+
+### Read or send messages
+
+- Read paginated history: `GET /api/conversations/{conversationId}/messages?page=0&size=50&sort=createdAt,desc`
+- Send: `POST /api/conversations/{conversationId}/messages`
+- Auth required: Yes
+- Send request body: `{"content":"Hello"}`
+- Validation: message content must not be blank and may contain at most 4000 characters.
+- Authorization: Only one of the conversation participants may read history or send a message. Non-participant access is rejected.
+
 ## Business image endpoints
 
 Business images are stored in Cloudinary and their metadata is persisted in PostgreSQL.

@@ -93,6 +93,16 @@ export default function JobDetail() {
               <p className="mt-4 flex items-center gap-2 text-sm text-neutral-600"><MapPin size={16} />{job.city}, {job.province}</p>
               <p className="mt-5 whitespace-pre-wrap text-neutral-800">{job.description}</p>
               <p className="mt-5 text-sm text-neutral-600">Employer contact information is private. Applications are shared only with this job's employer.</p>
+              {!isEmployer && isAuthenticated && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="mt-5"
+                  onClick={() => navigate(`/messages?participant=${job.employerId}`)}
+                >
+                  Message employer
+                </Button>
+              )}
               {isEmployer && (
                 <div className="mt-6 flex flex-wrap gap-2">
                   {job.status === 'OPEN' && <Button type="button" variant="secondary" onClick={() => navigate(`/jobs/${id}/edit`)}>Edit job</Button>}

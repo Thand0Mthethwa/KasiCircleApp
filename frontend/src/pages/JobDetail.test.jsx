@@ -35,7 +35,10 @@ const job = {
 function renderDetail() {
   return render(
     <MemoryRouter initialEntries={['/jobs/job-1']}>
-      <Routes><Route path="/jobs/:id" element={<JobDetail />} /></Routes>
+      <Routes>
+        <Route path="/jobs/:id" element={<JobDetail />} />
+        <Route path="/messages" element={<p>Messages route</p>} />
+      </Routes>
     </MemoryRouter>
   );
 }
@@ -95,5 +98,14 @@ describe('Job detail and applications', () => {
     await screen.findByText('Electrician');
     expect(screen.queryByRole('button', { name: 'View applications' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Edit job' })).not.toBeInTheDocument();
+  });
+
+  it('lets authenticated non-employers start a private conversation with the employer', async () => {
+    useAuth.mockReturnValue({ isAuthenticated: true, user: { id: 'applicant-1' } });
+    renderDetail();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Message employer' }));
+
+    expect(await screen.findByText('Messages route')).toBeInTheDocument();
   });
 });

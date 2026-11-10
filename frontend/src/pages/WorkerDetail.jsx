@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AlertCircle, MapPin } from 'lucide-react';
 import { Button, Card, Header, LoadingSpinner } from '../components';
+import { useAuth } from '../contexts/AuthContext';
 import { workerService } from '../services/api';
 
 export default function WorkerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [worker, setWorker] = useState(null);
   const [error, setError] = useState('');
 
@@ -38,7 +40,16 @@ export default function WorkerDetail() {
               <h2 className="font-semibold">Service categories</h2>
               <ul className="mt-2 flex flex-wrap gap-2">{worker.serviceCategories.map((category) => <li key={category} className="rounded-full bg-kasi-green-light px-3 py-1 text-sm">{category}</li>)}</ul>
             </section>
-            <p className="mt-6 text-sm text-neutral-600">Contact details are not public. Secure messaging will be available in a later marketplace sprint.</p>
+            <p className="mt-6 text-sm text-neutral-600">Contact details are private. Send a message to connect securely.</p>
+            {isAuthenticated && user?.id !== worker.ownerId && (
+              <Button
+                type="button"
+                className="mt-5"
+                onClick={() => navigate(`/messages?participant=${worker.ownerId}`)}
+              >
+                Message worker
+              </Button>
+            )}
             <Button type="button" variant="secondary" className="mt-5" onClick={() => navigate('/workers')}>Back to workers</Button>
           </Card>
         )}

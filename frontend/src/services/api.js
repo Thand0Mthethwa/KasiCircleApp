@@ -516,6 +516,50 @@ export const jobService = {
   },
 };
 
+export const messagingService = {
+  getConversations: async () => {
+    const response = await fetch(`${API_BASE_URL}/api/conversations`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  createConversation: async (participantId) => {
+    const response = await fetch(`${API_BASE_URL}/api/conversations`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: JSON.stringify({ participantId }),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  getMessages: async (conversationId, page = 0, size = 50) => {
+    const queryParams = new URLSearchParams({ page, size, sort: 'createdAt,desc' });
+    const response = await fetch(
+      `${API_BASE_URL}/api/conversations/${conversationId}/messages?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: getHeaders(true),
+      }
+    );
+
+    return handleResponse(response, { authenticated: true });
+  },
+
+  sendMessage: async (conversationId, content) => {
+    const response = await fetch(`${API_BASE_URL}/api/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: JSON.stringify({ content }),
+    });
+
+    return handleResponse(response, { authenticated: true });
+  },
+};
+
 export default {
   authService,
   userService,
@@ -523,4 +567,5 @@ export default {
   reviewService,
   workerService,
   jobService,
+  messagingService,
 };

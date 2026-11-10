@@ -38,8 +38,10 @@ This roadmap expands the previously completed foundation and the full marketplac
 - Create/list conversations; send and retrieve paginated/history messages.
 - Enforce participant-only access in backend services/controllers; do not return unnecessary contact data.
 - Build connected messaging UI and API integration; add backend and frontend tests.
+- Integrate secure "Message worker" and "Message employer" entry points; use recipient IDs from existing public listing DTOs without revealing contact details.
+- Verified: 10 backend tests passed; 14 frontend messaging/contact tests passed; targeted ESLint and frontend production build passed.
 
-**Exit:** cross-participant access is denied; history and send flows work; migration, tests, lint, and build pass.
+**Exit:** COMPLETE. Cross-participant access is denied; persisted conversation/history/send flows, participant-only APIs, UI, and public listing integration are covered.
 
 ### Sprint 9 — Notifications
 

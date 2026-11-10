@@ -126,3 +126,9 @@ If a migration script encounters a syntax error or constraint conflict during de
      DELETE FROM flyway_schema_history WHERE success = false;
      ```
 4. Restart the Spring Boot backend to re-run the corrected migration.
+
+## Marketplace migrations added during MVP reconciliation
+
+- `V8__create_jobs_and_applications.sql` adds the job marketplace and its applications.
+- `V9__create_conversations_and_messages.sql` adds one-to-one participant conversations and persisted messages. Both participants and senders reference `users`; deleting a user or conversation cascades to associated records.
+- `V9` is additive and uses unique participant pairs, a distinct-participant check, and indexes for conversation lists and chronological message history.
