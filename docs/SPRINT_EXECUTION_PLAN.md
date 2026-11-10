@@ -16,7 +16,7 @@ This roadmap expands the previously completed foundation and the full marketplac
 
 ### Sprint 6 — Worker Marketplace
 
-- Restore/reconcile the committed implementation against the current zero-byte worktree files only after the unexpected deletion diff is clarified.
+- The user authorized restoring zero-byte tracked Worker files from `HEAD`; those implementation and test files plus migration V7 have been restored. Current Worker integration was verified and committed separately.
 - Worker profile create/edit; skills and service categories.
 - Public directory, search/filter, profile details, ownership/privacy/security.
 - Run backend and frontend worker suites, lint, and build.
@@ -25,6 +25,7 @@ This roadmap expands the previously completed foundation and the full marketplac
 
 ### Sprint 7 — Job Marketplace
 
+- The committed backend and test implementation plus migration V8 were restored from `HEAD` with user approval. Existing nonempty edits removed the listing UI, job API client, routes, and job security matchers; integrate the workflows without discarding unrelated edits.
 - Job create/edit/close, public search/detail, employer ownership.
 - Apply to jobs, applicant-owned application view, employer-owned application management.
 - Ensure closed/self/duplicate applications are rejected and applicant email/phone are withheld.

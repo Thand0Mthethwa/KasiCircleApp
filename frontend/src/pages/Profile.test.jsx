@@ -100,6 +100,21 @@ describe('Profile Page', () => {
     expect(screen.getAllByText(/🔧/).length).toBeGreaterThanOrEqual(1);
   });
 
+  it('lets worker accounts open their worker profile manager', async () => {
+    const user = userEvent.setup();
+    useAuth.mockReturnValue({
+      user: { ...mockUser, accountType: 'WORKER' },
+      updateUser: mockUpdateUser,
+      logout: mockLogout,
+      isLoading: false,
+    });
+
+    renderComponent();
+    await user.click(screen.getByRole('button', { name: 'Manage' }));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/worker-profile');
+  });
+
   it('displays account type correctly in user-friendly format for Business', () => {
     useAuth.mockReturnValue({
       user: { ...mockUser, accountType: 'BUSINESS' },
@@ -280,4 +295,3 @@ describe('Profile Page', () => {
     });
   });
 });
-

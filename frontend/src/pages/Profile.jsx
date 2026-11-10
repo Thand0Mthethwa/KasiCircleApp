@@ -453,6 +453,30 @@ export default function Profile() {
           </Card>
         )}
 
+        {user?.accountType === 'WORKER' && (
+          <Card className="p-4 shadow-sm border-amber-100 bg-gradient-to-r from-amber-50/50 to-orange-50/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-xs" aria-hidden="true">
+                  🔧
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-neutral-900">Worker Profile</h4>
+                  <p className="text-xs text-neutral-500">Manage your public skills and services</p>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate('/worker-profile')}
+                className="text-xs py-2 px-3.5"
+              >
+                Manage
+              </Button>
+            </div>
+          </Card>
+        )}
+
         {/* Account Actions */}
         <Card className="p-4 shadow-sm">
           <button
