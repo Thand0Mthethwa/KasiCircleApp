@@ -1,78 +1,98 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { AlertCircle, Briefcase, MapPin, Search } from 'lucide-react';
+import { AlertCircle, Briefcase, MapPin } from 'lucide-react';
 import { Button, Card, Header, LoadingSpinner } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import { jobService } from '../services/api';
 
 export default function Jobs() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
-  const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || '');
-  const [city, setCity] = useState(searchParams.get('city') || '');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
     category: searchParams.get('category') || '',
     city: searchParams.get('city') || '',
   });
-  const [page, setPage] = useState(0);
+  const [form, setForm] = useState(filters);
   const [result, setResult] = useState({ content: [], totalPages: 0 });
+  const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadJobs = useCallback(async () => {
+  useEffect(() => {
+    let active = true;
     setIsLoading(true);
     setError('');
-    try {
-      setResult(await jobService.getJobs({ ...filters, page, size: 10 }));
-    } catch (requestError) {
-      setError(requestError.data?.message || requestError.message || 'Unable to load jobs.');
-    } finally {
-      setIsLoading(false);
-    }
+
+    jobService.getJobs({ ...filters, page, size: 10, status: 'OPEN' })
+      .then((response) => {
+        if (active) setResult(response);
+      })
+      .catch((requestError) => {
+        if (active) setError(requestError.data?.message || requestError.message || 'Unable to load jobs.');
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => { active = false; };
   }, [filters, page]);
 
-  useEffect(() => {
-    loadJobs();
-  }, [loadJobs]);
+  const updateField = (event) => {
+    setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+  };
 
-  const submit = (event) => {
+  const search = (event) => {
     event.preventDefault();
-    const nextFilters = { search: search.trim(), category: category.trim(), city: city.trim() };
-    const params = new URLSearchParams();
-    Object.entries(nextFilters).forEach(([key, value]) => { if (value) params.set(key, value); });
-    setSearchParams(params, { replace: true });
+    const nextFilters = {
+      search: form.search.trim(),
+      category: form.category.trim(),
+      city: form.city.trim(),
+    };
+    const nextParams = new URLSearchParams();
+    Object.entries(nextFilters).forEach(([key, value]) => {
+      if (value) nextParams.set(key, value);
+    });
+    setSearchParams(nextParams);
     setFilters(nextFilters);
     setPage(0);
   };
 
   return (
     <div className="page-wrapper pb-8">
-      <Header title="Local Jobs" subtitle="Find work and opportunities in your community" onBack={() => navigate('/home')} />
-      <main className="page-content page-padding py-6 max-w-3xl mx-auto w-full space-y-5">
+      <Header title="Find jobs" />
+      <main className="page-content page-padding py-6 max-w-4xl mx-auto w-full space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-neutral-600">Browse open opportunities near you.</p>
-          <div className="flex flex-wrap gap-2">
-            {isAuthenticated && <Button type="button" variant="secondary" onClick={() => navigate('/my-applications')}>My applications</Button>}
-            {isAuthenticated && <Button type="button" onClick={() => navigate('/jobs/new')}>Post a job</Button>}
+          <p className="text-neutral-600">Find local work and opportunities in your community.</p>
+          <div className="flex gap-2">
+            {isAuthenticated && (
+              <Button type="button" variant="secondary" onClick={() => navigate('/my-applications')}>
+                My applications
+              </Button>
+            )}
+            {isAuthenticated && (
+              <Button type="button" onClick={() => navigate('/jobs/new')}>Post a job</Button>
+            )}
           </div>
         </div>
-        <form onSubmit={submit} role="search" className="space-y-3">
-          <label className="block text-sm font-semibold">Job or employer
-            <input aria-label="Search jobs" className="input-field mt-1" value={search} onChange={(event) => setSearch(event.target.value)} />
-          </label>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block text-sm font-semibold">Category
-              <input aria-label="Filter jobs by category" className="input-field mt-1" value={category} onChange={(event) => setCategory(event.target.value)} />
+
+        <Card className="p-4">
+          <form onSubmit={search} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="text-sm font-semibold">Search jobs
+              <input aria-label="Search jobs" name="search" className="input-field mt-1" value={form.search} onChange={updateField} />
             </label>
-            <label className="block text-sm font-semibold"><span className="flex items-center gap-1"><MapPin aria-hidden="true" size={16} />Township or city</span>
-              <input aria-label="Filter jobs by city" className="input-field mt-1" value={city} onChange={(event) => setCity(event.target.value)} />
+            <label className="text-sm font-semibold">Category
+              <input aria-label="Filter jobs by category" name="category" className="input-field mt-1" value={form.category} onChange={updateField} />
             </label>
-          </div>
-          <Button type="submit"><Search size={16} className="inline mr-2" />Search jobs</Button>
-        </form>
+            <label className="text-sm font-semibold">City
+              <input aria-label="Filter jobs by city" name="city" className="input-field mt-1" value={form.city} onChange={updateField} />
+            </label>
+            <div className="flex items-end">
+              <Button type="submit" className="w-full">Search jobs</Button>
+            </div>
+          </form>
+        </Card>
 
         {isLoading ? (
           <div role="status" className="flex justify-center py-12"><LoadingSpinner size="lg" /></div>
@@ -80,23 +100,26 @@ export default function Jobs() {
           <Card className="p-5 text-red-700" role="alert"><AlertCircle className="inline mr-2" />{error}</Card>
         ) : result.content?.length ? (
           <>
-            <div className="space-y-3" aria-label="Open jobs">
+            <section aria-label="Open jobs" className="space-y-3">
               {result.content.map((job) => (
-                <button key={job.id} type="button" className="w-full text-left" onClick={() => navigate(`/jobs/${job.id}`)}>
-                  <Card className="p-5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-kasi-green">
-                    <div className="flex items-start gap-3">
-                      <Briefcase className="mt-1 shrink-0 text-kasi-green" aria-hidden="true" />
-                      <div className="min-w-0 flex-1">
-                        <h2 className="font-bold text-lg">{job.title}</h2>
-                        <p className="text-sm text-neutral-600">{job.employerName} · {job.category}</p>
-                        <p className="mt-2 text-sm text-neutral-700 line-clamp-2">{job.description}</p>
-                        <p className="mt-2 text-sm text-neutral-600">{job.city}, {job.province} · {job.employmentType.replaceAll('_', ' ').toLowerCase()}</p>
-                      </div>
-                    </div>
-                  </Card>
-                </button>
+                <Card key={job.id} className="p-5">
+                  <button
+                    type="button"
+                    className="text-left text-lg font-bold text-kasi-green hover:underline"
+                    onClick={() => navigate(`/jobs/${job.id}`)}
+                  >
+                    {job.title}
+                  </button>
+                  <p className="mt-1 text-sm text-neutral-600">
+                    {job.employerName} · {job.category} · {job.employmentType?.replaceAll('_', ' ').toLowerCase()}
+                  </p>
+                  <p className="mt-2 line-clamp-2 text-neutral-700">{job.description}</p>
+                  <p className="mt-3 flex items-center gap-1 text-sm text-neutral-600">
+                    <MapPin size={16} />{job.city}, {job.province}
+                  </p>
+                </Card>
               ))}
-            </div>
+            </section>
             {result.totalPages > 1 && (
               <nav className="flex items-center justify-between" aria-label="Job pages">
                 <Button type="button" variant="secondary" disabled={page === 0} onClick={() => setPage((value) => value - 1)}>Previous</Button>
@@ -108,7 +131,7 @@ export default function Jobs() {
         ) : (
           <Card className="p-8 text-center text-neutral-600" data-testid="job-empty-state">
             <Briefcase className="mx-auto mb-2" />
-            <p>No open jobs match your search.</p>
+            <p>No open jobs match your search yet.</p>
           </Card>
         )}
       </main>

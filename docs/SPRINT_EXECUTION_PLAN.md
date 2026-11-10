@@ -25,13 +25,12 @@ This roadmap expands the previously completed foundation and the full marketplac
 
 ### Sprint 7 — Job Marketplace
 
-- The committed backend and test implementation plus migration V8 were restored from `HEAD` with user approval. Existing nonempty edits removed the listing UI, job API client, routes, and job security matchers; integrate the workflows without discarding unrelated edits.
-- Job create/edit/close, public search/detail, employer ownership.
-- Apply to jobs, applicant-owned application view, employer-owned application management.
-- Ensure closed/self/duplicate applications are rejected and applicant email/phone are withheld.
-- Verify backend/frontend tests, lint, and build.
+- The committed backend/tests and migration V8 were restored from `HEAD` with user approval. The listing UI, route wiring, and authorization matchers have been reconnected; existing Job API methods were verified.
+- Job create/edit/close, public search/detail, employer ownership; apply to jobs, applicant-owned application view, employer-owned application management.
+- Ensure closed/self/duplicate applications are rejected and applicant contact data is withheld.
+- Verified: 20 backend job tests passed; 13 targeted frontend job tests passed; targeted ESLint passed.
 
-**Exit:** employer and applicant authorization tests pass; public listing/detail and complete application workflows pass.
+**Exit:** COMPLETE. Employer/applicant authorization, public listing/detail, and application workflows are implemented and covered by tests.
 
 ### Sprint 8 — Messaging
 

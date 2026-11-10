@@ -7,8 +7,8 @@ Feature-level evidence is maintained in [MVP_FEATURE_VERIFICATION.md](./MVP_FEAT
 | Sprints 1–4 | COMPLETE (previous checkpoint) | Authentication/profile/business foundations and Phase 4; recorded backend 181 tests, frontend 134 tests, lint/build pass. |
 | Sprint 5.4.7.6 — Customer Review Submission | COMPLETE (prior code/test evidence) | Review API, validation, duplicate/self-review denial, and customer UI/tests exist; earlier tests included in backend 181/frontend 134. Reverify at final QA. |
 | Sprint 6 — Worker Marketplace | COMPLETE | Restored the user-approved zero-byte tracked Worker files; verified public GET security rules and `/workers`/`/workers/:id`, added worker profile navigation and API/route integration coverage. Backend: 13/13 targeted tests passed using `mvn -DforkCount=0 test -Dtest=WorkerProfileServiceTest,WorkerProfileControllerTest,WorkerProfileRepositoryTest`. Frontend: 24/24 targeted tests across 6 files and 2/2 new Worker API/route tests passed with single-worker Vitest. Targeted ESLint passed. |
-| Sprint 7 — Job Marketplace | IN PROGRESS | Backend implementation, tests, and V8 migration restored with approval. Remaining nonempty edits removed the job listing page content, job API client, job routes, and public/protected GET security matchers. Reconnect and verify end-to-end before marking complete. |
-| Sprint 8 — Messaging | NOT STARTED | Untracked messaging sources and V9 migration are zero bytes; Messages page is still a placeholder. |
+| Sprint 7 — Job Marketplace | COMPLETE | Reconnected the public job directory/search/filter/pagination, job detail, create/edit/close, applicant and employer application flows, API client, routes, and GET authorization matchers. Backend: 20 tests passed via `mvn -DforkCount=0 test -Dtest='*Job*Test'`. Frontend: 13 job tests passed across 6 files with single-worker Vitest; targeted ESLint passed. |
+| Sprint 8 — Messaging | IN PROGRESS | Untracked messaging sources and V9 migration are zero bytes; Messages page is still a placeholder. Begin with a schema/domain/API audit and implement secure participant-authorized messaging. |
 | Sprint 9 — Notifications | NOT STARTED | No implementation found. |
 | Sprint 10 — Trust and Moderation | NOT STARTED | No report/moderation implementation found. |
 | Sprint 11 — UI/UX | NOT STARTED | Audit/complete marketplace accessibility, responsive behavior, and states after functional sprints. |
@@ -18,9 +18,9 @@ Feature-level evidence is maintained in [MVP_FEATURE_VERIFICATION.md](./MVP_FEAT
 
 ## Current checkpoint
 
-- Branch `Feature/Authentication`, `HEAD` `cf418eb`; local branch is not pushed.
+- Branch `Feature/Authentication`, latest focused local commit `8701562` (Sprint 6); local branch is not pushed.
 - User approved restoring zero-byte tracked Worker/Job implementation, tests, and API docs from `HEAD`. Those restorations were limited to their named paths; other pre-existing nonempty edits remain untouched.
-- The previous `4,065`-line deletion state no longer applies to restored tracked source. Nonempty deletions remain in `Jobs.jsx`, `App.jsx`, `api.js`, `SecurityConfig.java`, and other pre-existing changes; see the feature matrix.
+- The previous `4,065`-line deletion state no longer applies to restored tracked source. Remaining unrelated edits are preserved; see `git status` before staging.
 - Newly untracked Messaging files and V9 migration remain untouched and empty pending Sprint 8.
-- Current Maven/frontend results are only targeted Sprint 6 tests above; no full suite or Sprint 7 test run is claimed.
-- Next: finish Sprint 7 UI/API/routes/security integration; then proceed to Messaging, Notifications, Moderation, UI/UX, Production Readiness, E2E QA, and Release Documentation in order.
+- Current results: Sprint 6 backend 13 tests and focused frontend tests passed; Sprint 7 backend 20 tests and frontend 13 job tests passed, with targeted ESLint. No full-suite or production-build result is claimed for this checkpoint.
+- Next: implement Messaging in Sprint 8, then Notifications, Moderation, UI/UX, Production Readiness, E2E QA, and Release Documentation in order.
