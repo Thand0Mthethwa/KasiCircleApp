@@ -18,6 +18,8 @@ export default function Workers() {
     city: searchParams.get('city') || '',
   });
   const [workers, setWorkers] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -25,14 +27,15 @@ export default function Workers() {
     setIsLoading(true);
     setError('');
     try {
-      const result = await workerService.getWorkers({ ...filters, page: 0, size: 20 });
+      const result = await workerService.getWorkers({ ...filters, page, size: 20 });
       setWorkers(result.content || []);
+      setTotalPages(result.totalPages || 0);
     } catch (requestError) {
       setError(requestError.data?.message || requestError.message || 'Unable to load workers.');
     } finally {
       setIsLoading(false);
     }
-  }, [filters]);
+  }, [filters, page]);
 
   useEffect(() => {
     loadWorkers();
@@ -52,6 +55,7 @@ export default function Workers() {
     });
     setSearchParams(params, { replace: true });
     setFilters(nextFilters);
+    setPage(0);
   };
 
   const hasFilters = search || skill || category || city;
@@ -86,6 +90,7 @@ export default function Workers() {
                 setCategory('');
                 setCity('');
                 setFilters({ search: '', skill: '', category: '', city: '' });
+                setPage(0);
                 setSearchParams({}, { replace: true });
               }}>Clear filters <X size={15} className="inline ml-1" /></Button>
             )}
@@ -117,6 +122,13 @@ export default function Workers() {
               </button>
             ))}
           </div>
+        )}
+        {!isLoading && !error && totalPages > 1 && (
+          <nav aria-label="Worker pages" className="flex items-center justify-between">
+            <Button type="button" variant="secondary" disabled={page === 0} onClick={() => setPage((value) => value - 1)}>Previous</Button>
+            <span aria-live="polite">Page {page + 1} of {totalPages}</span>
+            <Button type="button" variant="secondary" disabled={page + 1 >= totalPages} onClick={() => setPage((value) => value + 1)}>Next</Button>
+          </nav>
         )}
       </main>
     </div>

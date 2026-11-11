@@ -75,4 +75,23 @@ describe('Workers directory', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Directory unavailable');
   });
+  it('loads later profiles, retains filters and resets pagination for a new search', async () => {
+    const profile = { id: 'first', displayName: 'First Worker', headline: 'Repairs', bio: 'Local repairs', skills: [], city: 'Soweto', province: 'Gauteng' };
+    workerService.getWorkers.mockImplementation(async ({ page }) => ({
+      content: [{ ...profile, id: String(page), displayName: page ? 'Later Worker' : 'First Worker' }],
+      totalPages: 2,
+    }));
+    render(<MemoryRouter initialEntries={['/workers?skill=Wiring']}><Workers /></MemoryRouter>);
+    expect(await screen.findByText('First Worker')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(await screen.findByText('Later Worker')).toBeInTheDocument();
+    expect(workerService.getWorkers).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, skill: 'Wiring' }));
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Filter workers by city'), { target: { value: 'Soweto' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(await screen.findByText('First Worker')).toBeInTheDocument();
+    expect(workerService.getWorkers).toHaveBeenLastCalledWith(expect.objectContaining({ page: 0, city: 'Soweto', skill: 'Wiring' }));
+  });
+
 });

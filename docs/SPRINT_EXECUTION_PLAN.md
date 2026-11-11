@@ -98,3 +98,7 @@ This roadmap expands the previously completed foundation and the full marketplac
 - Update the feature matrix and progress log from executed evidence.
 
 **Exit:** all required MVP features are COMPLETE or explicitly BLOCKED with evidence and decision; local release commits are focused. No automatic push/deployment.
+
+## Resumed execution — 2026-11-12
+
+Reconciliation at `fc73dd6` found a Sprint 6 usability gap: public worker pagination. Complete this first (controls and regression test), then verify Sprint 12 against an isolated local PostgreSQL database and continue with integrated Playwright journeys for Sprint 13. Sprint 12 code was already committed; remote CI remains unexecuted because pushing is prohibited. Record local checks independently from remote CI. Finish architecture/deployment/limitations/release documentation in Sprint 14. Preserve unrelated starting edits and exclude them from focused commits.
