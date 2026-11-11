@@ -14,18 +14,18 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: kasicircle
+          POSTGRES_DB: kasicircle_qa
           POSTGRES_USER: kasicircle
           POSTGRES_PASSWORD: ci-only-password
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U kasicircle -d kasicircle"
+          --health-cmd "pg_isready -U kasicircle -d kasicircle_qa"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     env:
-      DB_URL: jdbc:postgresql://localhost:5432/kasicircle
+      DB_URL: jdbc:postgresql://localhost:5432/kasicircle_qa
       DB_USERNAME: kasicircle
       DB_PASSWORD: ci-only-password
       JWT_SECRET: CI-only-signing-key-not-used-for-production-123456
@@ -60,13 +60,30 @@ jobs:
           cat /tmp/kasicircle-backend.log
           exit 1
 
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install browser QA dependencies
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Run integrated desktop and mobile journeys
+        working-directory: frontend
+        env:
+          E2E_DATABASE_URL: postgresql://kasicircle:ci-only-password@127.0.0.1:5432/kasicircle_qa
+        run: npm run test:e2e
+
   frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
@@ -74,7 +91,7 @@ jobs:
         run: npm ci
       - name: Run frontend tests
         working-directory: frontend
-        run: npm test -- --maxWorkers=1 --minWorkers=1
+        run: npm test -- --maxWorkers=1 --no-file-parallelism
       - name: Lint frontend
         working-directory: frontend
         run: npm run lint

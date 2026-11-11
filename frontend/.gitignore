@@ -28,3 +28,7 @@ coverage
 .env
 .env.local
 .env.*.local
+
+# Browser QA artifacts (may contain session data)
+test-results/
+playwright-report/

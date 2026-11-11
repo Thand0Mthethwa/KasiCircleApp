@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App';
-import { jobService, userService } from './services/api';
+import { jobService, userService, workerService } from './services/api';
 
 vi.mock('./services/api', () => ({
   authService: {
@@ -15,6 +15,13 @@ vi.mock('./services/api', () => ({
   },
   jobService: {
     getJobs: vi.fn(),
+  },
+  workerService: {
+    getWorkers: vi.fn(),
+    getWorkerById: vi.fn(),
+    getMyProfile: vi.fn(),
+    createMyProfile: vi.fn(),
+    updateMyProfile: vi.fn(),
   },
 }));
 
@@ -63,7 +70,19 @@ describe('App session expiry routing', () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByText('Local Jobs')).toBeInTheDocument();
+    expect(await screen.findByText('Find jobs')).toBeInTheDocument();
     expect(await screen.findByTestId('job-empty-state')).toBeInTheDocument();
+  });
+
+  it('exposes the public worker directory route to unauthenticated visitors', async () => {
+    workerService.getWorkers.mockResolvedValue({ content: [] });
+
+    render(
+      <MemoryRouter initialEntries={['/workers']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByTestId('worker-empty-state')).toBeInTheDocument();
   });
 });

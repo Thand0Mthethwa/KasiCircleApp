@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -38,7 +38,7 @@ describe('Home marketplace navigation', () => {
     await user.type(screen.getByRole('searchbox', { name: 'Search workers by name or skill...' }), 'electrician');
     await user.keyboard('{Enter}');
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/workers?search=electrician');
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/workers?search=electrician'));
   });
 
   it('links marketplace sections to supported directories without fabricated listings', async () => {
