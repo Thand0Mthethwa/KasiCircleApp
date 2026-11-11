@@ -34,3 +34,7 @@ Feature-level evidence is maintained in [MVP_FEATURE_VERIFICATION.md](./MVP_FEAT
 - Full backend `mvn --batch-mode verify`: 241 passed, zero failures/errors/skips; package succeeded outside the sandbox. Initial sandbox run failed due to Mockito JVM attachment restrictions and is not counted as a pass.
 - Initialized a disposable PostgreSQL 18 instance on port 55432, separate from existing databases; live migration/browser QA is in progress.
 - New Playwright journeys are being added for customer reviews, workers/messaging, jobs/applications/notifications, and admin moderation on desktop/mobile. No E2E pass is claimed until execution finishes.
+
+### Job form error-state checkpoint
+
+The job form hid its entire form after a failed save. It now retains the entered details and permits retry; foreign-employer edit forms remain hidden. The new regression passes in the full 194-test frontend suite after patched dependency updates. Desktop/mobile live journeys: 8/8 passed. A restored public-job route test is being revalidated alongside the preserved pre-existing worker-route test.

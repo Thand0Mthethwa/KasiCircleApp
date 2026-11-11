@@ -22,6 +22,7 @@ export default function JobForm() {
   const [isLoading, setIsLoading] = useState(Boolean(id));
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [canEdit, setCanEdit] = useState(!id);
 
   useEffect(() => {
     if (!id) return;
@@ -39,6 +40,7 @@ export default function JobForm() {
           city: job.city,
           province: job.province,
         });
+        setCanEdit(true);
       })
       .catch((requestError) => setError(requestError.data?.message || requestError.message || 'Unable to load this job.'))
       .finally(() => setIsLoading(false));
@@ -67,7 +69,7 @@ export default function JobForm() {
         {isLoading ? <div role="status" className="flex justify-center py-12"><LoadingSpinner size="lg" /></div> : (
           <Card className="p-5">
             {error && <p role="alert" className="mb-4 text-red-700"><AlertCircle className="inline mr-2" />{error}</p>}
-            {!error && <form className="space-y-4" onSubmit={submit}>
+            {canEdit && <form className="space-y-4" onSubmit={submit}>
               <label className="block text-sm font-semibold">Job title
                 <input name="title" className="input-field mt-1" maxLength={120} required value={form.title} onChange={updateField} />
               </label>

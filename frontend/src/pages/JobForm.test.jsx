@@ -69,4 +69,24 @@ describe('Job form', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Only the employer');
     expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
   });
+  it('preserves entered details and allows retry after a save failure', async () => {
+    jobService.createJob.mockRejectedValueOnce(new Error('Service temporarily unavailable'))
+      .mockResolvedValueOnce({ id: 'job-retry' });
+    render(<MemoryRouter initialEntries={['/jobs/new']}>
+      <Routes>
+        <Route path="/jobs/new" element={<JobForm />} />
+        <Route path="/jobs/:id" element={<p>Saved after retry</p>} />
+      </Routes>
+    </MemoryRouter>);
+    for (const [label, value] of Object.entries({ 'Job title': 'Plumber', Description: 'Fix pipes', 'Service category': 'Plumbing', 'Township or city': 'Soweto', Province: 'Gauteng' })) {
+      fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Publish job' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Service temporarily unavailable');
+    expect(screen.getByLabelText('Job title')).toHaveValue('Plumber');
+    fireEvent.click(screen.getByRole('button', { name: 'Publish job' }));
+    expect(await screen.findByText('Saved after retry')).toBeInTheDocument();
+    expect(jobService.createJob).toHaveBeenCalledTimes(2);
+  });
+
 });
