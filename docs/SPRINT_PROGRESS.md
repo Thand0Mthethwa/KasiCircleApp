@@ -11,20 +11,21 @@ Current evidence is in the [59-requirement feature matrix](MVP_FEATURE_VERIFICAT
 | 8 messaging | COMPLETE | Persisted conversations/messages, participant authorization, history/send/UI and contact links. Desktop/mobile exchange/reload and outsider-denial checks pass. |
 | 9 notifications | COMPLETE | Recipient persistence/list/unread/read, activity hooks and UI navigation. Desktop/mobile decision-notification navigation and recipient denial pass. |
 | 10 moderation | COMPLETE | Reports and admin queue/disposition UI with backend role checks. Desktop/mobile real admin JWT and regular-user denial pass. ACTIONED does not automatically hide targets. |
-| 11 UI/UX | COMPLETE | Shared responsive/form/navigation states plus worker pagination and job retry. Desktop/mobile core journeys pass. Full component rerun includes updated navigation timing; final count pending below. |
+| 11 UI/UX | COMPLETE | Shared responsive/form/navigation states plus worker pagination and job retry. Desktop/mobile core journeys pass. Full component suite: 195 passed, including updated navigation timing and both public-route regressions. |
 | 12 production readiness | BLOCKED (hosted CI) | Code/config/dependency audit, local tests/build, fresh PostgreSQL 18 V1–V11 and repeat startup verified. CI targets PostgreSQL 16 and includes integrated browsers, but has not executed remotely because automatic pushing is prohibited. |
 | 13 end-to-end QA | COMPLETE | Eight Playwright cases passed: four real browser/API/PostgreSQL/JWT journeys each on desktop and mobile Chromium. Privacy/ownership/participant/recipient/admin denials included. |
-| 14 documentation | COMPLETE (local review) | API, architecture, setup, deployment/operations, migration safety, QA, limitations and release report written. 31 local links resolve, 96 unique feature-evidence paths exist, CI YAML parses, whitespace check passes. Final test-result fields are reconciled at the final checkpoint. |
+| 14 documentation | COMPLETE (local review) | API, architecture, setup, deployment/operations, migration safety, QA, limitations and release report written. 31 local links resolve, 96 unique feature-evidence paths exist, CI YAML parses, whitespace check passes. Final requirement disposition: 58 COMPLETE / 1 BLOCKED (hosted CI). |
 
 ## Executed checks — 2026-11-12
 
 - Java 21 `mvn --batch-mode verify`: **241 passed**, zero failures/errors/skips, executable package success. Initial sandbox run failed due to Mockito attachment restrictions and is not counted as a pass.
-- Sequential frontend suite after dependency/UI changes: **194 passed across 32 files**. The restored public-job route regression adds one case alongside the preserved pre-existing worker-route test; the final full rerun is pending at this draft checkpoint.
+- Sequential frontend suite after dependency/UI changes: **195 passed across 32 files**, including the restored public-job route regression alongside the preserved pre-existing worker-route test. Targeted App route suite: 3 passed.
+- Clean committed snapshot `5b323af`: 11 route/API tests passed across four files, excluding preserved uncommitted API edits.
 - ESLint and frontend production build pass after dependency updates.
 - `npm audit --json`: **0 known vulnerabilities**. Updated Vite, React plugin, Vitest/coverage and React Router; Node 22.12+ now required. One Home test was updated to await asynchronous navigation.
 - Packaged application applied **V1–V11** to an isolated local PostgreSQL 18 database; queried Flyway history confirmed all successful. Repeated browser-harness starts validated the migrated database.
 - Playwright: **8 passed**, four journeys each on desktop/mobile. Initial assertion-text mismatches were corrected; a run interrupted by dependency installation is excluded from passing evidence. Only the completed final eight-case run is counted.
-- Workflow YAML parsed; **31 local documentation links** resolve and **96 unique matrix evidence paths** exist. `git diff --check` passes. GitHub Actions itself has not run.
+- Workflow YAML parsed; **32 local documentation links** resolve and **96 unique matrix evidence paths** exist. `git diff --check` passes. GitHub Actions itself has not run.
 
 ## Local commits
 
@@ -32,8 +33,9 @@ Current evidence is in the [59-requirement feature matrix](MVP_FEATURE_VERIFICAT
 |---|---|
 | `c1cb64d` | Independent scope reconciliation and worker pagination; four focused worker tests pass. |
 | `47f27d8` | Job form preserves input and supports retry after failed save; backend authorization unaffected. |
+| `5b323af` | Desktop/mobile live marketplace QA, patched dependencies, CI integration and public-route regression coverage. |
 
-Further focused QA/dependency/CI and documentation commits are recorded at final handoff. No push, merge or deployment has occurred.
+The final documentation commit records the authoritative 59-requirement matrix, roadmap, release evidence and operational guides. No push, merge or deployment has occurred.
 
 ## Preserved previous checkpoints
 

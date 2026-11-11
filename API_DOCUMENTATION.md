@@ -746,3 +746,14 @@ All API errors use the same JSON payload structure:
   "path": "/api/users/me"
 }
 ```
+
+
+## Integration, security and pagination notes
+
+The endpoint contract above is exercised against the real JWT filter and PostgreSQL by `frontend/e2e/marketplace.spec.js`; see [reproducible QA](docs/QA.md). Public worker/job DTOs omit account email and phone. Public business contacts are listing fields; review author display names are abbreviated. Application messages/statuses require the applicant's own application listing or the owning employer's job-application endpoint. No request body can assign ownership, participant membership, notification recipient or administrator role.
+
+Directory/history APIs return Spring pages (`content`, `number`, `size`, `totalElements`, `totalPages`, `first`, `last`). Query parameters `page` and `size` select zero-based pages; clients should use the returned page metadata. Workers additionally filter by skill/category/city/search; jobs filter category/city/search/status. Messages use `sort=createdAt,desc` when loading newest history first. The worker UI now exposes Previous/Next controls for results beyond the first 20.
+
+Review summaries and business ratings aggregate persisted reviews, so create/update/delete operations affect subsequent reads without a separate rating-update endpoint. Notifications are persistent in-app resources for incoming messages, applications and employer decisions; there is no email/push endpoint. Messaging refresh is request-based, without websocket delivery. Moderation records a disposition; it does not hide the target automatically. See [known limitations](docs/KNOWN_LIMITATIONS.md) and [architecture](docs/ARCHITECTURE.md).
+
+Production runtime and migration instructions are in [deployment](docs/DEPLOYMENT.md) and the [current migration guide](docs/DATABASE_MIGRATIONS.md). The environment-variable examples are placeholders and must be replaced through a secret manager.

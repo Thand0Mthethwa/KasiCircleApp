@@ -1,6 +1,6 @@
 # KasiCircle
 
-KasiCircle connects South African township communities with local businesses and trusted services through a searchable directory with customer ratings and reviews.
+KasiCircle connects South African township communities with local businesses, workers and job opportunities, with customer reviews, private messaging, activity notifications and administrator report review.
 
 ## Technology
 
@@ -12,7 +12,7 @@ KasiCircle connects South African township communities with local businesses and
 ## Prerequisites
 
 - Java 21 and Maven
-- Node.js 18+ and npm
+- Node.js 22.12+ and npm
 - PostgreSQL
 - Cloudinary credentials for business image uploads (optional when image uploads are not needed)
 
@@ -67,14 +67,14 @@ Run frontend tests, lint, and production build:
 
 ```bash
 cd frontend
-npm test
+npm test -- --maxWorkers=1 --no-file-parallelism
 npm run lint
 npm run build
 ```
 
-Frontend tests use the in-memory test configuration and do not require live database or Cloudinary credentials.
+Frontend component tests mock API boundaries; backend tests use H2/mocks. These suites do not require live PostgreSQL or Cloudinary credentials. Integrated Playwright journeys require an isolated local PostgreSQL database; see [QA instructions](./docs/QA.md).
 
-GitHub Actions runs backend verification and PostgreSQL migration/startup checks, plus sequential frontend tests, lint, and production build, on pushes and pull requests.
+GitHub Actions runs backend verification and PostgreSQL migration/startup checks, plus desktop/mobile integrated browser journeys, sequential frontend tests, lint, and production build, on pushes and pull requests.
 
 ## Production packaging
 
@@ -96,7 +96,13 @@ No deployment or cloud resources are created by these build commands.
 ## Documentation
 
 - [API documentation](./API_DOCUMENTATION.md)
-- [Database migrations](./backend/MIGRATIONS.md)
+- [Database migrations](./docs/DATABASE_MIGRATIONS.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Deployment and operations](./docs/DEPLOYMENT.md)
+- [Reproducible QA](./docs/QA.md)
+- [Known limitations](./docs/KNOWN_LIMITATIONS.md)
+- [Feature verification](./docs/MVP_FEATURE_VERIFICATION.md)
+- [Release readiness](./docs/RELEASE_READINESS.md)
 
 ## License
 

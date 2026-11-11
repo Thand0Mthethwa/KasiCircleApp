@@ -1,104 +1,49 @@
-# KasiCircle MVP Sprint Execution Plan
+# KasiCircle MVP sprint execution plan
 
-## Scope
+This roadmap covers the complete requested marketplace MVP. Use the current [59-requirement feature matrix](MVP_FEATURE_VERIFICATION.md) and [release report](RELEASE_READINESS.md) for evidence. Preserve completed work and unrelated local edits. Do not push, merge or deploy automatically.
 
-This roadmap expands the previously completed foundation and the full marketplace scope specified in the current Master Development Prompt. Feature status and exact worktree discrepancies are maintained in [MVP_FEATURE_VERIFICATION.md](./MVP_FEATURE_VERIFICATION.md). Do not infer completion from an older audit alone. Existing work is preserved; do not push, merge, or deploy.
+## Foundation — Sprints 1–4 and 5.4.7.6
 
-## Completed foundation (preserve)
+Retain authentication/profile/password, business listings/discovery/images/ownership, and review submission/edit/delete/rating summaries. Verify authenticated customer submission, valid stars/comments, duplicate/self-review denial and rating refresh with controller/service/repository/component tests plus live journeys. Earlier 181/134 totals are historical; use current full-suite results.
 
-- Sprint 1: Authentication and security foundation.
-- Sprint 2: User profile and password management.
-- Sprint 3: Business listings, directory, ownership, and image management.
-- Sprint 4: Stabilization, session recovery, release docs, and original Phase 4 package verification. The recorded 181 backend / 134 frontend results predate marketplace sprints.
-- Sprint 5.4.7.6: Customer review submission, moderation by authors, and rating summaries; source and tests exist. Reverify as part of final integration.
+## Sprint 6 — Worker marketplace
 
-## Marketplace and release sprints
+**Implemented and locally verified.** Profile create/edit, skills/categories, public directory/search/filter/detail and principal-owned WORKER-only management exist. Reconciliation identified missing UI access beyond the first 20 workers; pagination and a filter-reset regression test were added in `c1cb64d`. Public DTOs omit personal contacts. Retain worker controller/service/repository/UI and live browser coverage.
 
-### Sprint 6 — Worker Marketplace
+## Sprint 7 — Job marketplace
 
-- The user authorized restoring zero-byte tracked Worker files from `HEAD`; those implementation and test files plus migration V7 have been restored. Current Worker integration was verified and committed separately.
-- Worker profile create/edit; skills and service categories.
-- Public directory, search/filter, profile details, ownership/privacy/security.
-- Run backend and frontend worker suites, lint, and build.
+**Implemented and locally verified.** Create/edit/close/reopen jobs, owning-employer permissions, public directory/filter/detail, applicant-owned applications and employer application decisions exist. Retain self/duplicate/closed-job denial and applicant privacy checks. Job-form failures now preserve input and permit retry; unauthorized edit forms stay unavailable.
 
-**Exit:** no zero-byte Worker implementation/tests; authenticated users can only change their own Worker profile; public DTOs omit contact data; verified APIs and tests.
+## Sprint 8 — Messaging
 
-### Sprint 7 — Job Marketplace
+**Implemented and locally verified.** V9 persists unique one-to-one conversations and messages. Authenticated APIs enforce participant-only history/send, with connected UI and worker/job contact entry points. Browser QA verifies two-party send/history/reload and outsider denial. Delivery uses user refresh rather than realtime transport.
 
-- The committed backend/tests and migration V8 were restored from `HEAD` with user approval. The listing UI, route wiring, and authorization matchers have been reconnected; existing Job API methods were verified.
-- Job create/edit/close, public search/detail, employer ownership; apply to jobs, applicant-owned application view, employer-owned application management.
-- Ensure closed/self/duplicate applications are rejected and applicant contact data is withheld.
-- Verified: 20 backend job tests passed; 13 targeted frontend job tests passed; targeted ESLint passed.
+## Sprint 9 — Notifications
 
-**Exit:** COMPLETE. Employer/applicant authorization, public listing/detail, and application workflows are implemented and covered by tests.
+**Implemented and locally verified.** V10 persists recipient notifications. List/unread/read APIs derive recipients from authentication; application, employer-decision and message hooks generate activity. UI reads before navigation. Retain recipient-isolation and event-generation coverage.
 
-### Sprint 8 — Messaging
+## Sprint 10 — Trust and moderation
 
-- Persist secure conversations and messages with an incremental Flyway migration.
-- Create/list conversations; send and retrieve paginated/history messages.
-- Enforce participant-only access in backend services/controllers; do not return unnecessary contact data.
-- Build connected messaging UI and API integration; add backend and frontend tests.
-- Integrate secure "Message worker" and "Message employer" entry points; use recipient IDs from existing public listing DTOs without revealing contact details.
-- Verified: 10 backend tests passed; 14 frontend messaging/contact tests passed; targeted ESLint and frontend production build passed.
+**Implemented and locally verified.** V11 persists reports for businesses/workers/jobs/reviews, validates targets/reasons/details, rejects duplicate open reports and supports administrator queue/decisions/notes. Backend role enforcement and real JWT browser tests reject unauthorized moderation. Dispositions do not hide targets automatically; that operational limitation is explicit.
 
-**Exit:** COMPLETE. Cross-participant access is denied; persisted conversation/history/send flows, participant-only APIs, UI, and public listing integration are covered.
+## Sprint 11 — UI/UX
 
-### Sprint 9 — Notifications
+**Implemented and locally verified (195 component tests; eight browser cases).** Responsive shared shell/forms/navigation, real Home marketplace shortcuts, visible focus/labels, loading/error/empty states, worker pagination and job save retry are covered by component and desktop/mobile integrated journeys. No automated WCAG certification or physical-device coverage is claimed.
 
-- Implemented persistent notifications and unread counts with additive Flyway V10.
-- Recipient-scoped list/count/read APIs derive identity from the authenticated principal; users cannot read another user's notification.
-- Create notifications for incoming job applications, application decisions, and incoming messages.
-- Implemented protected notification list/navigation and mark-read-before-navigation, with unread count displayed on the notification page.
-- Verified: 18 targeted backend tests and 5 focused frontend notification tests passed; targeted ESLint and frontend production build passed.
+## Sprint 12 — Production readiness
 
-**Exit:** COMPLETE. Notification persistence, recipient permissions, event generation, UI, navigation, unread counts, and tests are implemented.
+**BLOCKED on hosted CI execution; local checks implemented and verified.** Required DB/JWT secrets, signing-key/expiry validation, exact-origin CORS, stateless authentication, owner/participant/recipient/admin authorization, disabled debug/SQL logs and hidden health details are in place. Frontend dependency advisories were remediated; audit reports zero vulnerabilities. V1–V11 applied on fresh PostgreSQL 18 and repeated packaged startups succeeded. CI now targets PostgreSQL 16 and runs backend verification, migrations/startup, desktop/mobile browser journeys and sequential frontend tests/lint/build. It has not executed remotely because automatic pushing is prohibited.
 
-### Sprint 10 — Trust and Moderation
+**Next:** an authorized operator publishes/reviews commits and runs hosted CI. Follow the deployment guide for historical-data migration rehearsal, production secrets, TLS and live Cloudinary acceptance. No ordinary local implementation task requires another permission decision.
 
-- Added authenticated reports for business, worker profile, job, and business-review content, with reason/details validation and duplicate-open-report protection.
-- Added an administrator-only open-report queue and ACTIONED/DISMISSED decision workflow with optional moderation notes.
-- Validate target existence and omit reporter identity from all report DTOs; enforce `ROLE_ADMIN` on queue and decision endpoints.
-- Added migration V11, report forms on marketplace details, and an administrator report screen linked from Profile.
-- Verified: 7 backend moderation tests and 66 focused/moderation plus marketplace regression frontend tests passed; targeted ESLint and production build passed.
+## Sprint 13 — End-to-end QA
 
-**Exit:** COMPLETE. Unauthorized report administration is rejected and report intake/decision flows are tested. ACTIONED decisions are recorded with notes; target removal is a manual moderator action, not an automatic side effect.
+**COMPLETE for defined core journeys.** Four Playwright journeys run sequentially on desktop and mobile Chromium (eight cases), against packaged Java 21 API, real JWT security, Flyway and PostgreSQL. Customer review/rating, worker/message, employer/applicant/notification and administrator/report flows pass with privacy/permission denial checks. Fixtures refuse non-loopback or non-QA database targets. See [QA](QA.md) for reproducibility and excluded external-service/cross-engine checks.
 
-### Sprint 11 — UI/UX and accessibility
+## Sprint 14 — Documentation
 
-- Widened the authenticated app shell and constrained auth/onboarding content so it remains readable on larger viewports while retaining mobile layouts.
-- Replaced fabricated Home marketplace statistics/worker cards with supported worker, job, and business directory navigation; Home worker search and skill shortcuts now open the real filtered worker directory.
-- Added visible keyboard focus treatments, accessible primary-navigation/current-page semantics, search labels and explicit search submission, worker-card keyboard interaction, and error/hint associations for inputs.
-- Added shared-component and Home navigation regression tests. Existing marketplace pages already expose loading, error, and empty states; retain their page-specific handling.
-- Verified at 375px mobile and 1440px desktop browser viewports. Full frontend suite: 192 tests across 32 files passed sequentially; full ESLint and production build passed.
+API reference, architecture, setup, deployment/operations, current migration guide, known limitations, QA instructions and release report are written. Local link/whitespace validation and final evidence reconciliation passed; documentation is complete and recorded in a focused local commit. Keep Sprint 12's external gate explicit; do not declare an unconditional production release.
 
-**Exit:** COMPLETE. Home links to real marketplace flows rather than mock listings; key shell/form/navigation interactions have responsive and accessibility coverage. No automated WCAG audit is claimed.
+## Resume policy
 
-### Sprint 12 — Production readiness
-
-- Audited stateless JWT authorization rules, authenticated owner/participant/admin service checks, request validation, exact-origin CORS, error responses, and DTO privacy. Existing controller/service tests exercise anonymous and unauthorized access; the full backend suite passed.
-- Reviewed Flyway V1–V11 for incremental schema changes; no table/column drops or data truncation operations were found. Added CI startup against an isolated PostgreSQL service to exercise Flyway plus Hibernate validation on a fresh database.
-- Removed default database credentials and the placeholder JWT signing key. Startup now requires `DB_USERNAME`, `DB_PASSWORD`, and `JWT_SECRET`; signing keys shorter than 32 bytes and non-positive expiration values are rejected. Disabled SQL/security debug logging and explicitly limited actuator exposure to health with hidden details.
-- Added GitHub Actions backend verification/package and PostgreSQL migration startup checks, plus sequential frontend tests, lint, and production build. Workflow YAML parsed locally; full backend suite passed (241 tests). Full frontend suite (192), lint, and production build passed in Sprint 11.
-- Updated setup/production configuration documentation. No push was made, so GitHub Actions has not yet been executed; local PostgreSQL accepts connections but test credentials are unavailable, so the real-PostgreSQL CI step remains unverified locally.
-
-**Exit:** PARTIAL pending execution of the newly added CI workflow against its isolated PostgreSQL service. No insecure secret defaults remain; all other listed code/test and static workflow checks are complete.
-
-### Sprint 13 — End-to-end QA
-
-- Exercise customer, worker, employer, applicant, and administrator journeys against an integrated backend/frontend environment.
-- Add browser automation if supported in the repository environment; otherwise record the tested manual integration matrix and the missing automation limitation.
-- Include negative authorization/privacy cases.
-
-**Exit:** complete core journeys and denial cases are recorded with reproducible results.
-
-### Sprint 14 — Documentation and release readiness
-
-- Complete API and architecture documentation, setup/deployment guide, known limitations, and release checklist.
-- Re-run full backend/frontend tests, lint, production builds, CI, and E2E checks.
-- Update the feature matrix and progress log from executed evidence.
-
-**Exit:** all required MVP features are COMPLETE or explicitly BLOCKED with evidence and decision; local release commits are focused. No automatic push/deployment.
-
-## Resumed execution — 2026-11-12
-
-Reconciliation at `fc73dd6` found a Sprint 6 usability gap: public worker pagination. Complete this first (controls and regression test), then verify Sprint 12 against an isolated local PostgreSQL database and continue with integrated Playwright journeys for Sprint 13. Sprint 12 code was already committed; remote CI remains unexecuted because pushing is prohibited. Record local checks independently from remote CI. Finish architecture/deployment/limitations/release documentation in Sprint 14. Preserve unrelated starting edits and exclude them from focused commits.
+Resume from hosted CI and production acceptance gates after final local checks. Do not restart implemented marketplace sprints or turn a local test pass into a deployment claim. Record exact executed results and local commit IDs in [progress](SPRINT_PROGRESS.md).
