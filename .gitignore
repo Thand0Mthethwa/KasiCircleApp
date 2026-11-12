@@ -17,6 +17,11 @@ buildNumber.properties
 
 # IDE - VS Code
 .vscode/
+# Share only sanitized launch/task configurations; other local IDE settings stay ignored.
+!/.vscode/
+/.vscode/*
+!/.vscode/launch.json
+!/.vscode/tasks.json
 
 # IDE - Eclipse
 .classpath
@@ -44,8 +49,9 @@ application-dev.properties
 application-secret.properties
 .env
 .env.*
-# Publish only the reviewed frontend template; real environment files stay ignored.
+# Publish only reviewed environment templates; real environment files stay ignored.
 !/frontend/.env.example
+!/backend/.env.example
 
 # Temporary files
 *.tmp

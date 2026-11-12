@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "BackendApplication",
+      "request": "launch",
+      "mainClass": "com.kasicircle.backend.BackendApplication",
+      "projectName": "backend",
+      "cwd": "${workspaceFolder}/backend",
+      "envFile": "${workspaceFolder}/backend/.env.local",
+      "console": "integratedTerminal",
+      "preLaunchTask": "Check KasiCircle Backend Environment"
+    }
+  ]
+}

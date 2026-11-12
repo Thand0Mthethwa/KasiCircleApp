@@ -1,0 +1,73 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Check KasiCircle Backend Environment",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "set +x; set -a; if ! source .env.local 2>/dev/null; then printf \"%s\\n\" \"Create or fix backend/.env.local; private values are not logged.\" >&2; exit 1; fi; set +a; if [[ -z \"$DB_USERNAME\" || -z \"$DB_PASSWORD\" || -z \"$JWT_SECRET\" ]]; then printf \"%s\\n\" \"Set DB_USERNAME, DB_PASSWORD and JWT_SECRET in backend/.env.local; do not paste credentials into logs.\" >&2; exit 1; fi"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "reveal": "silent"
+      }
+    },
+    {
+      "label": "Run KasiCircle Backend",
+      "type": "shell",
+      "command": "bash",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "args": [
+        "-c",
+        "set +x; set -a; if ! source .env.local 2>/dev/null; then printf \"%s\\n\" \"Create or fix backend/.env.local; private values are not logged.\" >&2; exit 1; fi; set +a; if [[ -z \"$DB_USERNAME\" || -z \"$DB_PASSWORD\" || -z \"$JWT_SECRET\" ]]; then printf \"%s\\n\" \"Set DB_USERNAME, DB_PASSWORD and JWT_SECRET in backend/.env.local; do not paste credentials into logs.\" >&2; exit 1; fi; exec mvn spring-boot:run"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      }
+    },
+    {
+      "label": "Test KasiCircle Backend",
+      "type": "shell",
+      "command": "mvn",
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "args": [
+        "--batch-mode",
+        "test"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      }
+    },
+    {
+      "label": "Run Backend and Tests",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Test KasiCircle Backend",
+        "Run KasiCircle Backend"
+      ]
+    }
+  ]
+}
