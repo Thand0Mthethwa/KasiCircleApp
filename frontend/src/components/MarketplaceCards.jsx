@@ -1,6 +1,43 @@
 import { useState } from "react";
-import { ArrowUpRight, MapPin } from "lucide-react";
-import { RatingDisplay, ShopArt } from "./ui";
+import { ArrowUpRight, Briefcase, MapPin } from "lucide-react";
+import { RatingDisplay, ShopArt, StatusBadge } from "./ui";
+
+export function JobCard({ job, onOpen }) {
+  return (
+    <article className="marketplace-card p-5 md:p-6 flex flex-col sm:flex-row gap-5">
+      <span className="state-icon shrink-0 mb-0">
+        <Briefcase size={23} aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap justify-between items-start gap-3">
+          <button
+            type="button"
+            className="text-left font-semibold text-xl text-kasi-green hover:underline underline-offset-4"
+            onClick={() => onOpen(job.id)}
+          >
+            {job.title}
+          </button>
+          <StatusBadge status={job.status || "OPEN"} />
+        </div>
+        <p className="mt-1 text-sm text-neutral-600">
+          {job.employerName} · {job.category}
+        </p>
+        <p className="mt-3 line-clamp-2 text-sm text-neutral-700 leading-relaxed">
+          {job.description}
+        </p>
+        <div className="flex flex-wrap gap-3 mt-5 text-xs text-neutral-600">
+          <span className="inline-flex items-center gap-1">
+            <MapPin size={15} aria-hidden="true" />
+            {job.city}, {job.province}
+          </span>
+          <span className="rounded-full bg-neutral-100 px-3 py-1 capitalize">
+            {job.employmentType?.replaceAll("_", " ").toLowerCase()}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 export function BusinessCard({ business, onOpen }) {
   const [failedImage, setFailedImage] = useState("");
