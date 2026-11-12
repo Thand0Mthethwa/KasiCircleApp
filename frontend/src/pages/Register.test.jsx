@@ -44,7 +44,7 @@ describe('Register Page', () => {
     renderComponent();
 
     expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-    expect(screen.getByText(/join kasiconnect/i)).toBeInTheDocument();
+    expect(screen.getByText(/join kasicircle/i)).toBeInTheDocument();
 
     // Account type buttons
     expect(screen.getByRole('button', { name: /resident/i })).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe('Register Page', () => {
     const residentBtn = screen.getByRole('button', { name: /resident/i });
     await user.click(residentBtn);
 
-    expect(residentBtn.className).toContain('border-kasi-green');
+    expect(residentBtn).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('allows Worker account type to be selected', async () => {
@@ -80,7 +80,7 @@ describe('Register Page', () => {
     const workerBtn = screen.getByRole('button', { name: /worker/i });
     await user.click(workerBtn);
 
-    expect(workerBtn.className).toContain('border-kasi-green');
+    expect(workerBtn).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('allows Business account type to be selected', async () => {
@@ -90,7 +90,7 @@ describe('Register Page', () => {
     const businessBtn = screen.getByRole('button', { name: /business/i });
     await user.click(businessBtn);
 
-    expect(businessBtn.className).toContain('border-kasi-green');
+    expect(businessBtn).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('includes the selected account type in the registration payload', async () => {

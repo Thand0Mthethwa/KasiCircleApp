@@ -10,6 +10,8 @@ import {
   LogOut,
   Lock,
   Building2,
+  UserRound,
+  Wrench,
 } from 'lucide-react';
 
 /**
@@ -21,23 +23,23 @@ const getAccountTypeDetails = (type) => {
     case 'WORKER':
       return {
         label: 'Worker',
-        emoji: '🔧',
+        icon: Wrench,
         badgeClass: 'bg-amber-100 text-amber-800 border border-amber-200',
         description: 'Providing skilled services in the community',
       };
     case 'BUSINESS':
       return {
         label: 'Business',
-        emoji: '🏢',
-        badgeClass: 'bg-blue-100 text-blue-800 border border-blue-200',
+        icon: Building2,
+        badgeClass: 'bg-kasi-green-light text-kasi-green border border-neutral-200',
         description: 'Local enterprise & service provider',
       };
     case 'RESIDENT':
     default:
       return {
         label: 'Resident',
-        emoji: '🏘️',
-        badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+        icon: UserRound,
+        badgeClass: 'bg-kasi-green-light text-kasi-green border border-neutral-200',
         description: 'Local community member',
       };
   }
@@ -193,7 +195,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="page-wrapper pb-24">
+    <div className="page-wrapper pb-12">
       {/* Top Header */}
       <Header
         title="My Profile"
@@ -202,11 +204,11 @@ export default function Profile() {
         onBack={() => navigate('/home')}
       />
 
-      <div className="page-content page-padding py-6 max-w-md mx-auto w-full space-y-6">
+      <main className="content-container profile-layout py-8 md:py-10">
         {/* Status Alerts */}
         {statusMessage && (
           <div
-            className={`p-4 rounded-xl flex items-start gap-3 text-sm ${
+            className={`profile-notice p-4 rounded-xl flex items-start gap-3 text-sm ${
               statusMessage.type === 'success'
                 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                 : 'bg-red-50 text-red-800 border border-red-200'
@@ -223,18 +225,18 @@ export default function Profile() {
         )}
 
         {/* User Identity Banner */}
-        <Card className="p-6 text-center shadow-sm">
-          <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-kasi-green to-kasi-green-dark text-white font-bold text-2xl flex items-center justify-center shadow-md mb-3">
+        <Card className="profile-summary p-6 text-center bg-kasi-green-light">
+          <div className="mx-auto w-20 h-20 rounded-full bg-kasi-green text-white font-semibold text-2xl flex items-center justify-center mb-4">
             {getInitials(user.firstName, user.lastName)}
           </div>
           <h2 className="text-xl font-bold text-neutral-900">
             {user.firstName} {user.lastName}
           </h2>
-          <p className="text-sm text-neutral-500 mb-3">{user.email}</p>
+          <p className="text-sm text-neutral-600 mb-3 break-words">{user.email}</p>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold shadow-xs">
-            <span className={`px-2.5 py-1 rounded-full ${accountInfo.badgeClass}`}>
-              {accountInfo.emoji} {accountInfo.label}
+            <span className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full ${accountInfo.badgeClass}`}>
+              {React.createElement(accountInfo.icon, { size: 14, 'aria-hidden': true })} {accountInfo.label}
             </span>
           </div>
           {user.role === 'ADMIN' && (
@@ -298,7 +300,7 @@ export default function Profile() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-base font-medium text-neutral-900">
-                    {accountInfo.label} {accountInfo.emoji}
+                    {accountInfo.label}
                   </span>
                   <span className="text-xs text-neutral-500">({accountInfo.description})</span>
                 </div>
@@ -364,11 +366,12 @@ export default function Profile() {
 
               {/* Read-Only Fields */}
               <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                <label htmlFor="profile-email" className="block text-sm font-semibold text-neutral-900 mb-2">
                   Email Address
                 </label>
                 <div className="relative">
                   <input
+                    id="profile-email"
                     type="email"
                     value={user.email}
                     disabled
@@ -383,13 +386,14 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                <label htmlFor="profile-account-type" className="block text-sm font-semibold text-neutral-900 mb-2">
                   Account Type
                 </label>
                 <div className="relative">
                   <input
+                    id="profile-account-type"
                     type="text"
-                    value={`${accountInfo.label} ${accountInfo.emoji}`}
+                    value={accountInfo.label}
                     disabled
                     readOnly
                     className="input-field bg-neutral-100 text-neutral-500 cursor-not-allowed border-neutral-200"
@@ -435,10 +439,10 @@ export default function Profile() {
 
         {/* Business Management for BUSINESS accounts */}
         {user?.accountType === 'BUSINESS' && (
-          <Card className="p-4 shadow-sm border-blue-100 bg-gradient-to-r from-blue-50/50 to-indigo-50/30">
+          <Card className="p-5 border-neutral-200 bg-kasi-green-light">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                <div className="w-10 h-10 rounded-xl bg-kasi-green text-white flex items-center justify-center shrink-0">
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
@@ -459,11 +463,11 @@ export default function Profile() {
         )}
 
         {user?.accountType === 'WORKER' && (
-          <Card className="p-4 shadow-sm border-amber-100 bg-gradient-to-r from-amber-50/50 to-orange-50/30">
+          <Card className="p-5 border-neutral-200 bg-kasi-green-light">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-xs" aria-hidden="true">
-                  🔧
+                  <Wrench className="w-5 h-5" />
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-neutral-900">Worker Profile</h4>
@@ -493,7 +497,7 @@ export default function Profile() {
             <span>Sign Out</span>
           </button>
         </Card>
-      </div>
+      </main>
 
       {/* Bottom Navigation */}
     </div>

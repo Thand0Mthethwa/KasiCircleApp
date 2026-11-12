@@ -85,7 +85,7 @@ describe('Profile Page', () => {
   it('displays account type correctly in user-friendly format for Resident', () => {
     renderComponent();
     expect(screen.getAllByText(/Resident/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/🏘️/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Local community member/i)).toBeInTheDocument();
   });
 
   it('displays account type correctly in user-friendly format for Worker', () => {
@@ -97,7 +97,7 @@ describe('Profile Page', () => {
     });
     renderComponent();
     expect(screen.getAllByText(/Worker/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/🔧/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Providing skilled services/i)).toBeInTheDocument();
   });
 
   it('lets worker accounts open their worker profile manager', async () => {
@@ -124,7 +124,7 @@ describe('Profile Page', () => {
     });
     renderComponent();
     expect(screen.getAllByText(/Business/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/🏢/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Local enterprise & service provider/i)).toBeInTheDocument();
   });
 
   it('opens edit mode when clicking Edit Profile button', async () => {

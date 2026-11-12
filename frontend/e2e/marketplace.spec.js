@@ -33,7 +33,7 @@ async function account(request, accountType = 'RESIDENT', admin = false) {
 
 async function login(page, user) {
   await page.goto('/login');
-  await page.getByLabel('Email or Phone Number').fill(user.email);
+  await page.getByLabel('Email address', { exact: true }).fill(user.email);
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Login', exact: true }).click();
   await expect(page).toHaveURL(/\/home$/);
