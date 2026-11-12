@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Input, Card, Header, LoadingSpinner } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import { businessService } from '../services/api';
+import useDialogFocus from '../components/useDialogFocus';
 import {
   Building2,
   MapPin,
@@ -441,6 +442,10 @@ export default function BusinessProfile() {
     }
   };
 
+  const imageDeleteRef = useDialogFocus(Boolean(imageToDelete), () => {
+    if (!actionInProgressId) handleCancelDelete();
+  });
+
   if (isAuthLoading || isLoadingBusiness) {
     return (
       <div className="page-wrapper flex items-center justify-center min-h-screen">
@@ -452,14 +457,14 @@ export default function BusinessProfile() {
   // Guard for non-BUSINESS accounts
   if (!isBusinessAccount) {
     return (
-      <div className="page-wrapper pb-24">
+      <div className="page-wrapper business-owner-page pb-12">
         <Header
           title="Business Profile"
           subtitle="Enterprise management"
           showBack={true}
           onBack={() => navigate('/profile')}
         />
-        <div className="page-content page-padding py-8 max-w-md mx-auto w-full">
+        <main className="page-content page-padding py-8 max-w-md mx-auto w-full">
           <Card className="p-6 text-center space-y-4 shadow-sm border-neutral-200">
             <div className="mx-auto w-16 h-16 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-2">
               <Lock className="w-8 h-8" />
@@ -490,7 +495,7 @@ export default function BusinessProfile() {
               </Button>
             </div>
           </Card>
-        </div>
+        </main>
       </div>
     );
   }
@@ -508,7 +513,7 @@ export default function BusinessProfile() {
   };
 
   return (
-    <div className="page-wrapper pb-24">
+    <div className="page-wrapper business-owner-page pb-12">
       <Header
         title={getPageTitle()}
         subtitle={getPageSubtitle()}
@@ -522,7 +527,7 @@ export default function BusinessProfile() {
         }}
       />
 
-      <div className="page-content page-padding py-6 max-w-md mx-auto w-full space-y-6">
+      <main className="content-container py-8 md:py-10 space-y-6">
         {/* Alerts */}
         {statusMessage && (
           <div
@@ -544,9 +549,9 @@ export default function BusinessProfile() {
 
         {/* Existing Business Profile View (when not editing) */}
         {business && !isEditing ? (
-          <div className="space-y-6" data-testid="existing-business-view">
+          <div className="owner-dashboard" data-testid="existing-business-view">
             {/* Business Header Card */}
-            <Card className="p-6 shadow-sm border-neutral-200">
+            <Card className="p-6 md:p-8 md:col-span-2 border-neutral-200 bg-kasi-green-light">
               <div className="flex items-start justify-between gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold text-2xl flex items-center justify-center shadow-md">
                   <Building2 className="w-7 h-7" />
@@ -561,7 +566,7 @@ export default function BusinessProfile() {
 
               <div className="mt-4">
                 <h2 className="text-xl font-bold text-neutral-900">{business.name}</h2>
-                <div className="inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                <div className="inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-kasi-green-light text-kasi-green border border-neutral-200">
                   <Tag className="w-3 h-3" />
                   {business.category}
                 </div>
@@ -623,7 +628,7 @@ export default function BusinessProfile() {
             </Card>
 
             {/* Business Photos & Image Management Card */}
-            <Card className="p-6 shadow-sm border-neutral-200 space-y-4" data-testid="business-images-card">
+            <Card className="p-6 shadow-sm border-neutral-200 space-y-4 md:row-span-2" data-testid="business-images-card">
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-5 h-5 text-kasi-green" />
@@ -681,13 +686,13 @@ export default function BusinessProfile() {
                       JPEG, PNG, or WebP up to 5 MB
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <div className="upload-control relative flex items-center gap-2 w-full sm:w-auto">
                     <input
                       type="file"
                       ref={fileInputRef}
                       onChange={handleFileSelect}
                       accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
-                      className="hidden"
+                      className="sr-only"
                       id="photo-upload-input"
                       data-testid="photo-upload-input"
                       disabled={isUploading || images.length >= 10}
@@ -963,7 +968,7 @@ export default function BusinessProfile() {
             </Card>
 
             {/* Actions: Edit & View Public */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 md:col-span-2">
               <Button
                 variant="primary"
                 onClick={handleStartEdit}
@@ -986,8 +991,8 @@ export default function BusinessProfile() {
             </div>
 
             {/* Account Policy Info */}
-            <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-2.5">
-              <Lock className="w-4 h-4 text-blue-700 flex-shrink-0 mt-0.5" />
+            <div className="p-4 rounded-xl bg-kasi-green-light border border-neutral-200 text-xs text-kasi-green flex items-start gap-2.5 md:col-span-2">
+              <Lock className="w-4 h-4 shrink-0 mt-0.5" />
               <span>
                 Each Business account is limited to one business profile during this release.
               </span>
@@ -996,7 +1001,7 @@ export default function BusinessProfile() {
         ) : (
           /* Business Form (Creation or Edit Mode) */
           <Card
-            className="p-6 shadow-sm border-neutral-200"
+            className="p-6 md:p-8 max-w-3xl mx-auto"
             data-testid={isEditing ? 'business-edit-form' : 'business-create-form'}
           >
             <div className="border-b border-neutral-100 pb-3 mb-5">
@@ -1180,7 +1185,7 @@ export default function BusinessProfile() {
             </form>
           </Card>
         )}
-      </div>
+      </main>
 
       {/* Delete Confirmation Modal */}
       {imageToDelete && (
@@ -1188,6 +1193,8 @@ export default function BusinessProfile() {
           role="dialog"
           aria-modal="true"
           aria-label="Confirm image deletion"
+          ref={imageDeleteRef}
+          tabIndex={-1}
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
           data-testid="delete-confirmation-dialog"
         >

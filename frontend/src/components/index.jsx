@@ -74,7 +74,7 @@ export const Input = ({
 };
 
 // Header Component
-export const Header = ({ title, subtitle, showBack = true, onBack }) => {
+export const Header = ({ title, subtitle, showBack = true, onBack, headingLevel = 1 }) => {
   return (
     <header className="page-header page-padding">
       <div className="page-header-inner">
@@ -90,7 +90,7 @@ export const Header = ({ title, subtitle, showBack = true, onBack }) => {
             <ChevronLeft className="w-6 h-6" />
           </button>
         )}
-        {title && <h1 className="page-title">{title}</h1>}
+        {title && React.createElement(`h${headingLevel}`, { className: 'page-title' }, title)}
       </div>
       {subtitle && <p className="text-neutral-600 text-sm mt-4 max-w-xl leading-relaxed">{subtitle}</p>}
       </div>

@@ -358,8 +358,8 @@ describe('BusinessDetail (Dedicated Business Detail Page)', () => {
 
     // Cover placeholder
     expect(await screen.findByTestId('business-cover-placeholder')).toBeInTheDocument();
-    expect(screen.getByText('Township Enterprise')).toBeInTheDocument();
-    expect(screen.getByText('Verified Business Listing')).toBeInTheDocument();
+    expect(screen.getByText('No cover photo provided')).toBeInTheDocument();
+    expect(screen.queryByText('Verified Business Listing')).not.toBeInTheDocument();
 
     // Gallery empty state
     expect(screen.getByTestId('gallery-empty')).toBeInTheDocument();

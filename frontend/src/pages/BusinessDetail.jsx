@@ -4,6 +4,8 @@ import { Button, Card, Header, LoadingSpinner } from '../components';
 import { businessService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import ReportForm from '../components/ReportForm';
+import useDialogFocus from '../components/useDialogFocus';
+import { ShopArt } from '../components/ui';
 import {
   Building2,
   MapPin,
@@ -489,17 +491,21 @@ export default function BusinessDetail() {
     }
   };
 
+  const lightboxRef = useDialogFocus(activeLightboxIndex !== null, closeLightbox);
+  const reviewDeleteRef = useDialogFocus(isDeleteDialogOpen, handleCloseDeleteDialog);
+
   return (
-    <div className="page-wrapper pb-24">
+    <div className="page-wrapper business-detail-page pb-12">
       {/* Header */}
       <Header
         title="Business Details"
+        headingLevel={business ? 2 : 1}
         subtitle="KasiCircle Enterprise Listing"
         showBack={true}
         onBack={() => navigate('/businesses')}
       />
 
-      <div className="page-content page-padding py-6 max-w-md mx-auto w-full space-y-5">
+      <main className="content-container py-8 md:py-10 space-y-6">
         {/* Navigation Breadcrumb / Back button */}
         <div className="flex items-center justify-between">
           <button
@@ -625,8 +631,18 @@ export default function BusinessDetail() {
             {/* Prominent Cover Image / Hero Banner */}
             {effectiveCoverUrl ? (
               <div
-                className="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden shadow-sm border border-neutral-200 group cursor-pointer bg-neutral-100"
+                className="relative w-full h-56 sm:h-80 rounded-xl overflow-hidden border border-neutral-200 group cursor-pointer bg-neutral-100"
                 data-testid="business-cover-image"
+                role="button"
+                tabIndex={0}
+                aria-label="View business cover photo"
+                onKeyDown={event => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    const index = displayImages.findIndex(image => image.imageUrl === effectiveCoverUrl);
+                    openLightbox(index >= 0 ? index : 0);
+                  }
+                }}
                 onClick={() => {
                   const idx = displayImages.findIndex((img) => img.imageUrl === effectiveCoverUrl);
                   openLightbox(idx >= 0 ? idx : 0);
@@ -656,18 +672,11 @@ export default function BusinessDetail() {
               </div>
             ) : (
               <div
-                className="relative w-full h-32 sm:h-40 rounded-2xl overflow-hidden border border-neutral-200 bg-gradient-to-br from-kasi-green-light via-neutral-50 to-neutral-100 flex flex-col items-center justify-center p-4 text-center"
+                className="relative w-full h-48 sm:h-64 rounded-xl overflow-hidden border border-neutral-200 bg-kasi-sage flex items-center justify-center gap-6 p-4 text-center"
                 data-testid="business-cover-placeholder"
               >
-                <div className="w-10 h-10 rounded-xl bg-white shadow-xs border border-kasi-green/20 text-kasi-green flex items-center justify-center mb-1.5">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                <p className="text-xs font-bold text-neutral-800 tracking-wide uppercase">
-                  Township Enterprise
-                </p>
-                <p className="text-[11px] text-neutral-500">
-                  Verified Business Listing
-                </p>
+                <ShopArt className="h-full w-auto" />
+                <p className="absolute bottom-3 right-3 text-xs bg-kasi-surface rounded-full px-3 py-1.5 text-neutral-600">No cover photo provided</p>
               </div>
             )}
 
@@ -675,11 +684,11 @@ export default function BusinessDetail() {
             <Card className="p-6 shadow-sm border-neutral-200 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-neutral-900 leading-tight">
+                  <h1 className="text-3xl md:text-4xl font-display font-normal text-neutral-900 leading-tight">
                     {business.name}
                   </h1>
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-kasi-green-light text-kasi-green border border-neutral-200">
                       <Tag className="w-3 h-3" />
                       <span>{business.category}</span>
                     </div>
@@ -706,7 +715,7 @@ export default function BusinessDetail() {
                     )}
                   </div>
                 </div>
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-kasi-green to-kasi-green-dark text-white flex items-center justify-center shadow-md flex-shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-kasi-green text-white flex items-center justify-center shadow-md flex-shrink-0">
                   <Building2 className="w-7 h-7" />
                 </div>
               </div>
@@ -720,6 +729,8 @@ export default function BusinessDetail() {
               </div>
             </Card>
 
+            <div className="detail-columns">
+            <div className="space-y-6 min-w-0">
             {/* About Card */}
             <Card className="p-6 shadow-sm border-neutral-200 space-y-2">
               <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
@@ -1328,6 +1339,8 @@ export default function BusinessDetail() {
               )}
             </Card>
 
+            </div>
+            <aside className="space-y-6 min-w-0" aria-label="Business contact and location">
             {/* Location Details Card */}
             <Card className="p-6 shadow-sm border-neutral-200 space-y-3">
               <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
@@ -1349,6 +1362,7 @@ export default function BusinessDetail() {
               <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
                 Contact Details
               </h2>
+              {!business.phoneNumber && !business.email && <p className="text-sm text-neutral-600">This business hasn’t added contact details yet.</p>}
 
               <div className="space-y-3 text-sm">
                 {business.phoneNumber && (
@@ -1395,7 +1409,7 @@ export default function BusinessDetail() {
 
               {/* Direct Action Contact Buttons */}
               {(business.phoneNumber || business.email) && (
-                <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                <div className="pt-2 flex flex-col gap-2.5">
                   {business.phoneNumber && (
                     <a
                       href={`tel:${business.phoneNumber}`}
@@ -1420,7 +1434,7 @@ export default function BusinessDetail() {
             </Card>
 
             {/* Secondary actions: Share & Directory */}
-            <div className="pt-1 flex gap-2">
+            <div className="pt-1 flex flex-wrap gap-2">
               <Button
                 variant="secondary"
                 size="sm"
@@ -1449,9 +1463,11 @@ export default function BusinessDetail() {
                 Browse More
               </Button>
             </div>
+            </aside>
+            </div>
           </div>
         )}
-      </div>
+      </main>
 
       {/* Persistent Bottom Navigation */}
 
@@ -1461,6 +1477,8 @@ export default function BusinessDetail() {
           role="dialog"
           aria-modal="true"
           aria-label="Photo lightbox view"
+          ref={lightboxRef}
+          tabIndex={-1}
           className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex flex-col justify-between p-4 animate-in fade-in duration-200"
           data-testid="image-lightbox"
           onClick={closeLightbox}
@@ -1555,6 +1573,8 @@ export default function BusinessDetail() {
           role="dialog"
           aria-modal="true"
           aria-label="Confirm review deletion"
+          ref={reviewDeleteRef}
+          tabIndex={-1}
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
           data-testid="delete-review-dialog"
         >

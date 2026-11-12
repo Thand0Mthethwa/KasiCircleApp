@@ -43,8 +43,8 @@ Each phase includes focused validation and a local commit; update this record be
 | Phase | Scope | Status / validation |
 |---|---|---|
 | A | Tokens, global styles, application shell, shared primitives, navigation | COMPLETE (`7185633`): shell/accessibility/session tests 13/13; lint clean and production build passed. Duplicated page navigation removed; safe favicon/metadata added. |
-| B | API-backed homepage, onboarding and welcome | COMPLETE: homepage/landing tests 10/10, production build passed. Three search scopes preserve worker keyword/skill navigation; real business API preview has loading/error/retry/empty states. |
-| C | Business directory/detail/owner/review dashboard | Pending |
+| B | API-backed homepage, onboarding and welcome | COMPLETE (`2654a72`): homepage/landing tests 10/10, production build passed. Three search scopes preserve worker keyword/skill navigation; real business API preview has loading/error/retry/empty states. Chrome inspected at 375/1440px with an empty API fixture; no overflow. |
+| C | Business directory/detail/owner/review dashboard | COMPLETE: 107/107 business/dialog tests passed, lint clean and production build passed. Responsive listing/photo cards, detail sidebar, owner dashboard, review statistics, semantic landmarks, keyboard cover/gallery/delete focus. Removed unsupported verification claim. Chrome directory/detail checks at 375/1440px: no overflow/runtime errors (explicit QA fixtures). |
 | D | Worker directory/detail/editor | Pending |
 | E | Job directory/detail/forms/applications | Pending |
 | F | Login/register/account/profile | Pending |
@@ -62,4 +62,4 @@ Each phase includes focused validation and a local commit; update this record be
 
 ## Resume notes
 
-Phases A–B implemented. Initial measured frontend run: 195/195 (32 files), rather than the historical 197. Shell/home/landing tests add twelve cases. Use host execution for Node/Vite: the restricted sandbox fails worker stream creation. An isolated temporary QA PostgreSQL cluster is running on loopback port 55432; its directory/port are recorded in `/tmp/kasicircle-redesign-qa-state.json`. Normal development database/settings are untouched. Unchanged backend packaged successfully for browser QA. A local Vite preview runs on 5175 for Chrome inspections. Next: Phase C business marketplace, then D workers. Record the Phase B commit in the next phase update.
+Phases A–C implemented. Initial measured frontend run: 195/195 (32 files), rather than the historical 197. Shell/home/landing/dialog tests add fourteen cases. Use host execution for Node/Vite: the restricted sandbox fails worker stream creation. An isolated temporary QA PostgreSQL cluster is running on loopback port 55432; its directory/port are recorded in `/tmp/kasicircle-redesign-qa-state.json`. Normal development database/settings are untouched. Unchanged backend packaged successfully for browser QA. A local Vite preview runs on 5175; initial screenshots are in `/tmp/kasicircle-redesign-visual`. Next: Phase D workers, then E jobs. Record the Phase C commit in the next phase update. Final full-suite/build/browser checks are still required after all phases.

@@ -129,5 +129,15 @@
   .intro-art.warm { background: #eed8c1; }
   .intro-art p { @apply font-display text-3xl md:text-4xl leading-tight tracking-tight mt-5 mb-3; }
   .intro-art p span { @apply text-neutral-600; }
+  .detail-columns { @apply grid lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)] gap-6 items-start; }
+  .detail-columns h2 { @apply text-base font-semibold normal-case tracking-normal text-kasi-green; }
+  .business-detail-page .detail-columns .text-xs { font-size: 13px; }
+  .business-detail-page .detail-columns [role='progressbar'] { @apply bg-neutral-200; }
+  .owner-dashboard { @apply grid md:grid-cols-2 gap-6 items-start; }
+  .business-owner-page h2 { @apply font-display text-3xl font-normal; }
+  .business-owner-page h3 { @apply text-base normal-case tracking-normal font-semibold text-kasi-green; }
+  .upload-control:focus-within label { outline: 3px solid var(--green); outline-offset: 4px; }
+  [role='dialog'] { overscroll-behavior: contain; overflow-y: auto; }
+  [role='dialog']>.marketplace-card { max-height: calc(100dvh - 40px); overflow-y: auto; }
   @screen lg { .app-body { padding-bottom: 0; } }
 }

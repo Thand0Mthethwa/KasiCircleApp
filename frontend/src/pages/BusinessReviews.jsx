@@ -219,14 +219,14 @@ export default function BusinessReviews() {
   // ---------------------------------------------------------------------------
   if (!isAuthLoading && user && !isBusinessAccount) {
     return (
-      <div className="page-wrapper pb-24">
+      <div className="page-wrapper reviews-dashboard-page pb-12">
         <Header
           title="Reviews & Feedback"
           subtitle="Owner Review Dashboard"
           showBack={true}
           onBack={() => navigate('/profile')}
         />
-        <div className="page-content page-padding py-6 max-w-md mx-auto w-full space-y-6">
+        <main className="content-container py-8 md:py-10 space-y-6">
           <Card className="p-6 text-center space-y-4" data-testid="access-restricted-card">
             <div className="w-12 h-12 mx-auto rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
               <Lock className="w-6 h-6" />
@@ -234,7 +234,7 @@ export default function BusinessReviews() {
             <div>
               <h2 className="text-lg font-bold text-neutral-900">Business Account Required</h2>
               <p className="text-xs text-neutral-500 mt-1">
-                The Review Dashboard is exclusive to verified Business accounts. Your account type is{' '}
+                The Review Dashboard is available to Business accounts. Your account type is{' '}
                 <span className="font-semibold text-neutral-800">{user.accountType || 'RESIDENT'}</span>.
               </p>
             </div>
@@ -246,7 +246,7 @@ export default function BusinessReviews() {
               Return to Profile
             </Button>
           </Card>
-        </div>
+        </main>
       </div>
     );
   }
@@ -256,20 +256,20 @@ export default function BusinessReviews() {
   // ---------------------------------------------------------------------------
   if (isResolvingBusiness || isAuthLoading) {
     return (
-      <div className="page-wrapper pb-24">
+      <div className="page-wrapper reviews-dashboard-page pb-12">
         <Header
           title="Reviews & Feedback"
           subtitle="Loading your business review dashboard..."
           showBack={true}
           onBack={() => navigate('/business-profile')}
         />
-        <div
+        <main
           className="page-content page-padding py-16 flex flex-col items-center justify-center gap-3 text-neutral-500"
           data-testid="dashboard-loading"
         >
           <LoadingSpinner size="lg" />
           <p className="text-sm font-medium">Resolving your business listing...</p>
-        </div>
+        </main>
       </div>
     );
   }
@@ -279,14 +279,14 @@ export default function BusinessReviews() {
   // ---------------------------------------------------------------------------
   if (businessError) {
     return (
-      <div className="page-wrapper pb-24">
+      <div className="page-wrapper reviews-dashboard-page pb-12">
         <Header
           title="Reviews & Feedback"
           subtitle="Owner Review Dashboard"
           showBack={true}
           onBack={() => navigate('/business-profile')}
         />
-        <div className="page-content page-padding py-6 max-w-md mx-auto w-full space-y-6">
+        <main className="content-container py-8 md:py-10 space-y-6">
           <Card className="p-6 text-center space-y-4 border-red-200 bg-red-50/50" data-testid="dashboard-error">
             <div className="w-12 h-12 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center">
               <AlertCircle className="w-6 h-6" />
@@ -304,7 +304,7 @@ export default function BusinessReviews() {
               <span>Retry</span>
             </Button>
           </Card>
-        </div>
+        </main>
       </div>
     );
   }
@@ -314,14 +314,14 @@ export default function BusinessReviews() {
   // ---------------------------------------------------------------------------
   if (!business) {
     return (
-      <div className="page-wrapper pb-24">
+      <div className="page-wrapper reviews-dashboard-page pb-12">
         <Header
           title="Reviews & Feedback"
           subtitle="Owner Review Dashboard"
           showBack={true}
           onBack={() => navigate('/business-profile')}
         />
-        <div className="page-content page-padding py-6 max-w-md mx-auto w-full space-y-6">
+        <main className="content-container py-8 md:py-10 space-y-6">
           <Card className="p-6 text-center space-y-4" data-testid="no-business-registered">
             <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200">
               <Building2 className="w-7 h-7" />
@@ -342,7 +342,7 @@ export default function BusinessReviews() {
               <span>Register Business Profile</span>
             </Button>
           </Card>
-        </div>
+        </main>
       </div>
     );
   }
@@ -351,7 +351,7 @@ export default function BusinessReviews() {
   // RENDER: Active Business Review Dashboard
   // ---------------------------------------------------------------------------
   return (
-    <div className="page-wrapper pb-24">
+    <div className="page-wrapper reviews-dashboard-page pb-12">
       {/* Dashboard Header */}
       <Header
         title="Reviews & Feedback"
@@ -360,7 +360,7 @@ export default function BusinessReviews() {
         onBack={() => navigate('/business-profile')}
       />
 
-      <div className="page-content page-padding py-6 max-w-md mx-auto w-full space-y-6">
+      <main className="content-container py-8 md:py-10 space-y-6">
         {/* Business Identity Banner */}
         <Card className="p-4 shadow-sm border-neutral-200">
           <div className="flex items-center justify-between">
@@ -389,7 +389,7 @@ export default function BusinessReviews() {
         </Card>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-3 gap-2.5" data-testid="kpi-cards">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" data-testid="kpi-cards">
           <StatCard
             icon={Star}
             value={effectiveAverageRating > 0 ? effectiveAverageRating.toFixed(1) : '0.0'}
@@ -400,7 +400,7 @@ export default function BusinessReviews() {
             icon={MessageSquare}
             value={effectiveTotalReviews}
             label="Total Reviews"
-            bgColor="bg-blue-50/80 border border-blue-200/70"
+            bgColor="bg-kasi-green-light border border-neutral-200"
           />
           <StatCard
             icon={Award}
@@ -535,7 +535,7 @@ export default function BusinessReviews() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-kasi-green to-kasi-green-dark text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
+                      <div className="w-8 h-8 rounded-full bg-kasi-green text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
                         {getReviewerInitial(rev.authorName)}
                       </div>
                       <div>
@@ -636,7 +636,7 @@ export default function BusinessReviews() {
             <span>View Public Page</span>
           </Button>
         </div>
-      </div>
+      </main>
 
       {/* Bottom Navigation */}
     </div>
