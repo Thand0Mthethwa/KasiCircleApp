@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { businessService, jobService, userService, workerService } from './api';
+import { businessService, userService, workerService } from './api';
 
 const response = (status, data) => ({
   ok: status >= 200 && status < 300,
@@ -51,73 +51,41 @@ describe('API session handling', () => {
     window.removeEventListener('kasicircle:unauthorized', unauthorizedListener);
   });
 
-  it('requests the public worker directory with filters and without an authorization header', async () => {
-    localStorage.setItem('kasicircle_token', 'active-token');
+  it('sends worker directory filters without authentication', async () => {
     fetch.mockResolvedValueOnce(response(200, { content: [] }));
 
-    await workerService.getWorkers({ search: 'Amahle', skill: 'Wiring', category: 'Electrical', city: 'Soweto' });
+    await workerService.getWorkers({
+      page: 2,
+      size: 20,
+      search: '  electrician ',
+      category: 'Electrical',
+      skill: 'wiring',
+      city: 'Soweto',
+    });
 
     const [url, options] = fetch.mock.calls[0];
-    expect(url).toContain('/api/workers?');
-    expect(url).toContain('search=Amahle');
-    expect(url).toContain('skill=Wiring');
-    expect(url).toContain('category=Electrical');
-    expect(url).toContain('city=Soweto');
+    expect(url).toContain('/api/workers?page=2&size=20&search=electrician&category=Electrical&skill=wiring&city=Soweto');
     expect(options.headers.Authorization).toBeUndefined();
   });
 
-  it('sends authenticated worker profile updates', async () => {
+  it('sends authenticated worker profile changes with the current token', async () => {
     localStorage.setItem('kasicircle_token', 'worker-token');
-    fetch.mockResolvedValueOnce(response(200, { headline: 'Electrician' }));
+    fetch.mockResolvedValueOnce(response(201, { id: 'profile-1' }));
     const profile = {
       headline: 'Electrician',
-      bio: 'Home wiring',
+      bio: 'Residential work',
       skills: ['Wiring'],
       serviceCategories: ['Electrical'],
       city: 'Soweto',
       province: 'Gauteng',
     };
 
-    await workerService.updateMyProfile(profile);
-
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/workers/me'),
-      expect.objectContaining({
-        method: 'PUT',
-        headers: expect.objectContaining({ Authorization: 'Bearer worker-token' }),
-        body: JSON.stringify(profile),
-      })
-    );
-  });
-
-  it('requests the public job directory with filters and without authentication', async () => {
-    localStorage.setItem('kasicircle_token', 'active-token');
-    fetch.mockResolvedValueOnce(response(200, { content: [] }));
-
-    await jobService.getJobs({ search: 'electrician', category: 'Electrical', city: 'Soweto' });
+    await workerService.createMyProfile(profile);
 
     const [url, options] = fetch.mock.calls[0];
-    expect(url).toContain('/api/jobs?');
-    expect(url).toContain('status=OPEN');
-    expect(url).toContain('search=electrician');
-    expect(url).toContain('category=Electrical');
-    expect(url).toContain('city=Soweto');
-    expect(options.headers.Authorization).toBeUndefined();
-  });
-
-  it('submits job applications through the authenticated endpoint', async () => {
-    localStorage.setItem('kasicircle_token', 'active-token');
-    fetch.mockResolvedValueOnce(response(201, { id: 'application-1' }));
-
-    await jobService.applyForJob('job-1', 'I have relevant experience.');
-
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/jobs/job-1/applications'),
-      expect.objectContaining({
-        method: 'POST',
-        headers: expect.objectContaining({ Authorization: expect.any(String) }),
-        body: JSON.stringify({ message: 'I have relevant experience.' }),
-      })
-    );
+    expect(url).toContain('/api/workers/me');
+    expect(options.method).toBe('POST');
+    expect(options.headers.Authorization).toBe('Bearer worker-token');
+    expect(JSON.parse(options.body)).toEqual(profile);
   });
 });

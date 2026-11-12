@@ -369,7 +369,7 @@ export const reviewService = {
 };
 
 export const workerService = {
-  getWorkers: async ({ page = 0, size = 10, search = '', category = '', skill = '', city = '' } = {}) => {
+  getWorkers: async ({ page = 0, size = 20, search = '', category = '', skill = '', city = '' } = {}) => {
     const queryParams = new URLSearchParams({ page, size });
     if (search.trim()) queryParams.set('search', search.trim());
     if (category.trim()) queryParams.set('category', category.trim());
@@ -629,4 +629,6 @@ export default {
   workerService,
   jobService,
   messagingService,
+  notificationService,
+  reportService,
 };
