@@ -97,5 +97,37 @@
   .app-footer a { @apply underline-offset-4 hover:underline; }
   .app-body { @apply min-h-screen flex flex-col; padding-bottom: 82px; }
   .app-body.auth-route { padding-bottom: 0; }
+  .home-hero { @apply grid lg:grid-cols-2 items-center gap-10 lg:gap-16 py-12 md:py-16 lg:py-20; }
+  .hero-copy h1, .editorial-title { @apply font-display font-normal tracking-tight my-6; font-size: clamp(44px, 5.8vw, 76px); line-height: 1.04; letter-spacing: -.045em; }
+  .hero-copy h1 span { color: #31684b; }
+  .hero-description { @apply text-neutral-600 text-base leading-relaxed max-w-lg; }
+  .hero-search { @apply mt-7; }
+  .search-scope { @apply px-4 rounded-full text-sm text-neutral-600; }
+  .search-scope[aria-pressed='true'] { @apply bg-kasi-green text-white; }
+  .hero-art { @apply relative rounded-xl overflow-hidden border border-neutral-200 bg-kasi-sage px-5 pt-7 pb-5; }
+  .hero-art-label { @apply text-[10px] tracking-[.16em] text-kasi-green font-semibold; }
+  .hero-shop { @apply w-full my-4; }
+  .hero-art-note { @apply flex items-center gap-4 rounded-lg bg-kasi-surface p-5; }
+  .hero-art-note strong { @apply block text-sm; }
+  .hero-art-note div>span { @apply block text-xs text-neutral-600 mt-1; }
+  .marketplace-strip { @apply border-y border-neutral-200; background: #f0f3e8; }
+  .marketplace-shortcut { @apply flex items-center gap-3 p-4 rounded-lg border border-neutral-200 bg-kasi-surface hover:border-kasi-green transition-colors; }
+  .shortcut-icon { @apply inline-flex items-center justify-center w-11 h-11 rounded-full bg-kasi-green-light text-kasi-green shrink-0; }
+  .category-tile { @apply marketplace-card flex flex-col items-start text-left p-5 md:p-6 hover:border-kasi-green transition-colors; }
+  .category-tile .state-icon { @apply mb-4; }
+  .business-card { transition: border-color .2s, box-shadow .2s; }
+  .business-card:hover { border-color: #b7c6a3; box-shadow: 0 12px 30px rgb(24 61 45 / 9%); }
+  .business-card-image { height: 190px; }
+  .skills-section { @apply bg-kasi-green-light rounded-xl p-6 md:p-9; }
+  .skill-tile { @apply flex flex-wrap items-center gap-3 bg-kasi-surface border border-neutral-200 rounded-lg p-4 text-sm font-medium hover:border-kasi-green; }
+  .skill-tile svg:last-child { @apply ml-auto; }
+  .intro-layout { @apply grid md:grid-cols-2 items-center gap-10 md:gap-14 py-12 md:py-20; min-height: 75vh; }
+  .intro-features { @apply grid gap-4 mt-7 text-sm; }
+  .intro-features p { @apply flex items-start gap-3; }
+  .intro-features svg { @apply shrink-0; }
+  .intro-art { @apply bg-kasi-sage rounded-xl overflow-hidden p-5 md:p-8; }
+  .intro-art.warm { background: #eed8c1; }
+  .intro-art p { @apply font-display text-3xl md:text-4xl leading-tight tracking-tight mt-5 mb-3; }
+  .intro-art p span { @apply text-neutral-600; }
   @screen lg { .app-body { padding-bottom: 0; } }
 }

@@ -1,63 +1,57 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, ProgressIndicator } from '../components';
-import { Search } from 'lucide-react';
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, MapPin, Store, Wrench, Briefcase } from "lucide-react";
+import { Button } from "../components";
+import { ShopArt } from "../components/ui";
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const [currentStep] = useState(2); // Step 2 of 3
-
-  const handleContinue = () => {
-    navigate('/welcome');
-  };
-
   return (
-    <div className="page-wrapper">
-      <div className="page-content page-padding flex flex-col justify-between pb-20 max-w-md w-full mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-block bg-kasi-green text-white rounded-lg p-2 mb-3">
-            <span className="text-xl font-bold">K</span>
-          </div>
-          <p className="text-xs text-neutral-500 font-semibold">KasiConnect</p>
-        </div>
-
-        {/* Hero Image */}
-        <div className="flex-1 flex items-center justify-center -mx-4 mb-8">
-          <div className="relative w-full aspect-square max-h-96">
-            {/* Placeholder for image - in production would use actual image */}
-            <div className="w-full h-full bg-gradient-to-br from-kasi-green-light to-blue-100 rounded-3xl flex items-center justify-center overflow-hidden">
-              <img
-                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect fill='%232D9D78' width='400' height='400'/%3E%3Ctext x='50%' y='50%' font-size='48' fill='white' text-anchor='middle' dy='.3em' font-family='sans-serif' font-weight='bold'%3EWorkers%3C/text%3E%3C/svg%3E"
-                alt="Find Trusted Workers"
-                className="w-full h-full object-cover"
-              />
-              {/* Search icon overlay */}
-              <div className="absolute top-4 left-4 bg-white rounded-full p-3 shadow-lg">
-                <Search className="w-6 h-6 text-kasi-green" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-neutral-900 mb-3">
-            Find Trusted Workers
-          </h1>
-          <p className="text-neutral-600 text-sm leading-relaxed">
-            Connect with verified electricians, plumbers, carpenters and more — right in your township.
+    <main className="intro-layout content-container">
+      <div className="intro-copy">
+        <p className="eyebrow flex gap-2 items-center">
+          <MapPin size={14} aria-hidden="true" />
+          Your neighbourhood, connected
+        </p>
+        <h1 className="editorial-title">
+          Good things.
+          <br />
+          Closer to home.
+        </h1>
+        <p className="text-neutral-600 leading-relaxed text-lg max-w-lg">
+          Big possibilities begin with the people around you. Welcome to your
+          community’s marketplace.
+        </p>
+        <div className="intro-features">
+          <p>
+            <Store size={20} aria-hidden="true" />
+            <span>Discover the businesses that make your kasi.</span>
+          </p>
+          <p>
+            <Wrench size={20} aria-hidden="true" />
+            <span>Find local workers and practical skills.</span>
+          </p>
+          <p>
+            <Briefcase size={20} aria-hidden="true" />
+            <span>Explore opportunities close to home.</span>
           </p>
         </div>
-
-        {/* Progress Indicator */}
-        <ProgressIndicator current={currentStep} total={3} />
-
-        {/* Continue Button */}
-        <Button variant="primary" onClick={handleContinue}>
-          Continue →
-        </Button>
+        <div className="flex flex-wrap gap-4 mt-8">
+          <Button onClick={() => navigate("/welcome")}>
+            Continue <ArrowRight size={17} aria-hidden="true" />
+          </Button>
+          <Link className="btn-secondary" to="/home">
+            Explore as a guest
+          </Link>
+        </div>
       </div>
-    </div>
+      <div className="intro-art" aria-hidden="true">
+        <ShopArt />
+        <p>
+          Our communities.
+          <br />
+          <span>Our possibilities.</span>
+        </p>
+      </div>
+    </main>
   );
 }
