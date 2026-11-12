@@ -40,3 +40,17 @@ Sprint 12 cannot be called fully verified while the hosted-CI gate is unresolved
 ## Reproducible resume point
 
 Start with the hosted CI acceptance gate, then production environment/storage smoke checks. Do not restart completed marketplace implementation or discard existing local edits. The sprint log records commit checkpoints; all new commits remain local. Pre-existing edits in the migration document, API tests and API client, plus the untracked workspace file, are preserved and excluded. The related pre-existing App worker-route test was retained and extended with the public-job check in the QA commit.
+
+
+## Sprint 15 — hosted CI preparation (2026-11-12)
+
+Hosted CI remains **BLOCKED / NOT RUN**. See [the exact hosted-CI runbook](HOSTED_CI_VERIFICATION.md) for repository prerequisites, operator-only publication/dispatch commands, exact-commit run selection, job/step verification, and evidence required before changing that status.
+
+The workflow now adds manual dispatch, pins both jobs to Ubuntu 24.04, explicitly installs the PostgreSQL client used by browser fixtures, and sets backend/frontend timeouts to 25/15 minutes. The clean test run exposed an asynchronous Home navigation assertion; its two remaining immediate URL checks now wait for routing to finish. Java 21/Maven verification, the PostgreSQL 16 service, locked npm installs, sequential frontend tests, ESLint, production build and managed-Chromium journeys remain configured. Repository checks confirmed Actions enabled, all actions allowed, no SHA-pin mandate and read-only workflow permissions. No additional repository secrets are required; CI uses disposable test fixtures and does not deploy.
+
+The current branch and GitHub default branch are `Feature/Authentication`. The latest four prior commits are `f901b80`, `5b323af`, `47f27d8`, `c1cb64d`; live remote inspection confirmed **18 unpublished commits** before the Sprint 15 commit, not only four. Review the complete unpublished chain before any authorized push. Existing unrelated edits remain excluded.
+
+Current Sprint 15 execution results are maintained in the runbook; tests run from a clean committed-source archive so the preserved uncommitted API changes cannot mask CI failures. Local PostgreSQL 18 is distinct from the hosted PostgreSQL 16 service. No hosted success is inferred from local results.
+
+
+Sprint 15 local preparation is **COMPLETE**: clean lockfile install (zero audit-reported vulnerabilities), Java 21 Maven verification **241 passed**, final sequential frontend suite **197 passed / 32 files**, ESLint, production build, actionlint/YAML/startup-shell checks, fresh PostgreSQL 18 packaged startup with **11 successful migrations**, and **8 managed-Chromium desktop/mobile journeys passed**. The initial clean frontend run had 196 passing / 1 failing navigation assertion; the corrected full rerun passed. The 197 clean-source total includes two existing API tests absent from the earlier 195-test dirty worktree. No production code or unrelated edits changed. The prepared workflow's Ubuntu 24.04/PostgreSQL 16 execution, including hosted package provisioning, is still **NOT RUN**; use the runbook to obtain actual hosted evidence.

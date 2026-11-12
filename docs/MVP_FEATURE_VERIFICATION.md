@@ -4,6 +4,8 @@ Reconciled on **2026-11-12**, starting from `fc73dd6`, then worker pagination co
 
 ## Executed validation
 
+The following results describe the previous MVP checkpoint; Sprint 15 clean-source evidence is recorded below.
+
 - Java 21 `mvn --batch-mode verify`: **241 passed**, zero failures/errors/skips, package success. Initial sandbox run failed on Mockito attachment and is excluded.
 - Initial sequential frontend suite: **193 passed** across 32 files, including worker pagination. After adding job retry coverage and patching dependencies, the final sequential suite passed **195 tests across 32 files**, including corrected navigation timing and both public-job/worker route regressions.
 - Clean committed snapshot `5b323af`: **11 route/API tests passed** across four files without the preserved uncommitted API edits.
@@ -84,3 +86,13 @@ Existing authentication/account/business foundations remain in place. Earlier ch
 At the beginning of this session, `backend/MIGRATIONS.md`, `frontend/src/App.test.jsx`, `frontend/src/services/api.js`, and `frontend/src/services/api.test.js` already had modifications, and a backend workspace file was untracked. The migration/API client/API test edits and workspace file remain untouched and excluded. The pre-existing App worker-route test was retained and extended with public-job regression coverage, and is included in the QA commit. Source files were not restored or discarded in this session. Earlier restoration history remains in Git and the progress log.
 
 The first newly identified incomplete feature was worker directory pagination (Sprint 6): the API was paginated, but later profiles were inaccessible in the UI. This was fixed/tested and committed as `c1cb64d`. A Sprint 11 error-state gap in JobForm was also fixed: save failure now preserves input and permits retry while unauthorized edit forms remain unavailable.
+
+
+## Sprint 15 hosted-CI preparation — 2026-11-12
+
+The automated CI requirement remains **BLOCKED**, with the disposition unchanged at **58 COMPLETE / 1 BLOCKED**. `.github/workflows/ci.yml` now supports manual dispatch, pinned Ubuntu 24.04 jobs, explicit PostgreSQL client installation and job timeouts while retaining all required backend/frontend/browser checks. Actionlint validates the workflow. GitHub Actions settings were inspected read-only and require no changes or additional repository secrets for this definition. No actual hosted run has been triggered or accepted as passed.
+
+[Hosted CI verification](HOSTED_CI_VERIFICATION.md) records current clean-source local checks, the full unpublished-history warning, exact push/dispatch/watch instructions and the evidence needed to clear this gate. Local PostgreSQL 18 evidence does not establish the PostgreSQL 16 hosted result.
+
+
+Sprint 15 local evidence: clean lockfile install, Java 21 verification **241 passed**, final clean frontend **197 passed / 32 files**, lint/build, actionlint/YAML/startup-shell checks, fresh PostgreSQL 18 **11 successful migrations**, and managed-Chromium desktop/mobile **8 passed**. The initial frontend run exposed one asynchronous navigation assertion; the corrected full rerun passed. The count differs from the earlier 195 because the clean committed API tests contain two cases absent from the preserved uncommitted edits. The workflow's hosted Ubuntu 24.04/PostgreSQL 16 combination and actual Actions run are still unverified, so the hosted-CI row stays **BLOCKED**.

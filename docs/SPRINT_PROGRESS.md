@@ -14,7 +14,7 @@ Current evidence is in the [59-requirement feature matrix](MVP_FEATURE_VERIFICAT
 | 11 UI/UX | COMPLETE | Shared responsive/form/navigation states plus worker pagination and job retry. Desktop/mobile core journeys pass. Full component suite: 195 passed, including updated navigation timing and both public-route regressions. |
 | 12 production readiness | BLOCKED (hosted CI) | Code/config/dependency audit, local tests/build, fresh PostgreSQL 18 V1–V11 and repeat startup verified. CI targets PostgreSQL 16 and includes integrated browsers, but has not executed remotely because automatic pushing is prohibited. |
 | 13 end-to-end QA | COMPLETE | Eight Playwright cases passed: four real browser/API/PostgreSQL/JWT journeys each on desktop and mobile Chromium. Privacy/ownership/participant/recipient/admin denials included. |
-| 14 documentation | COMPLETE (local review) | API, architecture, setup, deployment/operations, migration safety, QA, limitations and release report written. 31 local links resolve, 96 unique feature-evidence paths exist, CI YAML parses, whitespace check passes. Final requirement disposition: 58 COMPLETE / 1 BLOCKED (hosted CI). |
+| 14 documentation | COMPLETE (local review) | API, architecture, setup, deployment/operations, migration safety, QA, limitations and release report written. Previous checkpoint local links resolved, 96 unique feature-evidence paths exist, CI YAML parses, whitespace check passes. Final requirement disposition: 58 COMPLETE / 1 BLOCKED (hosted CI). |
 
 ## Executed checks — 2026-11-12
 
@@ -46,3 +46,13 @@ Prior reconciliation recorded approved restoration of zero-byte Worker/Job files
 ## Resume point
 
 **First unresolved gate: Sprint 12 hosted CI.** An authorized operator must publish/review the local commits and execute GitHub Actions. Follow the deployment guide for production configuration, historical-data migration/restore rehearsal and live Cloudinary upload/delete acceptance. No production infrastructure or cloud credentials were changed. Keep the documented MVP limitations explicit and do not restart completed implementation or declare unconditional release readiness.
+
+
+## Sprint 15 — hosted CI preparation (2026-11-12)
+
+Local preparation is **COMPLETE**; hosted CI stays **BLOCKED / NOT RUN**. Workflow fixes add `workflow_dispatch`, Ubuntu 24.04 runners, an explicit PostgreSQL client dependency for browser admin fixtures, and 25/15-minute job timeouts. Existing Java 21/Maven, PostgreSQL 16, reproducible frontend install, stable test workers, lint/build and browser steps remain intact. A clean-source frontend run found a Home navigation race; two URL assertions now wait for asynchronous routing. Actionlint and workflow/shell syntax validation pass. GitHub read-only settings checks confirmed Actions enabled and read-only token permissions; no extra repository secrets or settings changes are required by the definition.
+
+See [hosted CI verification](HOSTED_CI_VERIFICATION.md) for the clean-checkout results and exact operator-only push/trigger/watch instructions. Branch/default branch: `Feature/Authentication`; live remote tip `8be31ae04bdce451293d1d7a9c749e208f0c3f30`; 18 commits ahead before this preparation commit. The latest four are `f901b80`, `5b323af`, `47f27d8`, `c1cb64d`. Review all unpublished ancestors before authorizing publication. No push, merge, dispatch or deployment has occurred.
+
+
+Executed Sprint 15 results: clean `npm ci` passed with zero audit-reported vulnerabilities; backend **241 passed** and package succeeded; final clean frontend **197 passed across 32 files**; lint/build passed; actionlint/YAML/startup-shell checks passed; packaged startup applied **V1–V11 successfully** on fresh local PostgreSQL 18; managed Chromium desktop/mobile **8/8 passed**. The initial frontend run failed one navigation race (196/197 passing), which is fixed and covered by the final full rerun. Two preserved uncommitted API-test deletions explain the earlier worktree's 195 total. Local database stopped after QA. The final local preparation commit contains only workflow, the affected navigation test and release documents; unrelated files remain byte-for-byte unchanged. Hosted Ubuntu 24.04/PostgreSQL 16 execution remains unverified.

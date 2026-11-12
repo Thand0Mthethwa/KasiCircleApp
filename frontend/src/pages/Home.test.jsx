@@ -49,7 +49,7 @@ describe('Home marketplace navigation', () => {
     expect(screen.queryByText('Sipho Dlamini')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Find local jobs' }));
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/jobs');
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/jobs'));
   });
 
   it('opens the worker directory with a selected skill filter', async () => {
@@ -58,6 +58,6 @@ describe('Home marketplace navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Plumber' }));
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/workers?skill=Plumber');
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/workers?skill=Plumber'));
   });
 });
