@@ -142,6 +142,12 @@
   .profile-layout { @apply grid lg:grid-cols-[280px_minmax(0,1fr)] gap-6 items-start; }
   .profile-layout>.profile-summary { @apply lg:row-span-3; }
   .profile-layout>.profile-notice { @apply lg:col-span-2; }
+  .conversation-list { @apply flex md:block overflow-x-auto md:overflow-y-auto; max-height: 550px; }
+  .conversation-list>li { @apply shrink-0 w-56 md:w-auto md:border-b border-neutral-200; }
+  .message-panel { height: min(72vh, 760px); min-height: 440px; }
+  .message-bubble { @apply rounded-xl p-4 text-sm leading-relaxed border max-w-[90%] sm:max-w-[80%]; width: fit-content; }
+  .message-bubble.incoming { @apply bg-kasi-surface border-neutral-200 text-neutral-800 rounded-tl-sm; }
+  .message-bubble.outgoing { @apply ml-auto bg-kasi-green border-kasi-green text-white rounded-tr-sm; }
   .detail-columns h2 { @apply text-base font-semibold normal-case tracking-normal text-kasi-green; }
   .business-detail-page .detail-columns .text-xs { font-size: 13px; }
   .business-detail-page .detail-columns [role='progressbar'] { @apply bg-neutral-200; }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button, Card } from './index';
 import { useAuth } from '../contexts/AuthContext';
 import { reportService } from '../services/api';
+import { Flag } from 'lucide-react';
 
 const reasons = ['SPAM', 'HARASSMENT', 'INAPPROPRIATE', 'FRAUD', 'OTHER'];
 
@@ -41,7 +42,7 @@ export default function ReportForm({ targetType, targetId }) {
     return (
       <div className="mt-4">
         {!isOpen ? (
-          <Button type="button" variant="secondary" onClick={() => setIsOpen(true)}>Report this content</Button>
+          <Button type="button" variant="tertiary" onClick={() => setIsOpen(true)}><Flag size={15} aria-hidden="true" />Report this content</Button>
         ) : (
           <p className="text-sm text-neutral-600">
             <Link className="underline text-kasi-green" to="/login">Sign in</Link> to report this content.
@@ -56,10 +57,10 @@ export default function ReportForm({ targetType, targetId }) {
     <div className="mt-5">
       {notice && <p role="status" className="mb-3 text-sm text-green-700">{notice}</p>}
       {!isOpen ? (
-        <Button type="button" variant="secondary" onClick={() => setIsOpen(true)}>Report this content</Button>
+        <Button type="button" variant="tertiary" onClick={() => setIsOpen(true)}><Flag size={15} aria-hidden="true" />Report this content</Button>
       ) : (
         <Card className="p-4">
-          <form onSubmit={submitReport} className="space-y-3">
+          <form onSubmit={submitReport} className="space-y-4" aria-label="Report this content">
             <h2 className="font-semibold">Report this content</h2>
             <label className="block text-sm font-medium">
               Reason
