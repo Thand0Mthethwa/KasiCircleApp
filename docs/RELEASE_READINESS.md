@@ -54,3 +54,12 @@ Current Sprint 15 execution results are maintained in the runbook; tests run fro
 
 
 Sprint 15 local preparation is **COMPLETE**: clean lockfile install (zero audit-reported vulnerabilities), Java 21 Maven verification **241 passed**, final sequential frontend suite **197 passed / 32 files**, ESLint, production build, actionlint/YAML/startup-shell checks, fresh PostgreSQL 18 packaged startup with **11 successful migrations**, and **8 managed-Chromium desktop/mobile journeys passed**. The initial clean frontend run had 196 passing / 1 failing navigation assertion; the corrected full rerun passed. The 197 clean-source total includes two existing API tests absent from the earlier 195-test dirty worktree. No production code or unrelated edits changed. The prepared workflow's Ubuntu 24.04/PostgreSQL 16 execution, including hosted package provisioning, is still **NOT RUN**; use the runbook to obtain actual hosted evidence.
+
+
+## Sprint 15.1 — pre-push findings
+
+The frontend example is prepared for publication with a narrowly scoped root ignore exception and only `VITE_API_BASE_URL=http://localhost:8081`. Both README setup sections use that example with the current Node prerequisite and locked installation. Actual environment files remain ignored. No application code is changed.
+
+The complete `LICENSE` is Apache License 2.0 and remains unchanged. The root README now describes that file instead of claiming MIT. **The repository owner must approve Apache 2.0 as the intended project license before publication.** No other conflicting first-party license notice was found in the tracked source/documentation review; existing copyright and attribution notices were preserved. This correction does not determine ownership or grant a new license.
+
+Local validation passed: `git diff --check`, exact staged-file review, narrow ignore-rule assertions, a public-setting allowlist and staged secret-pattern scan, unchanged license/unrelated-file hashes, documentation consistency, and a clean staged-snapshot copy/Vite environment-loading/production-build check. Build validation reused the previously installed locked dependencies; no application functionality or dependency manifest changed. These checks establish that the published frontend setup inputs exist, without claiming a new dependency-install or full application-test run. Hosted CI remains unverified and must succeed for the eventual published commit before its release gate is cleared. Nothing is pushed, merged, rebased or deployed by this task.

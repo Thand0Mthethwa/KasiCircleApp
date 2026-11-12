@@ -96,3 +96,12 @@ The automated CI requirement remains **BLOCKED**, with the disposition unchanged
 
 
 Sprint 15 local evidence: clean lockfile install, Java 21 verification **241 passed**, final clean frontend **197 passed / 32 files**, lint/build, actionlint/YAML/startup-shell checks, fresh PostgreSQL 18 **11 successful migrations**, and managed-Chromium desktop/mobile **8 passed**. The initial frontend run exposed one asynchronous navigation assertion; the corrected full rerun passed. The count differs from the earlier 195 because the clean committed API tests contain two cases absent from the preserved uncommitted edits. The workflow's hosted Ubuntu 24.04/PostgreSQL 16 combination and actual Actions run are still unverified, so the hosted-CI row stays **BLOCKED**.
+
+
+## Sprint 15.1 — publication documentation and environment template
+
+The root `.env.*` ignore rule also hid the frontend example referenced above. A narrowly anchored `!/frontend/.env.example` exception now permits the reviewed template to be committed; real `.env`, `.env.local`, production variants and the root example remain ignored. The frontend template contains only the public `VITE_API_BASE_URL=http://localhost:8081` local-development default and explanatory comments. Root and frontend README setup instructions use the published template, Node 22.12+ and `npm ci`.
+
+The full existing `LICENSE` contains Apache License 2.0. The README's MIT label is corrected to describe that existing file. `LICENSE` and all copyright/attribution notices are unchanged. The repository owner must approve Apache 2.0 as the intended project license before publication; this is an outstanding owner decision, not an automated license change.
+
+Validation passed: the Git index includes the reviewed frontend template; a clean staged snapshot contains the documented setup inputs; copying the example to `.env.local` succeeds; Vite loads the expected API origin in development and production modes; the frontend production build passes with the existing locked dependencies. Narrow ignore-rule checks, staged secret-pattern/allowlist checks, documentation consistency and `git diff --check` pass. `LICENSE` and unrelated edits retain their original hashes. Hosted CI remains **BLOCKED / NOT RUN** and the existing feature disposition remains **58 COMPLETE / 1 BLOCKED**.

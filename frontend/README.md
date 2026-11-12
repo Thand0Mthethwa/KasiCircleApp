@@ -6,13 +6,14 @@ React + Vite frontend for the KasiConnect application.
 
 ### Prerequisites
 
-- Node.js 16+ and npm (or yarn/pnpm)
+- Node.js 22.12+ and npm
 
 ### Installation
 
 ```bash
 cd frontend
-npm install
+cp .env.example .env.local
+npm ci
 ```
 
 ### Development
@@ -75,7 +76,7 @@ All API calls go through `/src/services/api.js`:
 - `userService` - get user, update profile
 - `businessService` - get businesses, create business
 
-Backend URL: `http://localhost:8081` (configurable via `.env.local`)
+The committed `.env.example` sets `VITE_API_BASE_URL=http://localhost:8081`. Edit `.env.local` to use a different API origin. `VITE_*` values are public browser configuration; never add backend secrets or private credentials. Actual environment files remain ignored by Git.
 
 ## Styling
 

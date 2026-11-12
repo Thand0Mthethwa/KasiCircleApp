@@ -52,7 +52,7 @@ npm ci
 npm run dev
 ```
 
-The frontend is served at `http://localhost:5173`. Set `VITE_API_BASE_URL` in `frontend/.env.local` when the backend uses a different address.
+The frontend is served at `http://localhost:5173`. The committed example sets `VITE_API_BASE_URL=http://localhost:8081`, matching the local backend. Change this value in `frontend/.env.local` when the backend uses a different address. Vite embeds `VITE_*` values in browser assets; never put backend secrets or private credentials in frontend environment files. Keep `.env.local` untracked.
 
 ## Verification
 
@@ -106,4 +106,4 @@ No deployment or cloud resources are created by these build commands.
 
 ## License
 
-MIT
+The existing [LICENSE](./LICENSE) file contains the Apache License 2.0 text. The repository owner must approve Apache 2.0 as the intended project license before publication. This documentation correction does not replace the license or change existing copyright and attribution notices.

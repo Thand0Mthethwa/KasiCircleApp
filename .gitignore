@@ -44,6 +44,8 @@ application-dev.properties
 application-secret.properties
 .env
 .env.*
+# Publish only the reviewed frontend template; real environment files stay ignored.
+!/frontend/.env.example
 
 # Temporary files
 *.tmp
