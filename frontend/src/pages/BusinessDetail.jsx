@@ -1082,7 +1082,7 @@ export default function BusinessDetail() {
                     <label className="block text-xs font-semibold text-neutral-700">
                       Your Rating <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => {
                         const isFilled = star <= (hoverRating || formRating);
                         return (
@@ -1097,8 +1097,9 @@ export default function BusinessDetail() {
                             }}
                             onMouseEnter={() => setHoverRating(star)}
                             onMouseLeave={() => setHoverRating(0)}
-                            className="p-1 rounded-sm hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="p-2 rounded-lg transition-colors hover:bg-kasi-green-light focus:outline-none focus:ring-2 focus:ring-kasi-green"
                             aria-label={`${star} star${star > 1 ? 's' : ''}`}
+                            aria-pressed={formRating === star}
                             data-testid={`star-select-${star}`}
                           >
                             <Star
@@ -1111,7 +1112,7 @@ export default function BusinessDetail() {
                           </button>
                         );
                       })}
-                      <span className="ml-2 text-xs font-semibold text-neutral-600" data-testid="selected-rating-label">
+                      <span className="w-full mt-1 text-xs font-semibold text-neutral-600" data-testid="selected-rating-label">
                         {formRating > 0 ? `${formRating} of 5 stars` : 'Select rating'}
                       </span>
                     </div>

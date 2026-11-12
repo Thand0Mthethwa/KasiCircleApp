@@ -553,7 +553,7 @@ export default function BusinessProfile() {
             {/* Business Header Card */}
             <Card className="p-6 md:p-8 md:col-span-2 border-neutral-200 bg-kasi-green-light">
               <div className="flex items-start justify-between gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold text-2xl flex items-center justify-center shadow-md">
+                <div className="w-14 h-14 rounded-2xl bg-kasi-green text-white font-semibold text-2xl flex items-center justify-center shrink-0">
                   <Building2 className="w-7 h-7" />
                 </div>
                 <div className="flex flex-col items-end">
@@ -788,7 +788,7 @@ export default function BusinessProfile() {
 
               {/* Photos Grid */}
               {!isImagesLoading && !imagesError && images.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" data-testid="owner-image-grid">
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-3" data-testid="owner-image-grid">
                   {images.map((img, index) => {
                     const isCurrentAction = actionInProgressId === img.id;
                     const isCover = Boolean(img.isCover);

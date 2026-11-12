@@ -365,13 +365,13 @@ export default function BusinessReviews() {
         <Card className="p-4 shadow-sm border-neutral-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-kasi-green text-white flex items-center justify-center shrink-0">
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <h1 className="font-bold text-base text-neutral-900" data-testid="business-name-heading">
+                <h2 className="font-display text-2xl text-neutral-900" data-testid="business-name-heading">
                   {business.name}
-                </h1>
+                </h2>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500">
                     <Tag className="w-3 h-3 text-neutral-400" />

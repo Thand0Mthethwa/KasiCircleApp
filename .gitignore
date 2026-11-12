@@ -54,6 +54,9 @@ application-secret.properties
 !/backend/.env.example
 
 # Temporary files
+# Browser QA artifacts can contain session/request data; keep them local.
+/frontend/test-results/
+/frontend/playwright-report/
 *.tmp
 *.swp
 *~

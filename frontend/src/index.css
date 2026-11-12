@@ -21,7 +21,7 @@
   body { margin: 0; min-width: 320px; font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
   * { box-sizing: border-box; }
   button, input, select, textarea { font: inherit; }
-  button, [role='button'], select { min-height: 44px; }
+  button, [role='button'], select { min-height: 44px; min-width: 44px; }
   button, a, input, select, textarea, summary { -webkit-tap-highlight-color: transparent; }
   button, summary { touch-action: manipulation; }
   :focus-visible { outline: 3px solid var(--green); outline-offset: 4px; }
@@ -45,8 +45,8 @@
   .page-title { @apply font-display font-normal text-kasi-green; font-size: clamp(30px, 4vw, 48px); line-height: 1.12; letter-spacing: -.035em; }
   .eyebrow { @apply text-xs font-semibold uppercase text-neutral-600; letter-spacing: .14em; }
   .btn-primary, .btn-secondary, .btn-tertiary { @apply inline-flex items-center justify-center gap-2 font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed; }
-  .btn-primary { @apply bg-kasi-green text-white py-3 px-5 rounded-lg hover:bg-kasi-green-dark; }
-  .btn-secondary { @apply border border-neutral-300 text-kasi-green py-3 px-5 rounded-lg hover:bg-kasi-green-light; background: var(--surface); }
+  .btn-primary { @apply bg-kasi-green text-white py-3 px-5 rounded-lg hover:bg-kasi-green-dark; min-height: 44px; }
+  .btn-secondary { @apply border border-neutral-300 text-kasi-green py-3 px-5 rounded-lg hover:bg-kasi-green-light; background: var(--surface); min-height: 44px; }
   .btn-tertiary { @apply text-kasi-green underline-offset-4 hover:underline; }
   .input-field { @apply w-full min-w-0 px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-2 focus:ring-kasi-green focus:border-transparent transition-colors disabled:bg-neutral-100 disabled:text-neutral-600; background: var(--surface); min-height: 48px; }
   .marketplace-card { @apply rounded-xl border border-neutral-200 min-w-0; background: var(--surface); box-shadow: var(--shadow); }
@@ -71,7 +71,7 @@
   .skip-link:focus { transform: translateY(0); }
   .app-header { @apply border-b border-neutral-200 relative z-30; background: var(--surface); }
   .header-inner { @apply mx-auto max-w-7xl flex items-center gap-3 lg:gap-7 px-5 md:px-8; min-height: 84px; }
-  .brand { @apply inline-flex items-center gap-2.5 font-bold text-kasi-green text-xl tracking-tight whitespace-nowrap shrink-0; }
+  .brand { @apply inline-flex items-center gap-2.5 font-bold text-kasi-green text-xl tracking-tight whitespace-nowrap shrink-0; min-height: 44px; }
   .brand-mark { @apply inline-flex items-center justify-center border border-kasi-green rounded-lg font-display font-normal text-3xl; width: 36px; height: 38px; }
   .brand-dot { color: #628141; }
   .desktop-nav { @apply hidden lg:flex items-center gap-1 text-sm; }
@@ -80,7 +80,7 @@
   .header-actions { @apply ml-auto flex items-center gap-1.5 sm:gap-3; }
   .icon-button { @apply inline-flex items-center justify-center rounded-full text-kasi-green hover:bg-neutral-100 shrink-0; width: 44px; height: 44px; }
   .account-dropdown { @apply relative; }
-  .account-dropdown summary { @apply flex items-center gap-2 cursor-pointer rounded-full list-none; min-height: 44px; }
+  .account-dropdown summary { @apply flex items-center gap-2 cursor-pointer rounded-full list-none; min-height: 44px; min-width: 44px; }
   .account-dropdown summary::-webkit-details-marker { display: none; }
   .account-panel { @apply absolute right-0 mt-3 w-64 border border-neutral-200 rounded-xl p-2 shadow-xl; background: var(--surface); }
   .account-panel a, .account-panel button { @apply flex w-full items-center gap-3 text-left rounded-lg px-3 py-3 text-sm hover:bg-neutral-100; }
@@ -95,6 +95,7 @@
   .app-footer-inner { @apply content-container flex flex-col md:flex-row justify-between gap-6 py-9 text-sm text-neutral-600; }
   .app-footer nav { @apply flex flex-wrap gap-x-6 gap-y-3 items-center; }
   .app-footer a { @apply underline-offset-4 hover:underline; }
+  .app-footer nav a { @apply py-3; }
   .app-body { @apply min-h-screen flex flex-col; padding-bottom: 82px; }
   .app-body.auth-route { padding-bottom: 0; }
   .home-hero { @apply grid lg:grid-cols-2 items-center gap-10 lg:gap-16 py-12 md:py-16 lg:py-20; }
