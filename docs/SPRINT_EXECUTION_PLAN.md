@@ -32,9 +32,9 @@ Retain authentication/profile/password, business listings/discovery/images/owner
 
 ## Sprint 12 — Production readiness
 
-**BLOCKED on hosted CI execution; local checks implemented and verified.** Required DB/JWT secrets, signing-key/expiry validation, exact-origin CORS, stateless authentication, owner/participant/recipient/admin authorization, disabled debug/SQL logs and hidden health details are in place. Frontend dependency advisories were remediated; audit reports zero vulnerabilities. V1–V11 applied on fresh PostgreSQL 18 and repeated packaged startups succeeded. CI now targets PostgreSQL 16 and runs backend verification, migrations/startup, desktop/mobile browser journeys and sequential frontend tests/lint/build. It has not executed remotely because automatic pushing is prohibited.
+**COMPLETE for the requested technical verification scope.** Hosted [CI run 43177804983](https://github.com/Thand0Mthethwa/KasiCircleApp/actions/runs/43177804983), attempt 1, completed successfully for original application SHA `81a257fd738657f7b98eccf30907a814cb4cc909` on `Feature/Authentication`. Both jobs and all required steps succeeded: Java 21 backend tests/package, PostgreSQL 16 migration/startup, locked frontend install and sequential tests, lint, production build and desktop/mobile browser journeys.
 
-**Next:** an authorized operator publishes/reviews commits and runs hosted CI. Follow the deployment guide for historical-data migration rehearsal, production secrets, TLS and live Cloudinary acceptance. No ordinary local implementation task requires another permission decision.
+Required secret configuration, JWT validation, CORS, API authorization and migration checks remain implemented. Local PostgreSQL 18 results are historical supporting evidence; the hosted PostgreSQL 16 result is now independently verified. Production hosting, environment/TLS/secrets, monitoring, backup/restore rehearsal, live storage acceptance and release authorization remain separate operator requirements in the [release report](RELEASE_READINESS.md).
 
 ## Sprint 13 — End-to-end QA
 
@@ -42,8 +42,18 @@ Retain authentication/profile/password, business listings/discovery/images/owner
 
 ## Sprint 14 — Documentation
 
-API reference, architecture, setup, deployment/operations, current migration guide, known limitations, QA instructions and release report are written. Local link/whitespace validation and final evidence reconciliation passed; documentation is complete and recorded in a focused local commit. Keep Sprint 12's external gate explicit; do not declare an unconditional production release.
+API reference, architecture, setup, deployment/operations, current migration guide, known limitations, QA instructions and release report are written. Local link/whitespace validation and final evidence reconciliation passed; documentation is complete and recorded in a focused local commit. Sprint 12's technical CI gate is now closed; keep production deployment authorization separate.
+
+## Sprints 15 and 15.1 — preparation checkpoints
+
+**COMPLETE.** Hosted CI preparation, stable navigation assertions, the tracked safe frontend environment example and accurate Apache 2.0 documentation are recorded in the earlier progress history. Owner confirmation of the intended license remains an approval record, not an automatically inferred decision.
+
+## Sprint 16 — final technical MVP sign-off
+
+**COMPLETE: 59/59 requirements COMPLETE**, recalculated from the actual matrix after closing its sole hosted-CI blocker. Evidence is [run 43177804983](https://github.com/Thand0Mthethwa/KasiCircleApp/actions/runs/43177804983), attempt 1, original SHA `81a257fd738657f7b98eccf30907a814cb4cc909`. GitHub CLI confirmed completed/success, successful frontend/backend jobs and required migration/startup/browser steps. Hosted log summaries show 241 backend, 195 frontend and 8 browser tests passed.
+
+The new documentation commit only records that immutable application evidence. It is not claimed to have its own successful CI run, and it does not authorize or perform production deployment.
 
 ## Resume policy
 
-Resume from hosted CI and production acceptance gates after final local checks. Do not restart implemented marketplace sprints or turn a local test pass into a deployment claim. Record exact executed results and local commit IDs in [progress](SPRINT_PROGRESS.md).
+Proceed to owner/operator decisions for production hosting, environment configuration, monitoring/support, backups/restore and migration rehearsal, live Cloudinary acceptance, license confirmation and explicit release authorization. Use the [release report](RELEASE_READINESS.md) and [deployment runbook](DEPLOYMENT.md). Do not restart completed marketplace sprints, reuse an older run for changed application code, or equate technical completion with a deployed application. Do not push, merge, dispatch or deploy automatically.

@@ -1,12 +1,25 @@
-# Sprint 15 — hosted CI verification
+# Hosted CI verification — Sprint 16 sign-off
 
-This document records Sprint 15 local CI preparation and the remaining hosted acceptance gate. **Hosted CI remains BLOCKED / unverified until an actual GitHub Actions run succeeds for the prepared commit.** No workflow run, push, merge or deployment is performed by this preparation task.
+**Hosted CI is COMPLETE for the verified application commit.** The previously blocked requirement is closed by the independently checked successful run below. This document retains Sprint 15 preparation history and reusable future-run instructions; none of those earlier blocked/unpublished states is the current sign-off status.
 
-## Repository and commit checkpoint
+## Verified Sprint 16 run
+
+- Repository: `Thand0Mthethwa/KasiCircleApp`; branch: `Feature/Authentication`; workflow: `CI` (`.github/workflows/ci.yml`).
+- Run: [43177804983](https://github.com/Thand0Mthethwa/KasiCircleApp/actions/runs/43177804983); attempt **1**; event: `push`.
+- Verified application SHA: `81a257fd738657f7b98eccf30907a814cb4cc909`.
+- GitHub status: **completed**; conclusion: **success**. Verified read-only with GitHub CLI run, job/step and summary-log APIs on 2026-11-12.
+- `frontend` job `131046186522`: **success**; locked install, **195 tests / 32 files**, ESLint and production build succeeded. Completed 2026-11-12 09:48:01 SAST (07:48:01 UTC).
+- `backend` job `131046186863`: **success**; Java 21 Maven build/package with **241 tests, zero failures/errors/skips**, PostgreSQL 16 migration/startup checks, browser installation and **8 desktop/mobile browser journeys** succeeded. Completed 2026-11-12 09:49:24 SAST (07:49:24 UTC).
+- Run metadata last updated 2026-11-12 09:49:25 SAST (07:49:25 UTC).
+
+This evidence applies to the original application commit `81a257fd738657f7b98eccf30907a814cb4cc909`. The Sprint 16 documentation commit records that result; it does not claim that CI ran on the new documentation commit. No application functionality, workflow, dependency or database migration is changed by this sign-off. Later application/release-candidate changes require their own CI evidence. Technical completion is not production deployment approval, and no deployed application is claimed.
+
+
+## Historical Sprint 15 repository and commit checkpoint
 
 - Repository: `Thand0Mthethwa/KasiCircleApp`.
 - Local branch and verified GitHub default branch: `Feature/Authentication` (checked 2026-11-12).
-- The remote branch is not protected and GitHub currently lists **zero registered workflows**. The new CI definition must be published before its Actions page/manual trigger exists.
+- At the Sprint 15 inspection, the remote branch was not protected and GitHub listed zero registered workflows; publication was then pending. The workflow has since been published and the successful Sprint 16 run above is verified.
 - Starting HEAD: `f901b800b05264d15ccd2c9ebe3b8b9e2c938ee3`.
 - Verified remote branch tip at inspection: `8be31ae04bdce451293d1d7a9c749e208f0c3f30`.
 - Starting branch was **18 commits ahead** of that tip, including the following four latest commits. The Sprint 15 preparation commit adds one more. Publishing the branch publishes all unpublished ancestors, not only these four.
@@ -48,7 +61,7 @@ Hosted runners need outbound access to checkout/actions, Maven repositories, npm
 
 The publishing operator needs Git access allowed to update workflow files and write access to manually trigger Actions. Read-only workflow tokens inside jobs do not authorize publishing. Authenticate Git/`gh` as appropriate; never print or paste a token into logs or documentation.
 
-## Local checks for this preparation
+## Historical local checks for Sprint 15 preparation
 
 The initial clean frontend run exposed a navigation race (196 passed / 1 failed). The two remaining Home URL assertions now wait for asynchronous routing, matching the already-waited search assertion. No application behavior was changed. The full final rerun passed. Results below are executed local evidence, not hosted success.
 
@@ -62,13 +75,13 @@ The initial clean frontend run exposed a navigation race (196 passed / 1 failed)
 | Playwright-managed Chromium installation/journeys | Managed Chromium/headless shell installed successfully; all 8 desktop/mobile journeys passed (3.5 minutes). No system Chrome override. |
 | Packaged startup and Flyway | Workflow startup script passed against fresh isolated PostgreSQL 18; all 11 Flyway migrations successful and Hibernate validation/startup passed. Only the diagnostic log path differed from the hosted script. |
 | GitHub Actions permission settings | Read-only verification passed as described above. |
-| Hosted GitHub Actions | **NOT RUN / BLOCKED**; prepared commit is unpublished. |
+| Hosted GitHub Actions | At Sprint 15 preparation: NOT RUN / BLOCKED. Superseded by successful [run 43177804983](https://github.com/Thand0Mthethwa/KasiCircleApp/actions/runs/43177804983) for `81a257fd738657f7b98eccf30907a814cb4cc909`. |
 
-Local preparation is **COMPLETE**. Actionlint, YAML assertions, startup-shell syntax, documentation links, whitespace and preservation of all four unrelated files were checked. No PostgreSQL 16 container/Ubuntu 24.04 runner was available locally; the hosted OS/service combination and its package-install steps remain for the actual Actions run.
+Local preparation is **COMPLETE**. Actionlint, YAML assertions, startup-shell syntax, documentation links, whitespace and preservation of all four unrelated files were checked. No PostgreSQL 16 container/Ubuntu 24.04 runner was available locally at that checkpoint. Their hosted execution and package-install steps subsequently passed in the verified Sprint 16 run above.
 
-## Exact operator steps after local preparation
+## Reusable operator steps for future CI verification
 
-The following commands are instructions for a separately authorized operator. They were **not executed** by this task.
+These instructions are retained for a separately authorized operator verifying a later candidate. The current application run is already verified above. These commands are **not executed by Sprint 16**, which performs no push, merge, workflow dispatch or deployment.
 
 1. Review the full unpublished history and record the intended release SHA from this checkout:
 

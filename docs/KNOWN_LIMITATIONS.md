@@ -9,6 +9,6 @@
 - Cloudinary integration requires real deployment credentials and a live upload/delete smoke check. Browser QA deliberately avoids external storage calls.
 - Local tests establish fresh-database migration success and repeat-start checksum validation, not the safety of upgrading unknown historical data. Rehearse restoration/upgrades before deployment; V4's owner uniqueness may reject pre-existing duplicates.
 - Automated browser coverage is Chromium on desktop and mobile viewport emulation, not physical-device or cross-engine certification. No automated WCAG conformance, performance/load, penetration, dependency-license, or disaster-recovery certification is claimed.
-- Remote CI execution, hosted infrastructure, production credentials, backups, DNS/TLS configuration and actual deployment are outside this local task's executed evidence. Nothing has been pushed or deployed.
+- Hosted CI succeeded for `81a257fd738657f7b98eccf30907a814cb4cc909` in [run 43177804983](https://github.com/Thand0Mthethwa/KasiCircleApp/actions/runs/43177804983). That technical result does not establish production hosting, credentials, monitoring, backups, DNS/TLS or an actual deployment. Those operational requirements and owner authorization remain separate; no deployed application is claimed.
 
 See [feature verification](MVP_FEATURE_VERIFICATION.md) and [release readiness](RELEASE_READINESS.md) for current results and any unresolved checks.
