@@ -27,6 +27,21 @@ const destinations = [
 ];
 
 export function Brand() {
+  const { pathname } = useLocation();
+  if (pathname === "/home")
+    return (
+      <Link className="brand" to="/home" aria-label="KasiCircle home">
+        <span className="brand-symbol" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+        </span>
+        <strong>
+          KasiCircle<span>.</span>
+        </strong>
+      </Link>
+    );
   return (
     <Link className="brand" to="/home" aria-label="KasiCircle home">
       <span className="brand-mark" aria-hidden="true">
@@ -206,6 +221,18 @@ export function AppHeader() {
               <Search size={19} aria-hidden="true" />
               Search marketplace
             </Link>
+            {isAuthenticated && location.pathname === "/home" && (
+              <>
+                <Link to="/messages">
+                  <MessageCircle size={19} aria-hidden="true" />
+                  Messages
+                </Link>
+                <Link to="/notifications">
+                  <Bell size={19} aria-hidden="true" />
+                  Notifications
+                </Link>
+              </>
+            )}
             {!isAuthenticated && (
               <Link to="/register">
                 <User size={19} aria-hidden="true" />
@@ -263,7 +290,9 @@ export default function AppShell({ children }) {
               ? "home"
               : "profile";
   return (
-    <div className={`app-body ${authRoute ? "auth-route" : ""}`}>
+    <div
+      className={`app-body ${authRoute ? "auth-route" : ""} ${pathname === "/home" ? "reference-home" : ""}`}
+    >
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>

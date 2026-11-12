@@ -5,19 +5,23 @@ import {
   Briefcase,
   Coffee,
   MapPin,
+  ArrowDown,
+  Search,
+  X,
+  Leaf,
   Scissors,
   Store,
   Wrench,
   Zap,
 } from "lucide-react";
 import { SearchBar } from "../components";
-import { BusinessCard } from "../components/MarketplaceCards";
+import "../styles/home-reference.css";
+import { BusinessCard, categories } from "../components/HomeBusinessCard";
 import {
   EmptyState,
   ErrorState,
   LoadingSkeleton,
   SectionHeader,
-  ShopArt,
 } from "../components/ui";
 import { useAuth } from "../contexts/AuthContext";
 import { businessService } from "../services/api";
@@ -46,6 +50,10 @@ const searchTypes = {
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [category, setCategory] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [city, setCity] = useState("");
   const [searchType, setSearchType] = useState("businesses");
   const [businesses, setBusinesses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +65,7 @@ export default function Home() {
     setIsLoading(true);
     setError("");
     businessService
-      .getAllBusinesses({ page: 0, size: 3 })
+      .getAllBusinesses({ page: 0, size: 3, ...(category ? { category } : {}) })
       .then((result) => {
         if (active) setBusinesses(result?.content || []);
       })
@@ -75,11 +83,13 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, [retry]);
+  }, [retry, category]);
 
   const handleSearch = (query) => {
     const params = new URLSearchParams();
-    if (query) params.set("search", query);
+    if (query.trim()) params.set("search", query.trim());
+    if (city.trim() && searchType === "businesses")
+      params.set("city", city.trim());
     navigate(searchTypes[searchType].path + (params.size ? `?${params}` : ""));
   };
   const hour = new Date().getHours();
@@ -87,59 +97,221 @@ export default function Home() {
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <main className="page-wrapper">
-      <section className="home-hero content-container">
-        <div className="hero-copy">
-          <p className="eyebrow flex items-center gap-2">
-            <MapPin size={14} aria-hidden="true" />
-            Your neighbourhood, connected
-          </p>
-          <h1>
-            Good things.
-            <br />
-            <span>Closer to home.</span>
-          </h1>
-          <p className="hero-description">
-            The corner shop. The skilled neighbour. Your next opportunity.
-            Discover the people and places that make your kasi.
-          </p>
-          <div className="hero-search">
-            <div
-              className="flex flex-wrap gap-1 mb-3"
-              role="group"
-              aria-label="Search marketplace by"
+    <main className="home-reference">
+      <section className="discover-hero">
+        <div className="site-container hero-content">
+          <div className="hero-message">
+            <span className="overline">
+              <span className="small-dot" /> GOOD THINGS START CLOSE TO HOME
+            </span>
+            <h1>
+              Your next local
+              <br />
+              favourite is <em>right here.</em>
+            </h1>
+            <p>
+              Discover the food, shops, and everyday services that make a
+              neighbourhood feel like home.
+            </p>
+            <button
+              type="button"
+              className="hero-browse"
+              onClick={() =>
+                document
+                  .getElementById("directory")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
             >
-              {Object.keys(searchTypes).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  className="search-scope"
-                  aria-pressed={searchType === type}
-                  onClick={() => setSearchType(type)}
-                >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </button>
-              ))}
+              Explore the neighbourhood <ArrowDown size={16} />
+            </button>
+            <div className="hero-local-note">
+              <Leaf size={15} />
+              <span>Rooted in our communities. Made for our kasi.</span>
             </div>
-            <SearchBar
-              key={searchType}
-              placeholder={searchTypes[searchType].placeholder}
-              onSearch={handleSearch}
-            />
           </div>
-          <p className="mt-4 text-xs text-neutral-600">
-            Local businesses. Local skills. A world of possibility.
-          </p>
-        </div>
-        <div className="hero-art" aria-hidden="true">
-          <span className="hero-art-label">ROOTED IN OUR COMMUNITIES</span>
-          <ShopArt className="hero-shop" />
-          <div className="hero-art-note">
-            <span className="brand-mark">k</span>
-            <div>
-              <strong>Small business. Big heart.</strong>
-              <span>There’s so much to discover, right here.</span>
+          <div className="hero-illustration" aria-hidden="true">
+            <span className="hero-art-label">
+              A LITTLE LOCAL GOES A LONG WAY.
+            </span>
+            <img src="/demo-assets/neighbourhood-hero.svg" alt="" />
+            <div className="hero-local-card">
+              <span className="local-card-icon">
+                <Store size={20} />
+              </span>
+              <div>
+                <strong>Big heart. Local business.</strong>
+                <span>There’s a whole community to discover.</span>
+              </div>
+              <span className="local-card-spark">✳</span>
             </div>
+            <span className="hero-coordinate">GAUTENG, SOUTH AFRICA ↗</span>
+          </div>
+        </div>
+        <form
+          className="directory-search site-container"
+          role="search"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const params = new URLSearchParams();
+            if (search.trim()) params.set("search", search.trim());
+            if (city.trim()) params.set("city", city.trim());
+            navigate(`/explore${params.size ? `?${params}` : ""}`);
+          }}
+        >
+          <div className="search-input-group">
+            <Search size={20} />
+            <div>
+              <label htmlFor="business-search">What are you looking for?</label>
+              <input
+                type="search"
+                id="business-search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="A kota spot, a salon, a local service…"
+              />
+            </div>
+            {search && (
+              <button
+                type="button"
+                className="clear-field"
+                onClick={() => setSearch("")}
+                aria-label="Clear search"
+              >
+                <X size={15} />
+              </button>
+            )}
+          </div>
+          <div className="search-input-group location-input">
+            <MapPin size={20} />
+            <div>
+              <label htmlFor="city-search">Around your neighbourhood</label>
+              <input
+                id="city-search"
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                placeholder="Township or city, e.g. Daveyton"
+              />
+            </div>
+            {city && (
+              <button
+                type="button"
+                className="clear-field"
+                onClick={() => setCity("")}
+                aria-label="Clear location"
+              >
+                <X size={15} />
+              </button>
+            )}
+          </div>
+          <button className="primary-button search-submit" type="submit">
+            Find businesses <ArrowRight size={16} />
+          </button>
+        </form>
+      </section>
+
+      <section
+        className="site-container directory-section"
+        id="directory"
+        aria-labelledby="local-businesses-heading"
+      >
+        <SectionHeader
+          id="local-businesses-heading"
+          eyebrow="A GOOD PLACE TO START"
+          title="Find your kind of local."
+          description="Explore businesses listed by their owners on KasiCircle."
+        />
+        <div className="directory-layout">
+          <aside
+            className={`directory-sidebar ${filterOpen ? "expanded" : ""}`}
+            aria-label="Business filters"
+          >
+            <button
+              type="button"
+              className="mobile-filter-toggle"
+              onClick={() => setFilterOpen(!filterOpen)}
+              aria-expanded={filterOpen}
+            >
+              Browse by category <span>{filterOpen ? "−" : "+"}</span>
+            </button>
+            <div className="sidebar-content">
+              <h3>Browse by category</h3>
+              <div className="category-list">
+                {categories.map((item) => (
+                  <button
+                    type="button"
+                    key={item.label}
+                    className={category === item.value ? "selected" : ""}
+                    aria-pressed={category === item.value}
+                    onClick={() => {
+                      setCategory(item.value);
+                      setFilterOpen(false);
+                    }}
+                  >
+                    {createElement(item.icon, {
+                      size: 17,
+                      strokeWidth: 1.6,
+                      "aria-hidden": true,
+                    })}
+                    <span>{item.label}</span>
+                    {category === item.value && (
+                      <span className="category-active-dot" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="sidebar-note">
+                <span className="sprout-mark" aria-hidden="true">
+                  ✳
+                </span>
+                <strong>Built around community.</strong>
+                <p>
+                  From daily essentials to something a little special — local
+                  businesses bring us closer.
+                </p>
+              </div>
+            </div>
+          </aside>
+          <div className="directory-results">
+            <div className="results-toolbar">
+              <p>Discover real businesses in your community</p>
+              <Link to="/explore" className="outline-button">
+                View full directory
+              </Link>
+            </div>
+            {isLoading ? (
+              <LoadingSkeleton label="Loading local businesses" />
+            ) : error ? (
+              <ErrorState
+                title="We couldn’t load local businesses"
+                message={error}
+                onRetry={() => setRetry((value) => value + 1)}
+              />
+            ) : businesses.length ? (
+              <div className="business-grid">
+                {businesses.map((business) => (
+                  <BusinessCard key={business.id} business={business} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                title="Your neighbourhood starts with you"
+                description="No businesses have been listed yet. Give your business a place in the circle."
+                icon={Store}
+                action={
+                  <Link
+                    className="btn-primary mt-2"
+                    to={
+                      user?.accountType === "BUSINESS"
+                        ? "/business-profile"
+                        : "/register"
+                    }
+                  >
+                    List your business
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
+                }
+              />
+            )}
           </div>
         </div>
       </section>
@@ -149,6 +321,30 @@ export default function Home() {
           <h2 className="text-sm font-medium mb-4">
             {greeting}, {user?.firstName || "neighbour"}!
           </h2>
+          <div
+            className="flex gap-2 my-3"
+            role="group"
+            aria-label="Search marketplace by"
+          >
+            {["workers", "jobs"].map((type) => (
+              <button
+                key={type}
+                type="button"
+                className="outline-button"
+                aria-pressed={searchType === type}
+                onClick={() => setSearchType(type)}
+              >
+                {type === "workers" ? "Workers" : "Jobs"}
+              </button>
+            ))}
+          </div>
+          {searchType !== "businesses" && (
+            <SearchBar
+              key={searchType}
+              placeholder={searchTypes[searchType].placeholder}
+              onSearch={handleSearch}
+            />
+          )}
           <div className="grid sm:grid-cols-3 gap-3">
             {[
               {
@@ -230,65 +426,6 @@ export default function Home() {
             </button>
           ))}
         </div>
-      </section>
-
-      <section
-        className="content-container pb-12 md:pb-16"
-        aria-labelledby="local-businesses-heading"
-      >
-        <SectionHeader
-          id="local-businesses-heading"
-          eyebrow="Made in the neighbourhood"
-          title="Meet your local businesses"
-          description="Explore businesses listed by their owners on KasiCircle."
-          action={
-            <Link
-              className="link-text text-sm inline-flex items-center gap-2 py-2"
-              to="/explore"
-            >
-              View all businesses
-              <ArrowRight size={17} aria-hidden="true" />
-            </Link>
-          }
-        />
-        {isLoading ? (
-          <LoadingSkeleton label="Loading local businesses" />
-        ) : error ? (
-          <ErrorState
-            title="We couldn’t load local businesses"
-            message={error}
-            onRetry={() => setRetry((value) => value + 1)}
-          />
-        ) : businesses.length ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {businesses.map((business) => (
-              <BusinessCard
-                key={business.id}
-                business={business}
-                onOpen={(id) => navigate(`/businesses/${id}`)}
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="Your neighbourhood starts with you"
-            description="No businesses have been listed yet. Give your business a place in the circle."
-            icon={Store}
-            action={
-              <Link
-                className="btn-primary mt-2"
-                to={
-                  user?.accountType === "BUSINESS"
-                    ? "/business-profile"
-                    : "/register"
-                }
-              >
-                List your business
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
-            }
-          />
-        )}
       </section>
 
       <section

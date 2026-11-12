@@ -1,0 +1,5 @@
+KasiCircle development showcase
+Derived from Thand0Mthethwa/KasiCircleApp (8be31ae), licensed under Apache License 2.0.
+Modified for a public read-only showcase: responsive presentation and navigation, directory filtering and sorting, profile and gallery layouts, fictional data adapter, account restrictions, demo disclosures, original SVG sample illustrations, metadata, and visitor-flow tests.
+
+Homepage presentation adapted from src/showcase/Explore.jsx, shared.jsx, App.jsx and index.css. Modified to preserve production APIs and navigation; no demo records or adapters included.

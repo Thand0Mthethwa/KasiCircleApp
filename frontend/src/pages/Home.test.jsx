@@ -99,11 +99,47 @@ describe("Home marketplace navigation", () => {
     );
   });
 
+  it("passes search and location to the real business directory", async () => {
+    const user = userEvent.setup();
+    renderHome();
+    await user.type(
+      screen.getByRole("searchbox", { name: "What are you looking for?" }),
+      "cafe",
+    );
+    await user.type(
+      screen.getByLabelText("Around your neighbourhood"),
+      "Soweto",
+    );
+    await user.click(screen.getByRole("button", { name: /Find businesses/ }));
+    await waitFor(() =>
+      expect(screen.getByTestId("location")).toHaveTextContent(
+        "/explore?search=cafe&city=Soweto",
+      ),
+    );
+  });
+  it("filters API listings by category", async () => {
+    const user = userEvent.setup();
+    renderHome();
+    await user.click(
+      screen.getByRole("button", { name: "Hair & beauty", exact: true }),
+    );
+    await waitFor(() =>
+      expect(businessService.getAllBusinesses).toHaveBeenLastCalledWith({
+        page: 0,
+        size: 3,
+        category: "Salon & Beauty",
+      }),
+    );
+  });
+
   it("searches local jobs when the jobs scope is selected", async () => {
     const user = userEvent.setup();
     renderHome();
     await user.click(screen.getByRole("button", { name: "Jobs", exact: true }));
-    await user.type(screen.getByRole("searchbox"), "plumbing");
+    await user.type(
+      screen.getByRole("searchbox", { name: "Search local jobs..." }),
+      "plumbing",
+    );
     await user.keyboard("{Enter}");
     await waitFor(() =>
       expect(screen.getByTestId("location")).toHaveTextContent(
@@ -136,7 +172,7 @@ describe("Home marketplace navigation", () => {
     });
     expect(screen.getByText("No photo provided")).toBeInTheDocument();
     await user.click(
-      screen.getByRole("button", {
+      screen.getByRole("link", {
         name: "View details for API Community Shop",
       }),
     );

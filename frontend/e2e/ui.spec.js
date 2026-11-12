@@ -373,8 +373,12 @@ test("mobile navigation and scoped search call the intended directory", async ({
     .getByRole("group", { name: "Search marketplace by" })
     .getByRole("button", { name: "Jobs", exact: true })
     .click();
-  await page.getByRole("searchbox").fill("QA repairs");
-  await page.getByRole("searchbox").press("Enter");
+  await page
+    .getByRole("searchbox", { name: "Search local jobs..." })
+    .fill("QA repairs");
+  await page
+    .getByRole("searchbox", { name: "Search local jobs..." })
+    .press("Enter");
   await expect(page).toHaveURL(/\/jobs\?search=QA\+repairs$/);
   await expect
     .poll(() =>
