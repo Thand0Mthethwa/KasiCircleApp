@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AppShell from './components/AppShell';
 
 // Pages
 import Onboarding from './pages/Onboarding';
@@ -204,9 +205,9 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <div className="w-full max-w-7xl mx-auto bg-white min-h-screen relative">
+      <AppShell>
         <AppRoutes />
-      </div>
+      </AppShell>
     </AuthProvider>
   );
 }

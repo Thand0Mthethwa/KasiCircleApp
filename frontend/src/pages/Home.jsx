@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Briefcase, Building2, Scissors, Wrench, Zap } from 'lucide-react';
-import { BottomNavigation, SearchBar } from '../components';
+import { SearchBar } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 
 const workerSkills = [
@@ -113,8 +113,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-
-      <BottomNavigation active="home" onNavigate={navigate} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, Header, BottomNavigation, LoadingSpinner } from '../components';
+import { Button, Card, Header, LoadingSpinner } from '../components';
 import { businessService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import ReportForm from '../components/ReportForm';
@@ -1454,7 +1454,6 @@ export default function BusinessDetail() {
       </div>
 
       {/* Persistent Bottom Navigation */}
-      <BottomNavigation active="explore" onNavigate={(path) => navigate(path)} />
 
       {/* Lightbox Modal */}
       {activeLightboxIndex !== null && currentLightboxImage && (

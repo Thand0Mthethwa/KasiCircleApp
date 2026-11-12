@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input, Card, Header, BottomNavigation, LoadingSpinner } from '../components';
+import { Button, Input, Card, Header, LoadingSpinner } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import { userService } from '../services/api';
 import {
@@ -496,10 +496,6 @@ export default function Profile() {
       </div>
 
       {/* Bottom Navigation */}
-      <BottomNavigation
-        active="profile"
-        onNavigate={(path) => navigate(path)}
-      />
     </div>
   );
 }

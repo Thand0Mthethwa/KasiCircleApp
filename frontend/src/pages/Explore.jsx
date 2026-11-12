@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Card, Header, BottomNavigation, LoadingSpinner } from '../components';
+import { Button, Card, Header, LoadingSpinner } from '../components';
 import { businessService } from '../services/api';
 import {
   Search,
@@ -442,8 +442,6 @@ export default function Explore() {
           </div>
         )}
       </div>
-
-      <BottomNavigation active="explore" onNavigate={(path) => navigate(path)} />
     </div>
   );
 }

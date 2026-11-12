@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, Search, Home, Briefcase, Compass, MessageCircle, User, Bell } from 'lucide-react';
+import { ChevronLeft, Search, Home, Briefcase, Compass, MessageCircle, User, Wrench } from 'lucide-react';
 
 // Button Components
 export const Button = ({
@@ -10,7 +10,7 @@ export const Button = ({
   className = '',
   ...props
 }) => {
-  const baseClasses = 'font-semibold transition-all rounded-full focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kasi-green disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kasi-green disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variantClasses = {
     primary: 'btn-primary',
@@ -76,22 +76,25 @@ export const Input = ({
 // Header Component
 export const Header = ({ title, subtitle, showBack = true, onBack }) => {
   return (
-    <div className="page-header page-padding py-6">
-      <div className="flex items-center gap-3 mb-4">
+    <header className="page-header page-padding">
+      <div className="page-header-inner">
+      <p className="eyebrow mb-4">Your neighbourhood, connected</p>
+      <div className="flex items-center gap-3">
         {showBack && onBack && (
           <button
             type="button"
             onClick={onBack}
-            className="p-2 hover:bg-white/20 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="icon-button border border-neutral-300"
             aria-label="Go back"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
         )}
-        {title && <h1 className="text-2xl font-bold">{title}</h1>}
+        {title && <h1 className="page-title">{title}</h1>}
       </div>
-      {subtitle && <p className="text-white/80 text-sm">{subtitle}</p>}
-    </div>
+      {subtitle && <p className="text-neutral-600 text-sm mt-4 max-w-xl leading-relaxed">{subtitle}</p>}
+      </div>
+    </header>
   );
 };
 
@@ -99,7 +102,7 @@ export const Header = ({ title, subtitle, showBack = true, onBack }) => {
 export const Card = ({ children, className = '', ...props }) => {
   return (
     <div
-      className={`bg-white rounded-lg border border-neutral-200 ${className}`}
+      className={`marketplace-card ${className}`}
       {...props}
     >
       {children}
@@ -147,7 +150,7 @@ export const WorkerCard = ({ image, name, profession, isVerified = false, onClic
       aria-label={`View ${name}, ${profession}`}
     >
       <div className="relative">
-        <div className="w-20 h-20 bg-gradient-to-br from-kasi-green to-kasi-green-dark rounded-full flex items-center justify-center text-white font-bold text-2xl overflow-hidden">
+      <div className="w-20 h-20 bg-kasi-green rounded-full flex items-center justify-center text-white font-bold text-2xl overflow-hidden">
           {image ? (
             <img src={image} alt={name} className="w-full h-full object-cover" />
           ) : (
@@ -174,12 +177,13 @@ export const BottomNavigation = ({ active = 'home', onNavigate }) => {
     { id: 'home', label: 'Home', icon: Home, path: '/home' },
     { id: 'jobs', label: 'Jobs', icon: Briefcase, path: '/jobs' },
     { id: 'explore', label: 'Explore', icon: Compass, path: '/explore' },
+    { id: 'workers', label: 'Workers', icon: Wrench, path: '/workers' },
     { id: 'messages', label: 'Messages', icon: MessageCircle, path: '/messages' },
     { id: 'profile', label: 'Profile', icon: User, path: '/profile' },
   ];
 
   return (
-    <nav aria-label="Primary navigation" className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-4 py-3 flex justify-around max-w-md mx-auto">
+    <nav aria-label="Primary navigation" className="mobile-navigation">
       {items.map((item) => {
         const Icon = item.icon;
         const isActive = active === item.id;
@@ -188,16 +192,12 @@ export const BottomNavigation = ({ active = 'home', onNavigate }) => {
             key={item.id}
             type="button"
             onClick={() => onNavigate(item.path)}
-            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors ${
-              isActive
-                ? 'text-kasi-green'
-                : 'text-neutral-600 hover:text-neutral-900'
-            }`}
+            className="transition-colors"
             aria-label={item.label}
             aria-current={isActive ? 'page' : undefined}
           >
-            <Icon className="w-6 h-6" />
-            <span className="text-xs font-semibold">{item.label}</span>
+            <Icon className="w-5 h-5" aria-hidden="true" />
+            <span className="text-[10px] sm:text-xs font-semibold">{item.label}</span>
           </button>
         );
       })}
@@ -249,7 +249,7 @@ export const LoadingSpinner = ({ size = 'md', className = '' }) => {
 
   return (
     <div className={`inline-flex ${sizeClasses[size]} ${className}`}>
-      <div className="animate-spin rounded-full border-4 border-neutral-300 border-t-kasi-green"></div>
+      <div className="animate-spin rounded-full w-full h-full border-4 border-neutral-300 border-t-kasi-green"></div>
     </div>
   );
 };

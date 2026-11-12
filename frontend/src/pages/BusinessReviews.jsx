@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, StatCard, Header, BottomNavigation, LoadingSpinner, Button } from '../components';
+import { Card, StatCard, Header, LoadingSpinner, Button } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import { businessService } from '../services/api';
 import {
@@ -247,7 +247,6 @@ export default function BusinessReviews() {
             </Button>
           </Card>
         </div>
-        <BottomNavigation active="profile" onNavigate={(path) => navigate(path)} />
       </div>
     );
   }
@@ -271,7 +270,6 @@ export default function BusinessReviews() {
           <LoadingSpinner size="lg" />
           <p className="text-sm font-medium">Resolving your business listing...</p>
         </div>
-        <BottomNavigation active="profile" onNavigate={(path) => navigate(path)} />
       </div>
     );
   }
@@ -307,7 +305,6 @@ export default function BusinessReviews() {
             </Button>
           </Card>
         </div>
-        <BottomNavigation active="profile" onNavigate={(path) => navigate(path)} />
       </div>
     );
   }
@@ -346,7 +343,6 @@ export default function BusinessReviews() {
             </Button>
           </Card>
         </div>
-        <BottomNavigation active="profile" onNavigate={(path) => navigate(path)} />
       </div>
     );
   }
@@ -643,7 +639,6 @@ export default function BusinessReviews() {
       </div>
 
       {/* Bottom Navigation */}
-      <BottomNavigation active="profile" onNavigate={(path) => navigate(path)} />
     </div>
   );
 }
