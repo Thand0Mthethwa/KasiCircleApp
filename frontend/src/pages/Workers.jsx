@@ -1,37 +1,46 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { AlertCircle, MapPin, Search, UserRound, X } from 'lucide-react';
-import { Button, Card, Header, LoadingSpinner } from '../components';
-import { workerService } from '../services/api';
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { MapPin, Search, UserRound, X } from "lucide-react";
+import { Button, Header, Input, WorkerCard } from "../components";
+import { EmptyState, ErrorState, LoadingSkeleton } from "../components/ui";
+import { workerService } from "../services/api";
 
 export default function Workers() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [skill, setSkill] = useState(searchParams.get('skill') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || '');
-  const [city, setCity] = useState(searchParams.get('city') || '');
+  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [skill, setSkill] = useState(searchParams.get("skill") || "");
+  const [category, setCategory] = useState(searchParams.get("category") || "");
+  const [city, setCity] = useState(searchParams.get("city") || "");
   const [filters, setFilters] = useState({
-    search: searchParams.get('search') || '',
-    skill: searchParams.get('skill') || '',
-    category: searchParams.get('category') || '',
-    city: searchParams.get('city') || '',
+    search: searchParams.get("search") || "",
+    skill: searchParams.get("skill") || "",
+    category: searchParams.get("category") || "",
+    city: searchParams.get("city") || "",
   });
   const [workers, setWorkers] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const loadWorkers = useCallback(async () => {
     setIsLoading(true);
-    setError('');
+    setError("");
     try {
-      const result = await workerService.getWorkers({ ...filters, page, size: 20 });
+      const result = await workerService.getWorkers({
+        ...filters,
+        page,
+        size: 20,
+      });
       setWorkers(result.content || []);
       setTotalPages(result.totalPages || 0);
     } catch (requestError) {
-      setError(requestError.data?.message || requestError.message || 'Unable to load workers.');
+      setError(
+        requestError.data?.message ||
+          requestError.message ||
+          "Unable to load workers.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -62,72 +71,129 @@ export default function Workers() {
 
   return (
     <div className="page-wrapper pb-8">
-      <Header title="Find Local Workers" subtitle="Discover skills and services in your community" onBack={() => navigate('/home')} />
-      <main className="page-content page-padding py-6 max-w-2xl mx-auto w-full space-y-5">
-        <form onSubmit={submitSearch} role="search" className="space-y-3">
-          <label className="block text-sm font-semibold" htmlFor="worker-search">Name or keyword</label>
-          <input id="worker-search" className="input-field" value={search} onChange={(event) => setSearch(event.target.value)} />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="space-y-1 text-sm font-semibold">
-              Skill
-              <input aria-label="Filter by skill" className="input-field" value={skill} onChange={(event) => setSkill(event.target.value)} />
-            </label>
-            <label className="space-y-1 text-sm font-semibold">
-              Service category
-              <input aria-label="Filter by service category" className="input-field" value={category} onChange={(event) => setCategory(event.target.value)} />
-            </label>
+      <Header
+        title="Find Local Workers"
+        subtitle="Discover skills and services in your community"
+        onBack={() => navigate("/home")}
+      />
+      <main className="content-container py-8 md:py-10 space-y-6">
+        <form
+          onSubmit={submitSearch}
+          role="search"
+          className="filter-panel space-y-4"
+        >
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Input
+              id="worker-search"
+              label="Name or keyword"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Who can help?"
+            />
+            <Input
+              id="worker-skill"
+              label="Skill"
+              aria-label="Filter by skill"
+              value={skill}
+              onChange={(event) => setSkill(event.target.value)}
+              placeholder="e.g. Wiring"
+            />
+            <Input
+              id="worker-category"
+              label="Service category"
+              aria-label="Filter by service category"
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              placeholder="e.g. Electrical"
+            />
+            <Input
+              id="worker-city"
+              label="Township or city"
+              aria-label="Filter workers by city"
+              icon={MapPin}
+              value={city}
+              onChange={(event) => setCity(event.target.value)}
+              placeholder="Your neighbourhood"
+            />
           </div>
-          <label className="block space-y-1 text-sm font-semibold">
-            <span className="flex items-center gap-1"><MapPin aria-hidden="true" size={16} />Township or city</span>
-            <input aria-label="Filter workers by city" className="input-field" value={city} onChange={(event) => setCity(event.target.value)} />
-          </label>
           <div className="flex gap-2">
-            <Button type="submit"><Search size={16} className="inline mr-2" />Search</Button>
+            <Button type="submit">
+              <Search size={16} className="inline mr-2" />
+              Search
+            </Button>
             {hasFilters && (
-              <Button type="button" variant="secondary" onClick={() => {
-                setSearch('');
-                setSkill('');
-                setCategory('');
-                setCity('');
-                setFilters({ search: '', skill: '', category: '', city: '' });
-                setPage(0);
-                setSearchParams({}, { replace: true });
-              }}>Clear filters <X size={15} className="inline ml-1" /></Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setSearch("");
+                  setSkill("");
+                  setCategory("");
+                  setCity("");
+                  setFilters({ search: "", skill: "", category: "", city: "" });
+                  setPage(0);
+                  setSearchParams({}, { replace: true });
+                }}
+              >
+                Clear filters <X size={15} className="inline ml-1" />
+              </Button>
             )}
           </div>
         </form>
 
         {isLoading ? (
-          <div role="status" className="flex justify-center py-12"><LoadingSpinner size="lg" /></div>
+          <LoadingSkeleton label="Loading local workers" />
         ) : error ? (
-          <Card className="p-5 text-red-700" role="alert"><AlertCircle className="inline mr-2" />{error}</Card>
+          <ErrorState
+            title="We couldn’t load local workers"
+            message={error}
+            onRetry={loadWorkers}
+          />
         ) : workers.length === 0 ? (
-          <Card className="p-8 text-center text-neutral-600" data-testid="worker-empty-state">
-            <UserRound className="mx-auto mb-2" />
-            <p>No workers match these filters yet.</p>
-          </Card>
+          <EmptyState
+            title="No workers match these filters yet."
+            description="Try a different skill or neighbourhood. Local talent can be closer than you think."
+            icon={UserRound}
+            data-testid="worker-empty-state"
+          />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2" aria-label="Worker directory">
+          <div
+            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+            aria-label="Worker directory"
+          >
             {workers.map((worker) => (
-              <button key={worker.id} type="button" onClick={() => navigate(`/workers/${worker.id}`)} className="text-left">
-                <Card className="h-full p-5 hover:shadow-md focus-within:ring-2 focus-within:ring-kasi-green">
-                  <h2 className="font-bold text-lg">{worker.displayName}</h2>
-                  <p className="text-kasi-green font-semibold">{worker.headline}</p>
-                  <p className="mt-2 text-sm text-neutral-600 line-clamp-3">{worker.bio}</p>
-                  <p className="mt-3 text-sm text-neutral-600">{worker.city}, {worker.province}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {worker.skills.map((item) => <span key={item} className="rounded-full bg-neutral-100 px-2 py-1 text-xs">{item}</span>)}
-                  </div>
-                </Card>
-              </button>
+              <WorkerCard
+                key={worker.id}
+                worker={worker}
+                onClick={() => navigate(`/workers/${worker.id}`)}
+              />
             ))}
           </div>
         )}
         {!isLoading && !error && totalPages > 1 && (
-          <nav aria-label="Worker pages" className="flex items-center justify-between">
-            <Button type="button" variant="secondary" disabled={page === 0} onClick={() => setPage((value) => value - 1)}>Previous</Button>
-            <span aria-live="polite">Page {page + 1} of {totalPages}</span>
-            <Button type="button" variant="secondary" disabled={page + 1 >= totalPages} onClick={() => setPage((value) => value + 1)}>Next</Button>
+          <nav
+            aria-label="Worker pages"
+            className="flex items-center justify-between"
+          >
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={page === 0}
+              onClick={() => setPage((value) => value - 1)}
+            >
+              Previous
+            </Button>
+            <span aria-live="polite">
+              Page {page + 1} of {totalPages}
+            </span>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={page + 1 >= totalPages}
+              onClick={() => setPage((value) => value + 1)}
+            >
+              Next
+            </Button>
           </nav>
         )}
       </main>

@@ -140,35 +140,22 @@ export const CategoryCard = ({ icon: Icon, label, onClick, isSelected = false })
   );
 };
 
-// Worker Card Component
-export const WorkerCard = ({ image, name, profession, isVerified = false, onClick }) => {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col items-center gap-3 cursor-pointer hover:shadow-lg transition-shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kasi-green"
-      aria-label={`View ${name}, ${profession}`}
-    >
-      <div className="relative">
-      <div className="w-20 h-20 bg-kasi-green rounded-full flex items-center justify-center text-white font-bold text-2xl overflow-hidden">
-          {image ? (
-            <img src={image} alt={name} className="w-full h-full object-cover" />
-          ) : (
-            name.charAt(0).toUpperCase()
-          )}
-        </div>
-        {isVerified && (
-          <div className="absolute bottom-0 right-0 bg-kasi-green text-white rounded-full p-1 border-2 border-white">
-            <svg className="w-3 h-3 fill-current" viewBox="0 0 20 20">
-              <path d="M7 10l2 2 4-4" />
-            </svg>
-          </div>
-        )}
-      </div>
-      <p className="font-semibold text-neutral-900 text-center">{name}</p>
-      <p className="text-xs text-neutral-600 text-center">{profession}</p>
-    </button>
-  );
+// Worker Card Component (also accepts the original compact-card props).
+export const WorkerCard = ({ worker, image, name = worker?.displayName || '', profession = worker?.headline || '', isVerified = false, onClick }) => {
+  return <button type="button" onClick={onClick} className="marketplace-card worker-card w-full h-full p-6 text-left flex flex-col items-start hover:border-kasi-green transition-colors" aria-label={`View ${name}, ${profession}`}>
+    <div className="flex items-start justify-between gap-4 w-full mb-5">
+      <span className="avatar !w-16 !h-16 !text-xl overflow-hidden">{image ? <img src={image} alt="" loading="lazy" className="w-full h-full object-cover" /> : name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('')}</span>
+      <Wrench size={20} className="text-neutral-500 mt-2" aria-hidden="true" />
+    </div>
+    <h2 className="text-xl font-semibold">{name}</h2>
+    <p className="text-sm text-kasi-green font-semibold mt-1">{profession}</p>
+    {isVerified && <span className="sr-only">Verified</span>}
+    {worker && <>
+      <p className="text-sm text-neutral-600 line-clamp-3 mt-3 leading-relaxed">{worker.bio}</p>
+      <div className="flex flex-wrap gap-2 mt-4">{(worker.skills || []).slice(0, 4).map(skill => <span className="skill-badge" key={skill}>{skill}</span>)}{worker.skills?.length > 4 && <span className="skill-badge">+{worker.skills.length - 4} more</span>}</div>
+      <div className="mt-auto pt-5 border-t border-neutral-200 w-full flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-600"><span>{worker.city}, {worker.province}</span><span className="font-semibold text-kasi-green">View profile →</span></div>
+    </>}
+  </button>;
 };
 
 // Bottom Navigation Component

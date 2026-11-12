@@ -130,6 +130,9 @@
   .intro-art p { @apply font-display text-3xl md:text-4xl leading-tight tracking-tight mt-5 mb-3; }
   .intro-art p span { @apply text-neutral-600; }
   .detail-columns { @apply grid lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)] gap-6 items-start; }
+  .skill-badge { @apply inline-flex rounded-full border border-neutral-200 bg-kasi-green-light px-3 py-1 text-xs text-kasi-green; }
+  .worker-card { box-shadow: var(--shadow); }
+  .worker-card>div:last-child { margin-top: 24px; }
   .detail-columns h2 { @apply text-base font-semibold normal-case tracking-normal text-kasi-green; }
   .business-detail-page .detail-columns .text-xs { font-size: 13px; }
   .business-detail-page .detail-columns [role='progressbar'] { @apply bg-neutral-200; }
