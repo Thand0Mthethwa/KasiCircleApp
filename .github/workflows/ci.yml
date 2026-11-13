@@ -45,6 +45,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes postgresql-client
+      - name: Initialize isolated QA database guard
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: kasicircle_qa
+          PGUSER: kasicircle
+          PGPASSWORD: ci-only-password
+        run: psql -X --set=ON_ERROR_STOP=1 --file=frontend/scripts/bootstrap-e2e-marker.sql
       - name: Run backend tests and package
         working-directory: backend
         run: mvn --batch-mode verify
