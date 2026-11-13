@@ -74,11 +74,11 @@ export const Input = ({
 };
 
 // Header Component
-export const Header = ({ title, subtitle, showBack = true, onBack, headingLevel = 1 }) => {
+export const Header = ({ title, subtitle, showBack = true, onBack, headingLevel = 1, eyebrow = "Your neighbourhood, connected" }) => {
   return (
     <header className="page-header page-padding">
       <div className="page-header-inner">
-      <p className="eyebrow mb-4">Your neighbourhood, connected</p>
+      <p className="eyebrow mb-4">{eyebrow}</p>
       <div className="flex items-center gap-3">
         {showBack && onBack && (
           <button

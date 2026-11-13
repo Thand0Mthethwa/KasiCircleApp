@@ -4,21 +4,23 @@
 
 @layer base {
   :root {
-    --canvas: #fbfcf5;
-    --surface: #fffef8;
-    --forest: #183d2d;
-    --green: #31684b;
-    --sage: #d8e8bf;
-    --muted: #596650;
-    --border: #e0e4d6;
-    --shadow: 0 8px 30px rgb(24 61 45 / 5%);
+    --canvas: #faf6ee;
+    --surface: #fffaf3;
+    --forest: #341e33;
+    --green: #391a38;
+    --sage: #eee3e8;
+    --muted: #705f66;
+    --border: #dbccd2;
+    --shadow: 0 8px 30px rgb(52 30 51 / 5%);
     color: var(--forest);
     background: var(--canvas);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
-  body { margin: 0; min-width: 320px; font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  h1, h2, h3, h4 { font-family: "Bricolage Grotesque Variable", sans-serif; letter-spacing: -.045em; }
+  [hidden] { display: none !important; }
+  body { margin: 0; min-width: 320px; font-family: "DM Sans Variable", ui-sans-serif, system-ui, -apple-system, sans-serif; }
   * { box-sizing: border-box; }
   button, input, select, textarea { font: inherit; }
   button, [role='button'], select { min-height: 44px; min-width: 44px; }
@@ -26,7 +28,7 @@
   button, summary { touch-action: manipulation; }
   :focus-visible { outline: 3px solid var(--green); outline-offset: 4px; }
   input, textarea, select { accent-color: var(--forest); }
-  input::placeholder, textarea::placeholder { color: #69725f; opacity: 1; }
+  input::placeholder, textarea::placeholder { color: #705f66; opacity: 1; }
   h1, h2, h3, h4, p { overflow-wrap: anywhere; }
   img, svg { max-width: 100%; }
   a, button { overflow-wrap: anywhere; }
@@ -40,7 +42,7 @@
   .page-wrapper { @apply flex flex-col min-w-0; background: var(--canvas); }
   .page-content { @apply flex-1 min-w-0; }
   .page-padding { padding-inline: clamp(20px, 4vw, 48px); }
-  .page-header { @apply border-b border-neutral-200; background: #f0f3e8; }
+  .page-header { @apply border-b border-neutral-200; background: #f0e5eb; }
   .page-header-inner { @apply w-full mx-auto max-w-6xl py-8 md:py-12; }
   .page-title { @apply font-display font-normal text-kasi-green; font-size: clamp(30px, 4vw, 48px); line-height: 1.12; letter-spacing: -.035em; }
   .eyebrow { @apply text-xs font-semibold uppercase text-neutral-600; letter-spacing: .14em; }
@@ -100,7 +102,7 @@
   .app-body.auth-route { padding-bottom: 0; }
   .home-hero { @apply grid lg:grid-cols-2 items-center gap-10 lg:gap-16 py-12 md:py-16 lg:py-20; }
   .hero-copy h1, .editorial-title { @apply font-display font-normal tracking-tight my-6; font-size: clamp(44px, 5.8vw, 76px); line-height: 1.04; letter-spacing: -.045em; }
-  .hero-copy h1 span { color: #31684b; }
+  .hero-copy h1 span { color: #391a38; }
   .hero-description { @apply text-neutral-600 text-base leading-relaxed max-w-lg; }
   .hero-search { @apply mt-7; }
   .search-scope { @apply px-4 rounded-full text-sm text-neutral-600; }
@@ -111,13 +113,13 @@
   .hero-art-note { @apply flex items-center gap-4 rounded-lg bg-kasi-surface p-5; }
   .hero-art-note strong { @apply block text-sm; }
   .hero-art-note div>span { @apply block text-xs text-neutral-600 mt-1; }
-  .marketplace-strip { @apply border-y border-neutral-200; background: #f0f3e8; }
+  .marketplace-strip { @apply border-y border-neutral-200; background: #f0e5eb; }
   .marketplace-shortcut { @apply flex items-center gap-3 p-4 rounded-lg border border-neutral-200 bg-kasi-surface hover:border-kasi-green transition-colors; }
   .shortcut-icon { @apply inline-flex items-center justify-center w-11 h-11 rounded-full bg-kasi-green-light text-kasi-green shrink-0; }
   .category-tile { @apply marketplace-card flex flex-col items-start text-left p-5 md:p-6 hover:border-kasi-green transition-colors; }
   .category-tile .state-icon { @apply mb-4; }
   .business-card { transition: border-color .2s, box-shadow .2s; }
-  .business-card:hover { border-color: #b7c6a3; box-shadow: 0 12px 30px rgb(24 61 45 / 9%); }
+  .business-card:hover { border-color: #8d7486; box-shadow: 0 12px 30px rgb(52 30 51 / 9%); }
   .business-card-image { height: 190px; }
   .skills-section { @apply bg-kasi-green-light rounded-xl p-6 md:p-9; }
   .skill-tile { @apply flex flex-wrap items-center gap-3 bg-kasi-surface border border-neutral-200 rounded-lg p-4 text-sm font-medium hover:border-kasi-green; }

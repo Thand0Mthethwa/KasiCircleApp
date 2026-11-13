@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="10" fill="#183d2d"/><text x="24" y="35" font-family="Georgia,serif" font-size="39" text-anchor="middle" fill="#fbfcf5">k</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#341e33"/>
+  <g fill="#fff8ef">
+    <rect x="12" y="12" width="18" height="18" rx="4"/>
+    <rect x="12" y="34" width="18" height="18" rx="4"/>
+    <rect x="34" y="34" width="18" height="18" rx="4"/>
+  </g>
+  <rect x="34" y="12" width="18" height="18" rx="4" fill="#ffbf29"/>
+</svg>

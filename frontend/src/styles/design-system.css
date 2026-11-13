@@ -1,0 +1,92 @@
+/* Shared application system, derived from the supplied Explore reference. */
+:root {
+  --ink: #341e33; --plum: #391a38; --paper: #faf6ee; --cream: #fffaf3;
+  --gold: #ffbf29; --gold-hover: #f4ad0a; --muted: #705f66; --border: #a68e9b;
+  --canvas: var(--paper); --surface: var(--cream); --forest: var(--ink);
+  --green: var(--plum); --sage: #eee3e8;
+  --display: 'Bricolage Grotesque Variable', sans-serif;
+  --radius: 13px; --shell: min(1320px, calc(100% - 88px));
+}
+body { font-family: 'DM Sans Variable', sans-serif; color: var(--ink); background: var(--paper); }
+h1, h2, h3, h4 { font-family: var(--display); }
+:focus-visible { outline-color: #94600c; }
+.app-header { background: var(--ink); color: #fff9f1; border: 0; }
+.header-inner { width: var(--shell); max-width: none; padding: 0; min-height: 74px; gap: 40px; }
+.brand { color: inherit; gap: 22px; font: 800 34px/1 var(--display); letter-spacing: -.035em; }
+.brand-mark { display: grid; align-items: stretch; justify-content: normal; grid-template-columns: repeat(2,15px); grid-template-rows: repeat(2,15px); gap: 4px; width: auto; height: auto; border: 0; border-radius: 0; }
+.brand-mark i { border-radius: 4px; background: #fff8ef; }
+.brand-mark i:nth-child(2) { background: var(--gold); transform: rotate(38deg) scale(.88); }
+.desktop-nav { align-self: stretch; gap: 22px; }
+.desktop-nav a { display: grid; place-items: center; position: relative; color: inherit; border-radius: 0; padding: 12px 0; font-size: 17px; font-weight: 750; }
+.desktop-nav a:hover { background: transparent; color: var(--gold); }
+.desktop-nav a[aria-current='page'] { color: inherit; background: transparent; }
+.desktop-nav a[aria-current='page']::after { content: ''; position: absolute; bottom: 11px; inset-inline: 0; height: 4px; border-radius: 5px; background: var(--gold); }
+.app-header .header-actions > .icon-button, .app-header .header-actions > button { color: inherit; }
+.app-header .icon-button:hover { background: #503b4d; }
+.app-header .account-dropdown summary { color: #fff9f1; }
+.account-panel { color: var(--ink); }
+.app-header .mobile-menu { background: var(--cream); color: var(--ink); border-color: var(--border); }
+.app-footer { background: var(--ink); color: #fff9f1; }
+.app-footer-inner { color: inherit; }
+.content-container { max-width: 1320px; }
+.page-header { background: var(--paper); border-bottom: 1px solid #dbccd2; }
+.page-title { font-weight: 800; letter-spacing: -.045em; font-size: clamp(36px,4.5vw,62px); }
+.btn-primary { background: var(--gold); color: var(--ink); border: 0; border-radius: 11px; font-family: var(--display); font-weight: 800; }
+.btn-primary:hover { background: var(--gold-hover); }
+.btn-secondary { border-color: var(--plum); border-radius: 11px; }
+.input-field { border-radius: 11px; border-color: #a68e9b; }
+.marketplace-card { border-color: #dbccd2; border-radius: var(--radius); box-shadow: none; }
+.filter-panel { border-color: var(--plum); box-shadow: 0 4px 9px #32192d15; }
+.filter-chip { border-radius: 12px; border-color: var(--plum); }
+.business-card { border-color: #8d7486; }
+.business-card-image { height: auto; aspect-ratio: 1.75; }
+.business-card-body { padding: 9px 17px 14px; }
+.business-card h3 { font: 800 clamp(22px,2.05vw,29px)/1.15 var(--display); letter-spacing: -.045em; }
+.business-card-category { font-size: 17px; margin-top: 3px; }
+.business-card-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.business-card .rating-star { color: #b57600; fill: var(--gold); }
+.worker-card { border-top: 4px solid var(--plum); }
+.worker-card .avatar { border-radius: 13px; background: var(--plum); color: var(--cream); }
+.job-card { border-left: 4px solid var(--gold); }
+.auth-story, .intro-art, .intro-art.warm { background: #eee3e8; }
+.auth-story h2 { font-weight: 800; }
+.auth-story img { width: 100%; aspect-ratio: 1.3; object-fit: cover; border-radius: 13px; }
+.intro-art img { width: 100%; aspect-ratio: 1.3; object-fit: cover; border-radius: 13px; }
+.message-bubble { border-radius: 13px; }
+.message-bubble.outgoing { background: var(--plum); }
+.conversation-list { background: var(--cream); }
+.mobile-navigation { background: var(--paper); }
+.mobile-navigation button[aria-current='page'] { background: transparent; border-bottom: 4px solid var(--gold); border-radius: 0; }
+@media (max-width: 1200px) and (min-width: 1024px) {
+  .header-inner { gap: 20px; }
+  .desktop-nav { gap: 16px; }
+  .header-actions { gap: 4px; }
+  .brand { font-size: 30px; gap: 15px; }
+}
+@media (max-width: 1020px) { :root { --shell: calc(100% - 56px); } }
+@media (max-width: 740px) {
+  :root { --shell: calc(100% - 36px); }
+  .header-inner { min-height: 66px; gap: 12px; }
+  .brand { gap: 15px; font-size: 30px; }
+  .brand-mark { grid-template-columns: repeat(2,13px); grid-template-rows: repeat(2,13px); gap: 3px; }
+  .header-actions { gap: 0; }
+  .app-header .header-actions > a[href='/register'] { display: none; }
+  .business-card-image { aspect-ratio: 2; }
+  .business-card-body { padding: 8px 14px 12px; }
+  .business-card h3 { font-size: 25px; }
+}
+/* Marketplace extensions keep the same cards and forms across account types. */
+.worker-marketplace .page-header, .job-marketplace .page-header { background: linear-gradient(110deg,var(--paper) 55%,#eee3e8); }
+.worker-detail .detail-columns > .marketplace-card:first-child { border-top: 5px solid var(--plum); }
+.worker-management form, .job-management form { max-width: 760px; }
+.job-applications .marketplace-card { border-left: 4px solid var(--gold); }
+.business-detail .detail-columns > div > .marketplace-card:first-child { border-color: #8d7486; }
+.business-feedback .card-stat { border: 1px solid #dbccd2; }
+.account-profile .profile-summary { background: #eee3e8; border-color: #a68e9b; }
+.messaging-page .message-panel { border-color: #a68e9b; box-shadow: 0 4px 9px #32192d15; }
+.notifications-page main > .marketplace-card { border-color: #a68e9b; }
+.moderation-page .page-header { border-bottom: 4px solid var(--gold); }
+.business-card h3 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.business-details-link { min-height: 44px; }
+.business-card-meta { column-gap: 14px; row-gap: 4px; }
+.business-card-meta > div { margin-right: auto; }
