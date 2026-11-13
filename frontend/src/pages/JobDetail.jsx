@@ -112,8 +112,9 @@ export default function JobDetail() {
   };
 
   return (
-    <div className="page-wrapper pb-12">
+    <div className="page-wrapper job-detail pb-12">
       <Header
+        eyebrow="Opportunity in your community"
         title="Job details"
         subtitle="An opportunity to put your skills to work, close to home."
         headingLevel={job ? 2 : 1}

@@ -33,8 +33,9 @@ export default function MyJobApplications() {
   }, [loadApplications]);
 
   return (
-    <div className="page-wrapper pb-8">
+    <div className="page-wrapper job-applications pb-8">
       <Header
+        eyebrow="Keep your next step in sight"
         title="My applications"
         subtitle="Keep track of the opportunities you’ve taken a step towards."
         onBack={() => navigate("/jobs")}

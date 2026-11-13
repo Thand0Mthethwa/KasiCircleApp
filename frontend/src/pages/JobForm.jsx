@@ -80,8 +80,9 @@ export default function JobForm() {
   };
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper job-management">
       <Header
+        eyebrow="Find the right person for the job"
         title={id ? "Edit job" : "Post a job"}
         subtitle="Connect an opportunity with the right person in your community."
         onBack={() => navigate(id ? `/jobs/${id}` : "/jobs")}

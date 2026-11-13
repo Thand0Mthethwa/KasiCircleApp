@@ -74,8 +74,9 @@ export default function Jobs() {
   };
 
   return (
-    <div className="page-wrapper pb-8">
+    <div className="page-wrapper job-marketplace pb-8">
       <Header
+        eyebrow="Your next step starts nearby"
         title="Find jobs"
         subtitle="Your next opportunity could be just around the corner."
       />
