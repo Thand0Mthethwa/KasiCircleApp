@@ -448,7 +448,7 @@ export default function BusinessProfile() {
 
   if (isAuthLoading || isLoadingBusiness) {
     return (
-      <div className="page-wrapper flex items-center justify-center min-h-screen">
+      <div className="page-wrapper business-management flex items-center justify-center min-h-screen">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -457,8 +457,9 @@ export default function BusinessProfile() {
   // Guard for non-BUSINESS accounts
   if (!isBusinessAccount) {
     return (
-      <div className="page-wrapper business-owner-page pb-12">
+      <div className="page-wrapper business-management business-owner-page pb-12">
         <Header
+        eyebrow="Built by you. Found by your community."
           title="Business Profile"
           subtitle="Enterprise management"
           showBack={true}
@@ -513,8 +514,9 @@ export default function BusinessProfile() {
   };
 
   return (
-    <div className="page-wrapper business-owner-page pb-12">
+    <div className="page-wrapper business-management business-owner-page pb-12">
       <Header
+        eyebrow="Built by you. Found by your community."
         title={getPageTitle()}
         subtitle={getPageSubtitle()}
         showBack={true}

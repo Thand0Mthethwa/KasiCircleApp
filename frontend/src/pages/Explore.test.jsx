@@ -92,7 +92,7 @@ describe('Explore (Public Business Directory) Page', () => {
     renderComponent();
 
     // Directory title & inputs
-    expect(screen.getByText('Business Directory')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Find businesses near you.' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/search businesses by name/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/filter by township\/city/i)).toBeInTheDocument();
 
@@ -334,7 +334,7 @@ describe('Explore (Public Business Directory) Page', () => {
     });
 
     // Click View Details for Kasi Fresh Cafe (biz-1)
-    const viewDetailsButtons = screen.getAllByRole('button', { name: /view details/i });
+    const viewDetailsButtons = screen.getAllByRole('link', { name: /view details/i });
     await user.click(viewDetailsButtons[0]);
 
     expect(mockNavigate).toHaveBeenCalledWith('/businesses/biz-1');

@@ -1,10 +1,11 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
-import { ArrowUpRight, Briefcase, MapPin } from "lucide-react";
-import { RatingDisplay, ShopArt, StatusBadge } from "./ui";
+import { ArrowUpRight, Briefcase, MapPin, Building2 } from "lucide-react";
+import { RatingDisplay, StatusBadge } from "./ui";
 
 export function JobCard({ job, onOpen }) {
   return (
-    <article className="marketplace-card p-5 md:p-6 flex flex-col sm:flex-row gap-5">
+    <article className="marketplace-card job-card p-5 md:p-6 flex flex-col sm:flex-row gap-5">
       <span className="state-icon shrink-0 mb-0">
         <Briefcase size={23} aria-hidden="true" />
       </span>
@@ -59,42 +60,30 @@ export function BusinessCard({ business, onOpen }) {
           />
         ) : (
           <>
-            <ShopArt className="w-full h-full object-cover" />
+            <Building2 className="absolute inset-0 m-auto w-16 h-16 text-kasi-green" aria-hidden="true" />
             <span className="absolute bottom-3 right-3 rounded-full bg-kasi-surface px-2.5 py-1 text-[11px] text-neutral-600">
               No photo provided
             </span>
           </>
         )}
-        <span className="absolute top-3 left-3 rounded-full border border-neutral-200 bg-kasi-surface px-3 py-1.5 text-xs font-medium">
-          {business.category}
-        </span>
       </div>
-      <div className="p-5 md:p-6 flex flex-col flex-1">
-        <h3 className="font-semibold text-lg leading-snug">{business.name}</h3>
-        <p className="text-sm text-neutral-600 leading-relaxed line-clamp-2 mt-2 mb-4">
-          {business.description}
-        </p>
-        <RatingDisplay
-          rating={business.averageRating}
-          count={business.reviewCount}
-          data-testid={`business-rating-${business.id}`}
-        />
-        <div className="mt-auto pt-5 flex flex-wrap items-center justify-between gap-3">
-          <p className="flex items-start gap-1.5 text-xs text-neutral-600">
-            <MapPin size={15} className="shrink-0" aria-hidden="true" />
-            <span>
-              {business.city}, {business.province}
-            </span>
+      <div className="business-card-body flex flex-col flex-1">
+        <h3><Link to={`/businesses/${business.id}`}>{business.name}</Link></h3>
+        <p className="business-card-category">{business.category}</p>
+        <p className="sr-only">{business.description}</p>
+        <div className="business-card-meta">
+          <p className="flex items-start gap-1.5 text-sm text-neutral-600">
+            <MapPin size={17} className="shrink-0" aria-hidden="true" />
+            <span>{business.city}, {business.province}</span>
           </p>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-kasi-green hover:underline underline-offset-4"
-            onClick={() => onOpen(business.id)}
-            aria-label={`View details for ${business.name}`}
-          >
-            View Details
-            <ArrowUpRight size={16} aria-hidden="true" />
-          </button>
+          <RatingDisplay rating={business.averageRating} count={business.reviewCount}
+            data-testid={`business-rating-${business.id}`} />
+          <Link to={`/businesses/${business.id}`}
+            className="business-details-link inline-flex items-center gap-1.5 text-sm font-semibold text-kasi-green hover:underline underline-offset-4 py-2"
+            onClick={onOpen ? (event) => { event.preventDefault(); onOpen(business.id); } : undefined}
+            aria-label={`View details for ${business.name}`}>
+            View Details <ArrowUpRight size={16} aria-hidden="true" />
+          </Link>
         </div>
       </div>
     </article>

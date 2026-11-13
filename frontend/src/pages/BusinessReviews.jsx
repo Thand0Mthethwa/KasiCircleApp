@@ -219,8 +219,9 @@ export default function BusinessReviews() {
   // ---------------------------------------------------------------------------
   if (!isAuthLoading && user && !isBusinessAccount) {
     return (
-      <div className="page-wrapper reviews-dashboard-page pb-12">
+      <div className="page-wrapper business-feedback reviews-dashboard-page pb-12">
         <Header
+        eyebrow="What your community is saying"
           title="Reviews & Feedback"
           subtitle="Owner Review Dashboard"
           showBack={true}
@@ -256,8 +257,9 @@ export default function BusinessReviews() {
   // ---------------------------------------------------------------------------
   if (isResolvingBusiness || isAuthLoading) {
     return (
-      <div className="page-wrapper reviews-dashboard-page pb-12">
+      <div className="page-wrapper business-feedback reviews-dashboard-page pb-12">
         <Header
+        eyebrow="What your community is saying"
           title="Reviews & Feedback"
           subtitle="Loading your business review dashboard..."
           showBack={true}
@@ -279,8 +281,9 @@ export default function BusinessReviews() {
   // ---------------------------------------------------------------------------
   if (businessError) {
     return (
-      <div className="page-wrapper reviews-dashboard-page pb-12">
+      <div className="page-wrapper business-feedback reviews-dashboard-page pb-12">
         <Header
+        eyebrow="What your community is saying"
           title="Reviews & Feedback"
           subtitle="Owner Review Dashboard"
           showBack={true}
@@ -314,8 +317,9 @@ export default function BusinessReviews() {
   // ---------------------------------------------------------------------------
   if (!business) {
     return (
-      <div className="page-wrapper reviews-dashboard-page pb-12">
+      <div className="page-wrapper business-feedback reviews-dashboard-page pb-12">
         <Header
+        eyebrow="What your community is saying"
           title="Reviews & Feedback"
           subtitle="Owner Review Dashboard"
           showBack={true}
@@ -351,9 +355,10 @@ export default function BusinessReviews() {
   // RENDER: Active Business Review Dashboard
   // ---------------------------------------------------------------------------
   return (
-    <div className="page-wrapper reviews-dashboard-page pb-12">
+    <div className="page-wrapper business-feedback reviews-dashboard-page pb-12">
       {/* Dashboard Header */}
       <Header
+        eyebrow="What your community is saying"
         title="Reviews & Feedback"
         subtitle={`Customer ratings and feedback for ${business.name}`}
         showBack={true}

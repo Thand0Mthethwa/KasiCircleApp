@@ -15,7 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import { SearchBar } from "../components";
-import "../styles/home-reference.css";
+import "../styles/home-migration.css";
 import { BusinessCard, categories } from "../components/HomeBusinessCard";
 import {
   EmptyState,
@@ -119,7 +119,7 @@ export default function Home() {
               onClick={() =>
                 document
                   .getElementById("directory")
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  ?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" })
               }
             >
               Explore the neighbourhood <ArrowDown size={16} />
@@ -130,21 +130,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hero-illustration" aria-hidden="true">
-            <span className="hero-art-label">
-              A LITTLE LOCAL GOES A LONG WAY.
-            </span>
-            <img src="/demo-assets/neighbourhood-hero.svg" alt="" />
-            <div className="hero-local-card">
-              <span className="local-card-icon">
-                <Store size={20} />
-              </span>
-              <div>
-                <strong>Big heart. Local business.</strong>
-                <span>There’s a whole community to discover.</span>
-              </div>
-              <span className="local-card-spark">✳</span>
-            </div>
-            <span className="hero-coordinate">GAUTENG, SOUTH AFRICA ↗</span>
+            <img src="/images/storefront.webp" alt="" fetchPriority="high" />
           </div>
         </div>
         <form

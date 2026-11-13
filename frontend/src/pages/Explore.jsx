@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { createElement, useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button, Card, Header } from "../components";
+import { Button } from "../components";
 import { businessService } from "../services/api";
 import { BusinessCard } from "../components/MarketplaceCards";
 import { EmptyState, ErrorState, LoadingSkeleton } from "../components/ui";
-import { Search, MapPin, X, Building2 } from "lucide-react";
+import { Search, MapPin, X, Building2, LayoutGrid, Utensils, ShoppingBag, Wrench, Hammer, Scissors, Briefcase, HeartPulse, Laptop, MoreHorizontal } from "lucide-react";
 
+import "../styles/explore-reference.css";
+
+const categoryIcons = [LayoutGrid, Utensils, ShoppingBag, Wrench, Hammer, Scissors, Briefcase, HeartPulse, Laptop, MoreHorizontal];
 const CATEGORIES = [
   "All",
   "Food & Beverage",
@@ -121,149 +124,52 @@ export default function Explore() {
   );
 
   return (
-    <div className="page-wrapper pb-12">
-      <Header
-        title="Business Directory"
-        subtitle="Discover the businesses that make your kasi. Good things are closer than you think."
-        onBack={() => navigate("/home")}
-      />
-      <main className="content-container py-8 md:py-10 space-y-6">
-        <div className="flex flex-wrap justify-between items-center gap-4">
-          <div>
-            <h2 className="text-2xl font-display">Explore Kasi Businesses</h2>
-            <p className="text-sm text-neutral-600 mt-2">
-              Browse registered local services, artisans, and enterprises in
-              your community.
-            </p>
-          </div>
-          <Button
-            variant="secondary"
-            onClick={() => navigate("/business-profile")}
-          >
-            List your business
-          </Button>
+    <div className="page-wrapper explore-reference">
+      <section className="hero" aria-labelledby="hero-heading">
+        <div className="hero-image">
+          <img src="/images/storefront.webp" alt="" width="1440" height="900" fetchPriority="high" />
         </div>
-        <Card className="p-5 md:p-6">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="grid md:grid-cols-[1.3fr_1fr_auto] gap-4 items-end"
-            role="search"
-          >
-            <div>
-              <label
-                htmlFor="business-search"
-                className="block text-sm font-semibold mb-2"
-              >
-                Find a local business
-              </label>
-              <div className="relative">
-                <Search
-                  className="absolute left-3.5 top-4 w-4 h-4 text-neutral-500 pointer-events-none"
-                  aria-hidden="true"
-                />
-                <input
-                  id="business-search"
-                  type="search"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="Search businesses by name..."
-                  aria-label="Search businesses by name"
-                  className="input-field pl-10 pr-12"
-                />
-                {searchInput && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchInput("")}
-                    className="absolute right-1 top-0.5 icon-button"
-                    aria-label="Clear search keyword"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-            </div>
-            <div>
-              <label
-                htmlFor="business-city"
-                className="block text-sm font-semibold mb-2"
-              >
-                Your neighbourhood
-              </label>
-              <div className="relative">
-                <MapPin
-                  className="absolute left-3.5 top-4 w-4 h-4 text-neutral-500 pointer-events-none"
-                  aria-hidden="true"
-                />
-                <input
-                  id="business-city"
-                  type="text"
-                  value={cityInput}
-                  onChange={(e) => setCityInput(e.target.value)}
-                  placeholder="Filter by township/city (e.g. Soweto)..."
-                  aria-label="Filter by township or city"
-                  className="input-field pl-10 pr-12"
-                />
-                {cityInput && (
-                  <button
-                    type="button"
-                    onClick={() => setCityInput("")}
-                    className="absolute right-1 top-0.5 icon-button"
-                    aria-label="Clear city filter"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" className="flex-1">
-                <Search size={17} aria-hidden="true" />
-                Search
-              </Button>
-              {hasActiveFilters && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={handleResetFilters}
-                  aria-label="Reset all filters"
-                >
-                  Reset
-                </Button>
-              )}
-            </div>
-          </form>
-        </Card>
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <span className="eyebrow">Filter by Category</span>
-            {selectedCategory !== "All" && (
-              <button
-                type="button"
-                onClick={() => handleCategorySelect("All")}
-                className="link-text text-sm"
-              >
-                Show All
-              </button>
-            )}
-          </div>
-          <div
-            className="flex gap-2 overflow-x-auto pb-3 max-w-full"
-            role="group"
-            aria-label="Business Categories"
-          >
-            {CATEGORIES.map((category) => (
-              <button
-                key={category}
-                type="button"
-                className="filter-chip whitespace-nowrap shrink-0"
-                onClick={() => handleCategorySelect(category)}
-                aria-pressed={selectedCategory === category}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
+        <div className="shell hero-inner">
+          <h1 id="hero-heading">Find businesses<br />near you.</h1>
+          <p>Discover food, shops and services<br className="desktop-break" /> in your township.</p>
         </div>
+      </section>
+      <main className="shell directory-shell">
+        <form onSubmit={handleSearchSubmit} className="search-panel" role="search">
+          <div className="search-fields">
+            <div className="search-field">
+              <Search aria-hidden="true" />
+              <label className="sr-only" htmlFor="business-search">Find a local business</label>
+              <input id="business-search" type="search" value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search businesses by name..." aria-label="Search businesses by name" />
+              {searchInput && <button type="button" onClick={() => setSearchInput("")} aria-label="Clear search keyword"><X size={16} /></button>}
+            </div>
+            <div className="search-field location-field">
+              <MapPin aria-hidden="true" />
+              <label className="sr-only" htmlFor="business-city">Your neighbourhood</label>
+              <input id="business-city" type="text" value={cityInput}
+                onChange={(e) => setCityInput(e.target.value)}
+                placeholder="Filter by township/city..." aria-label="Filter by township or city" />
+              {cityInput && <button type="button" onClick={() => setCityInput("")} aria-label="Clear city filter"><X size={16} /></button>}
+            </div>
+          </div>
+          <button type="submit" className="primary-button">Search</button>
+        </form>
+        <nav className="categories live-categories" aria-label="Business Categories">
+          {CATEGORIES.map((category, index) => (
+            <button key={category} type="button" className={`category-button${selectedCategory === category ? " selected" : ""}`}
+              onClick={() => handleCategorySelect(category)} aria-pressed={selectedCategory === category}>
+              {createElement(categoryIcons[index], { "aria-hidden": true })}<span>{category}</span>
+            </button>
+          ))}
+        </nav>
+        <section className="directory" aria-labelledby="directory-heading">
+          <div className="section-heading">
+            <h2 id="directory-heading">Explore local businesses</h2>
+            <Button variant="secondary" onClick={() => navigate("/business-profile")}>List your business</Button>
+          </div>
+          {hasActiveFilters && <button type="button" className="clear-filters" onClick={handleResetFilters} aria-label="Reset all filters"><X size={16} /> Clear filters</button>}
         {!isLoading && !error && (
           <div className="flex items-center justify-between text-sm text-neutral-600">
             <span>
@@ -310,7 +216,7 @@ export default function Explore() {
         {!isLoading && !error && businesses.length > 0 && (
           <>
             <div
-              className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+              className="business-grid"
               data-testid="business-cards-list"
             >
               {businesses.map((business) => (
@@ -357,6 +263,7 @@ export default function Explore() {
             )}
           </>
         )}
+        </section>
       </main>
     </div>
   );

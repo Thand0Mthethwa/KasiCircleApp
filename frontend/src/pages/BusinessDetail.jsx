@@ -495,9 +495,10 @@ export default function BusinessDetail() {
   const reviewDeleteRef = useDialogFocus(isDeleteDialogOpen, handleCloseDeleteDialog);
 
   return (
-    <div className="page-wrapper business-detail-page pb-12">
+    <div className="page-wrapper business-detail business-detail-page pb-12">
       {/* Header */}
       <Header
+        eyebrow="Meet your local favourite"
         title="Business Details"
         headingLevel={business ? 2 : 1}
         subtitle="KasiCircle Enterprise Listing"
