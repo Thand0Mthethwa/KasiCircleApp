@@ -1,0 +1,45 @@
+Final publication audit verification — 2026-11-13
+
+Image backend regression tests (clean exit 0)
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.707 s -- in com.kasicircle.backend.businesses.validation.ImageValidatorTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.597 s -- in com.kasicircle.backend.businesses.storage.CloudinaryStorageServiceImplTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.099 s -- in com.kasicircle.backend.businesses.service.BusinessImageServiceTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 35.45 s -- in com.kasicircle.backend.businesses.controller.BusinessImageControllerTest
+[INFO] Tests run: 41, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  53.378 s
+
+Frontend full regression suite, single thread worker (clean exit 0)
+ Test Files  38 passed (38)
+      Tests  237 passed (237)
+   Duration  211.83s (environment 37%, tests 33%, setup 18%, import 12%, worker 1%, transform 1%)
+
+Real Spring Boot/PostgreSQL desktop/mobile suite (clean exit 0)
+  ✓   1 [desktop] › e2e/marketplace.spec.js:43:1 › customer review persists, updates ratings and rejects duplicate/self/invalid reviews (15.6s)
+  ✓   2 [desktop] › e2e/marketplace.spec.js:72:1 › worker creates and edits own skills, is discoverable, and can securely exchange messages (16.6s)
+  ✓   3 [desktop] › e2e/marketplace.spec.js:118:1 › employer posts/edits job, applicant applies privately, employer decides, and notification opens (23.7s)
+  ✓   4 [desktop] › e2e/marketplace.spec.js:172:1 › regular user reports content, cannot moderate, administrator resolves from UI (10.3s)
+  ✓   5 [desktop] › e2e/marketplace.spec.js:198:1 › registration validates fields, logs in a resident, and protects account routes after logout (9.7s)
+  ✓   6 [desktop] › e2e/marketplace.spec.js:230:1 › business owner creates and edits a listing; real API filters and database-backed images render (13.5s)
+  ✓   7 [desktop] › e2e/marketplace.spec.js:278:1 › live directory navigation and responsive layouts work with persisted fixtures (8.8s)
+  ✓   8 [mobile] › e2e/marketplace.spec.js:43:1 › customer review persists, updates ratings and rejects duplicate/self/invalid reviews (10.0s)
+  ✓   9 [mobile] › e2e/marketplace.spec.js:72:1 › worker creates and edits own skills, is discoverable, and can securely exchange messages (17.3s)
+  ✓  10 [mobile] › e2e/marketplace.spec.js:118:1 › employer posts/edits job, applicant applies privately, employer decides, and notification opens (19.8s)
+  ✓  11 [mobile] › e2e/marketplace.spec.js:172:1 › regular user reports content, cannot moderate, administrator resolves from UI (10.1s)
+  ✓  12 [mobile] › e2e/marketplace.spec.js:198:1 › registration validates fields, logs in a resident, and protects account routes after logout (9.4s)
+  ✓  13 [mobile] › e2e/marketplace.spec.js:230:1 › business owner creates and edits a listing; real API filters and database-backed images render (13.7s)
+  ✓  14 [mobile] › e2e/marketplace.spec.js:278:1 › live directory navigation and responsive layouts work with persisted fixtures (7.1s)
+  14 passed (4.1m)
+
+ESLint including helper modules (clean exit 0)
+
+> kasicircle-frontend@0.0.1 lint
+> eslint . --ext .js,.jsx
+
+
+Production build (clean exit 0)
+dist/assets/index-BPaZ5dlt.css                                          77.92 kB │ gzip:  14.86 kB
+dist/assets/index-DbjEQXej.js                                          390.19 kB │ gzip: 106.70 kB
+✓ built in 6.38s
+
+CI guard setup/idempotence/wrong-database rejection passed on the isolated QA cluster; YAML target/order checked. Cloudinary calls: NONE (rotation/revocation remains unverified). QA cluster stopped after checks; its data was retained. No application code, DB migrations, dependency versions or existing user images changed. No pushes, merges, deployments or workflow dispatches.

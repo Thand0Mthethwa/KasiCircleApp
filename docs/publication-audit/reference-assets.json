@@ -1,0 +1,10 @@
+{
+  "reference_assets_match": {
+    "kasicircle.svg": true,
+    "images/salon.webp": true,
+    "images/hardware.webp": true,
+    "images/storefront.webp": true,
+    "images/kota.webp": true
+  },
+  "unintended_tracked_build_artifacts": []
+}
