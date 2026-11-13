@@ -27,6 +27,33 @@ class WorkerProfileRepositoryTest {
 
     @Test
     void searchesProfilesByKeywordSkillCategoryAndCity() {
+        createProfile();
+
+        var matches = workerProfileRepository.searchPublicProfiles(
+                "Amahle", "electrical", "wir", "soweto", PageRequest.of(0, 10));
+        var noMatches = workerProfileRepository.searchPublicProfiles(
+                "Amahle", "plumbing", null, null, PageRequest.of(0, 10));
+
+        assertEquals(1, matches.getTotalElements());
+        assertEquals("Qualified Electrician", matches.getContent().get(0).getHeadline());
+        assertEquals(0, noMatches.getTotalElements());
+    }
+    @Test
+    void supportsEveryCombinationOfOptionalFiltersAndCountPagination() {
+        createProfile();
+        for (int mask = 0; mask < 16; mask++) {
+            var matches = workerProfileRepository.searchPublicProfiles(
+                    (mask & 1) == 0 ? null : "Amahle",
+                    (mask & 2) == 0 ? null : "electrical",
+                    (mask & 4) == 0 ? null : "wir",
+                    (mask & 8) == 0 ? null : "soweto",
+                    PageRequest.of(0, 1));
+            assertEquals(1, matches.getTotalElements(), "Optional filter combination " + mask);
+            assertEquals("Qualified Electrician", matches.getContent().get(0).getHeadline());
+        }
+    }
+
+    private void createProfile() {
         User worker = userRepository.save(User.builder()
                 .firstName("Amahle")
                 .lastName("Dube")
@@ -47,13 +74,6 @@ class WorkerProfileRepositoryTest {
         profile.setProvince("Gauteng");
         workerProfileRepository.saveAndFlush(profile);
 
-        var matches = workerProfileRepository.searchPublicProfiles(
-                "Amahle", "electrical", "wir", "soweto", PageRequest.of(0, 10));
-        var noMatches = workerProfileRepository.searchPublicProfiles(
-                "Amahle", "plumbing", null, null, PageRequest.of(0, 10));
-
-        assertEquals(1, matches.getTotalElements());
-        assertEquals("Qualified Electrician", matches.getContent().get(0).getHeadline());
-        assertEquals(0, noMatches.getTotalElements());
     }
+
 }

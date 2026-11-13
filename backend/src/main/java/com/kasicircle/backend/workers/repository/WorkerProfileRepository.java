@@ -18,38 +18,39 @@ public interface WorkerProfileRepository extends JpaRepository<WorkerProfile, UU
     @EntityGraph(attributePaths = "owner")
     Optional<WorkerProfile> findByOwnerId(UUID ownerId);
 
+    // PostgreSQL must receive typed text parameters even when optional filters are null.
     @EntityGraph(attributePaths = "owner")
     @Query(value = """
             select distinct p from WorkerProfile p
             join fetch p.owner owner
-            where (:search is null
-                or lower(p.headline) like lower(concat('%', :search, '%'))
-                or lower(p.bio) like lower(concat('%', :search, '%'))
-                or lower(owner.firstName) like lower(concat('%', :search, '%'))
-                or lower(owner.lastName) like lower(concat('%', :search, '%')))
-              and (:city is null or lower(p.city) like lower(concat('%', :city, '%')))
-              and (:category is null or exists (
+            where (cast(:search as string) is null
+                or lower(p.headline) like lower(concat('%', cast(:search as string), '%'))
+                or lower(p.bio) like lower(concat('%', cast(:search as string), '%'))
+                or lower(owner.firstName) like lower(concat('%', cast(:search as string), '%'))
+                or lower(owner.lastName) like lower(concat('%', cast(:search as string), '%')))
+              and (cast(:city as string) is null or lower(p.city) like lower(concat('%', cast(:city as string), '%')))
+              and (cast(:category as string) is null or exists (
                   select c from WorkerProfile profile join profile.serviceCategories c
-                  where profile = p and lower(c) = lower(:category)))
-              and (:skill is null or exists (
+                  where profile = p and lower(c) = lower(cast(:category as string))))
+              and (cast(:skill as string) is null or exists (
                   select s from WorkerProfile profile join profile.skills s
-                  where profile = p and lower(s) like lower(concat('%', :skill, '%'))))
+                  where profile = p and lower(s) like lower(concat('%', cast(:skill as string), '%'))))
             """,
             countQuery = """
             select count(p) from WorkerProfile p
             join p.owner owner
-            where (:search is null
-                or lower(p.headline) like lower(concat('%', :search, '%'))
-                or lower(p.bio) like lower(concat('%', :search, '%'))
-                or lower(owner.firstName) like lower(concat('%', :search, '%'))
-                or lower(owner.lastName) like lower(concat('%', :search, '%')))
-              and (:city is null or lower(p.city) like lower(concat('%', :city, '%')))
-              and (:category is null or exists (
+            where (cast(:search as string) is null
+                or lower(p.headline) like lower(concat('%', cast(:search as string), '%'))
+                or lower(p.bio) like lower(concat('%', cast(:search as string), '%'))
+                or lower(owner.firstName) like lower(concat('%', cast(:search as string), '%'))
+                or lower(owner.lastName) like lower(concat('%', cast(:search as string), '%')))
+              and (cast(:city as string) is null or lower(p.city) like lower(concat('%', cast(:city as string), '%')))
+              and (cast(:category as string) is null or exists (
                   select c from WorkerProfile profile join profile.serviceCategories c
-                  where profile = p and lower(c) = lower(:category)))
-              and (:skill is null or exists (
+                  where profile = p and lower(c) = lower(cast(:category as string))))
+              and (cast(:skill as string) is null or exists (
                   select s from WorkerProfile profile join profile.skills s
-                  where profile = p and lower(s) like lower(concat('%', :skill, '%'))))
+                  where profile = p and lower(s) like lower(concat('%', cast(:skill as string), '%'))))
             """)
     Page<WorkerProfile> searchPublicProfiles(
             @Param("search") String search,
