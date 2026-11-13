@@ -38,8 +38,9 @@ export default function WorkerDetail() {
   }, [id, retry]);
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper worker-detail">
       <Header
+        eyebrow="Meet your next helping hand"
         title="Worker profile"
         subtitle="Meet the people who bring practical skills to your neighbourhood."
         headingLevel={worker ? 2 : 1}

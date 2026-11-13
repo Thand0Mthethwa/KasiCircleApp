@@ -98,8 +98,9 @@ export default function WorkerProfile() {
   };
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper worker-management">
       <Header
+        eyebrow="Your skills, in the spotlight"
         title="Worker profile"
         subtitle="Manage your public skills and service information"
         onBack={() => navigate("/home")}

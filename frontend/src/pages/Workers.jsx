@@ -70,8 +70,9 @@ export default function Workers() {
   const hasFilters = search || skill || category || city;
 
   return (
-    <div className="page-wrapper pb-8">
+    <div className="page-wrapper worker-marketplace pb-8">
       <Header
+        eyebrow="Practical skills. Local people."
         title="Find Local Workers"
         subtitle="Discover skills and services in your community"
         onBack={() => navigate("/home")}
