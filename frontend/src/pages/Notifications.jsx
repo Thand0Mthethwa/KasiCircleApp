@@ -77,8 +77,9 @@ export default function Notifications() {
   };
 
   return (
-    <div className="page-wrapper pb-8">
+    <div className="page-wrapper notifications-page pb-8">
       <Header
+        eyebrow="Stay close to what matters"
         title="Notifications"
         subtitle="The latest from your community, all in one place."
         onBack={() => navigate(-1)}

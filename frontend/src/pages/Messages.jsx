@@ -179,8 +179,9 @@ export default function Messages() {
   );
 
   return (
-    <div className="page-wrapper pb-8">
+    <div className="page-wrapper messaging-page pb-8">
       <Header
+        eyebrow="Good conversations start here"
         title="Messages"
         subtitle="Good connections start with a conversation."
       />

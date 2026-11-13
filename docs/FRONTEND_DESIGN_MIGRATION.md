@@ -33,8 +33,8 @@ Endpoints below are relative to `/api`. Existing page tests are under `frontend/
 | JobForm | `/jobs/new; /jobs/:id/edit` | Protected; edit restricted to employer | Create/edit fields, validation, saving state, retry without data loss | GET /jobs/:id; POST /jobs; PUT /jobs/:id | Editorial header, premium form panel | JobForm; service/route tests | Implemented; final QA pending |
 | MyJobApplications | `/my-applications` | Protected | Applications, status, pagination, job navigation, retry | GET /jobs/me/applications | Application cards, status badges | MyJobApplications; service/route tests | Implemented; final QA pending |
 | Profile | `/profile` | Protected | Edit personal details; email/account type read-only; role-specific management; logout | GET/PUT /users/me | Profile summary, personal details form | Profile; service/route tests | Implemented; final QA pending |
-| Messages | `/messages` | Protected; conversation participants | Participant deep links, conversation selection, message pagination/send, timestamps, retry | GET/POST /conversations; GET/POST /conversations/:id/messages | Conversation rail, message bubbles, composer | Messages; service/route tests | Audited; pending migration |
-| Notifications | `/notifications` | Protected | Unread count, mark read, resource navigation, pagination, retry | GET /notifications; GET /notifications/unread-count; PATCH /notifications/:id/read | Notification cards and unread accents | Notifications; service/route tests | Audited; pending migration |
+| Messages | `/messages` | Protected; conversation participants | Participant deep links, conversation selection, message pagination/send, timestamps, retry | GET/POST /conversations; GET/POST /conversations/:id/messages | Conversation rail, message bubbles, composer | Messages; service/route tests | Implemented; final QA pending |
+| Notifications | `/notifications` | Protected | Unread count, mark read, resource navigation, pagination, retry | GET /notifications; GET /notifications/unread-count; PATCH /notifications/:id/read | Notification cards and unread accents | Notifications; service/route tests | Implemented; final QA pending |
 | AdminReports | `/admin/reports` | Protected; ADMIN (frontend and backend) | Open report paging, decisions/notes, dismiss/remove, retry | GET /reports; PATCH /reports/:id/moderation | Moderation cards and decision forms | AdminReports; service/route tests | Audited; pending migration |
 | NotFound | `*` | Public | Return home, browser back | — | Editorial error state | NotFound; service/route tests | Audited; pending migration |
 
@@ -45,7 +45,7 @@ Endpoints below are relative to `/api`. Existing page tests are under `frontend/
 - C: implemented; shared lint/build passed; final behavior and browser verification recorded in the final QA section.
 - D: implemented; shared lint/build passed; final behavior and browser verification recorded in the final QA section.
 - E: implemented; shared lint/build passed; final behavior and browser verification recorded in the final QA section.
-- F: messaging and notifications — pending.
+- F: implemented; shared lint/build passed; final behavior and browser verification recorded in the final QA section.
 - G: moderation and supporting pages — pending.
 
 Each phase must have affected tests, lint/build and a local commit recorded. Final screenshots must include reference and actual Explore at 1440×900, 768×1024 and 375×812. A build alone is not visual sign-off.
