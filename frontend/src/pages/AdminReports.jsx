@@ -71,8 +71,9 @@ export default function AdminReports() {
   };
 
   return (
-    <div className="page-wrapper pb-8">
+    <div className="page-wrapper moderation-page pb-8">
       <Header
+        eyebrow="Care for your community"
         title="Content reports"
         subtitle="A considered review helps keep the circle useful and welcoming."
         onBack={() => navigate("/profile")}

@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, MapPin } from "lucide-react";
 import { Button } from "../components";
-import { ShopArt } from "../components/ui";
 
 export default function NotFound() {
   const navigate = useNavigate();
@@ -28,7 +27,7 @@ export default function NotFound() {
         </div>
       </div>
       <div className="intro-art" aria-hidden="true">
-        <ShopArt />
+        <img src="/images/storefront.webp" alt="" />
         <p>
           Let’s find your
           <br />

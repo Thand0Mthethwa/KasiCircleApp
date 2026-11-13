@@ -130,7 +130,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hero-illustration" aria-hidden="true">
-            <img src="/images/storefront.webp" alt="" fetchPriority="high" />
+            <img src="/images/storefront.webp" alt="" fetchpriority="high" />
           </div>
         </div>
         <form

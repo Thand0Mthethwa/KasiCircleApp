@@ -5,7 +5,6 @@ import { businessService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import ReportForm from '../components/ReportForm';
 import useDialogFocus from '../components/useDialogFocus';
-import { ShopArt } from '../components/ui';
 import {
   Building2,
   MapPin,
@@ -676,7 +675,7 @@ export default function BusinessDetail() {
                 className="relative w-full h-48 sm:h-64 rounded-xl overflow-hidden border border-neutral-200 bg-kasi-sage flex items-center justify-center gap-6 p-4 text-center"
                 data-testid="business-cover-placeholder"
               >
-                <ShopArt className="h-full w-auto" />
+                <Building2 className="w-20 h-20 text-kasi-green" aria-hidden="true" />
                 <p className="absolute bottom-3 right-3 text-xs bg-kasi-surface rounded-full px-3 py-1.5 text-neutral-600">No cover photo provided</p>
               </div>
             )}

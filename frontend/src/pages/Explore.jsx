@@ -9,6 +9,7 @@ import { Search, MapPin, X, Building2, LayoutGrid, Utensils, ShoppingBag, Wrench
 import "../styles/explore-reference.css";
 
 const categoryIcons = [LayoutGrid, Utensils, ShoppingBag, Wrench, Hammer, Scissors, Briefcase, HeartPulse, Laptop, MoreHorizontal];
+const categoryLabels = ["All", "Food", "Retail", "Automotive", "Hardware", "Beauty", "Services", "Health", "Technology", "Other"];
 const CATEGORIES = [
   "All",
   "Food & Beverage",
@@ -127,7 +128,7 @@ export default function Explore() {
     <div className="page-wrapper explore-reference">
       <section className="hero" aria-labelledby="hero-heading">
         <div className="hero-image">
-          <img src="/images/storefront.webp" alt="" width="1440" height="900" fetchPriority="high" />
+          <img src="/images/storefront.webp" alt="" width="1440" height="900" fetchpriority="high" />
         </div>
         <div className="shell hero-inner">
           <h1 id="hero-heading">Find businesses<br />near you.</h1>
@@ -159,8 +160,8 @@ export default function Explore() {
         <nav className="categories live-categories" aria-label="Business Categories">
           {CATEGORIES.map((category, index) => (
             <button key={category} type="button" className={`category-button${selectedCategory === category ? " selected" : ""}`}
-              onClick={() => handleCategorySelect(category)} aria-pressed={selectedCategory === category}>
-              {createElement(categoryIcons[index], { "aria-hidden": true })}<span>{category}</span>
+              onClick={() => handleCategorySelect(category)} aria-label={category} aria-pressed={selectedCategory === category}>
+              {createElement(categoryIcons[index], { "aria-hidden": true })}<span>{categoryLabels[index]}</span>
             </button>
           ))}
         </nav>

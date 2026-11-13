@@ -272,3 +272,8 @@
   .explore-reference .live-categories .category-button { font-size: 12px; }
 }
 .explore-reference .search-field input { line-height: normal; }
+.explore-reference .category-button span { overflow-wrap: normal; }
+@media (min-width: 741px) and (max-width: 1020px) {
+  .explore-reference .live-categories { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 10px; }
+  .explore-reference .live-categories .category-button { flex-direction: column; gap: 4px; font-size: 14px; }
+}

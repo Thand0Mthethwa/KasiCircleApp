@@ -1,0 +1,62 @@
+Executed local verification — 2026-11-13
+
+Baseline sequential tests
+ Test Files  37 passed (37)
+      Tests  226 passed (226)
+   Start at  13:58:31
+   Duration  318.58s (tests 39%, environment 34%, setup 15%, import 11%, worker 1%, transform 1%)
+
+Final sequential tests
+ Test Files  37 passed (37)
+      Tests  226 passed (226)
+   Start at  14:23:19
+   Duration  253.58s (tests 38%, environment 35%, setup 15%, import 11%, transform 1%, worker 1%)
+
+Final affected markup tests
+ Test Files  3 passed (3)
+      Tests  67 passed (67)
+   Start at  14:25:26
+   Duration  44.66s (tests 63%, environment 16%, setup 8%, import 7%, transform 5%)
+
+Business profile/moderation recheck
+ Test Files  2 passed (2)
+      Tests  33 passed (33)
+   Start at  14:22:05
+   Duration  40.32s (tests 56%, environment 18%, setup 10%, import 8%, transform 7%)
+
+Existing UI journey run before mobile fix
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/ui.spec.js:278:3 › all routes are responsive and labeled at 375px ──────────────────────────
+  7 passed (7.4m)
+
+Corrected entire mobile route sweep
+
+Running 1 test using 1 worker
+
+(node:2105300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/ui.spec.js:278:3 › all routes are responsive and labeled at 375px (1.7m)
+
+  1 passed (1.9m)
+
+Final lint
+
+> kasicircle-frontend@0.0.1 lint
+> eslint . --ext .js,.jsx
+
+
+Final production build
+dist/index.html                                                          0.69 kB │ gzip:   0.40 kB
+dist/assets/bricolage-grotesque-vietnamese-wght-normal-BUzh504Q.woff2    8.60 kB
+dist/assets/dm-sans-latin-ext-wght-normal-BOFOeGcA.woff2                18.22 kB
+dist/assets/bricolage-grotesque-latin-ext-wght-normal-CcLUaPy7.woff2    18.66 kB
+dist/assets/dm-sans-latin-wght-normal-Xz1IZZA0.woff2                    36.93 kB
+dist/assets/bricolage-grotesque-latin-wght-normal-DLoelf7F.woff2        41.34 kB
+dist/assets/index-BPaZ5dlt.css                                          77.92 kB │ gzip:  14.86 kB
+dist/assets/index-DbjEQXej.js                                          390.19 kB │ gzip: 106.70 kB
+
+✓ built in 6.14s
+
+Live backend integration was attempted and stopped by the existing E2E_DATABASE_URL safety guard; no live backend success is claimed.

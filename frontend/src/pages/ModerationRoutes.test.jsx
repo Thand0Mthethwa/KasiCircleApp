@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 
@@ -29,7 +29,10 @@ describe('admin moderation route', () => {
       });
     });
     vi.stubGlobal('fetch', fetchMock);
-    render(<MemoryRouter initialEntries={['/admin/reports']}><App /></MemoryRouter>);
+    // Settle the authenticated redirect before checking the destination.
+    await act(async () => {
+      render(<MemoryRouter initialEntries={['/admin/reports']}><App /></MemoryRouter>);
+    });
     return fetchMock;
   };
 

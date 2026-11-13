@@ -1,0 +1,122 @@
+[
+  {
+    "label": "reference",
+    "size": "desktop",
+    "viewport": 1440,
+    "scroll": 1440,
+    "headingFont": "\"Bricolage Grotesque Variable\", sans-serif",
+    "bodyColor": "rgb(52, 30, 51)",
+    "hero": {
+      "x": 0,
+      "y": 74,
+      "width": 1440,
+      "height": 414
+    },
+    "search": {
+      "x": 76,
+      "y": 449,
+      "width": 1288,
+      "height": 94
+    }
+  },
+  {
+    "label": "reference",
+    "size": "tablet",
+    "viewport": 768,
+    "scroll": 768,
+    "headingFont": "\"Bricolage Grotesque Variable\", sans-serif",
+    "bodyColor": "rgb(52, 30, 51)",
+    "hero": {
+      "x": 0,
+      "y": 74,
+      "width": 768,
+      "height": 370
+    },
+    "search": {
+      "x": 44,
+      "y": 405,
+      "width": 680,
+      "height": 94
+    }
+  },
+  {
+    "label": "reference",
+    "size": "mobile",
+    "viewport": 375,
+    "scroll": 375,
+    "headingFont": "\"Bricolage Grotesque Variable\", sans-serif",
+    "bodyColor": "rgb(52, 30, 51)",
+    "hero": {
+      "x": 0,
+      "y": 66,
+      "width": 375,
+      "height": 179.875
+    },
+    "search": {
+      "x": 18,
+      "y": 245.875,
+      "width": 339,
+      "height": 162
+    }
+  },
+  {
+    "label": "actual",
+    "size": "desktop",
+    "viewport": 1440,
+    "scroll": 1440,
+    "headingFont": "\"Bricolage Grotesque Variable\", sans-serif",
+    "bodyColor": "rgb(52, 30, 51)",
+    "hero": {
+      "x": 0,
+      "y": 74,
+      "width": 1440,
+      "height": 414
+    },
+    "search": {
+      "x": 76,
+      "y": 449,
+      "width": 1288,
+      "height": 94
+    }
+  },
+  {
+    "label": "actual",
+    "size": "tablet",
+    "viewport": 768,
+    "scroll": 768,
+    "headingFont": "\"Bricolage Grotesque Variable\", sans-serif",
+    "bodyColor": "rgb(52, 30, 51)",
+    "hero": {
+      "x": 0,
+      "y": 74,
+      "width": 768,
+      "height": 370
+    },
+    "search": {
+      "x": 44,
+      "y": 405,
+      "width": 680,
+      "height": 94
+    }
+  },
+  {
+    "label": "actual",
+    "size": "mobile",
+    "viewport": 375,
+    "scroll": 375,
+    "headingFont": "\"Bricolage Grotesque Variable\", sans-serif",
+    "bodyColor": "rgb(52, 30, 51)",
+    "hero": {
+      "x": 0,
+      "y": 66,
+      "width": 375,
+      "height": 179.875
+    },
+    "search": {
+      "x": 18,
+      "y": 245.875,
+      "width": 339,
+      "height": 162
+    }
+  }
+]
