@@ -1,5 +1,4 @@
 import { MapPin } from "lucide-react";
-import { ShopArt } from "./ui";
 
 export default function AuthLayout({ title, description, eyebrow, children }) {
   return (
@@ -17,7 +16,7 @@ export default function AuthLayout({ title, description, eyebrow, children }) {
           Your corner shop. Your skilled neighbour. Your next opportunity. It
           all starts with a connection.
         </p>
-        <ShopArt className="w-full mt-8 rounded-lg" />
+        <img src="/images/storefront.webp" alt="" className="w-full mt-8 rounded-lg" />
         <p className="text-xs text-neutral-600 mt-6">
           Rooted in South African communities.
         </p>

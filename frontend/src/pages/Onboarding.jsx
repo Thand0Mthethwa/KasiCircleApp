@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, MapPin, Store, Wrench, Briefcase } from "lucide-react";
 import { Button } from "../components";
-import { ShopArt } from "../components/ui";
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -45,7 +44,7 @@ export default function Onboarding() {
         </div>
       </div>
       <div className="intro-art" aria-hidden="true">
-        <ShopArt />
+        <img src="/images/storefront.webp" alt="" />
         <p>
           Our communities.
           <br />

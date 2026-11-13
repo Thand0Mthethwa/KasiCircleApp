@@ -1,14 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Heart, MapPin } from "lucide-react";
 import { Button } from "../components";
-import { ShopArt } from "../components/ui";
 
 export default function Welcome() {
   const navigate = useNavigate();
   return (
     <main className="intro-layout content-container">
       <div className="intro-art warm" aria-hidden="true">
-        <ShopArt warm />
+        <img src="/images/storefront.webp" alt="" />
         <p>
           A little more local.
           <br />

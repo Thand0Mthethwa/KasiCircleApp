@@ -16,10 +16,10 @@ Endpoints below are relative to `/api`. Existing page tests are under `frontend/
 
 | Page | Routes | Permissions | Existing functionality/actions/forms | Endpoints | New visual components | Behavior tests | Status |
 |---|---|---|---|---|---|---|---|
-| Onboarding | `/ → /onboarding` | Guest; signed-in redirects home | Continue, guest browsing | — | Editorial introduction, decorative photo | Landing; service/route tests | Audited; pending migration |
-| Welcome | `/welcome` | Guest | Login, register, guest browsing | — | Editorial welcome, marigold actions | Landing; service/route tests | Audited; pending migration |
-| Login | `/login` | Guest | Validation, JWT login, password visibility, redirects | POST /auth/login; GET /users/me | AuthLayout, inputs, buttons | Login; service/route tests | Audited; pending migration |
-| Register | `/register` | Guest | Resident/business/worker choice, validation, register and auto-login | POST /auth/register; POST /auth/login; GET /users/me | Account choice cards, AuthLayout | Register; service/route tests | Audited; pending migration |
+| Onboarding | `/ → /onboarding` | Guest; signed-in redirects home | Continue, guest browsing | — | Editorial introduction, decorative photo | Landing; service/route tests | Implemented; final QA pending |
+| Welcome | `/welcome` | Guest | Login, register, guest browsing | — | Editorial welcome, marigold actions | Landing; service/route tests | Implemented; final QA pending |
+| Login | `/login` | Guest | Validation, JWT login, password visibility, redirects | POST /auth/login; GET /users/me | AuthLayout, inputs, buttons | Login; service/route tests | Implemented; final QA pending |
+| Register | `/register` | Guest | Resident/business/worker choice, validation, register and auto-login | POST /auth/register; POST /auth/login; GET /users/me | Account choice cards, AuthLayout | Register; service/route tests | Implemented; final QA pending |
 | Home | `/home` | Public | API preview, category filtering, business/city search, worker/job search, skill links | GET /businesses | Photo hero, search panel, category buttons, listing cards | Home; service/route tests | Implemented; final QA pending |
 | Explore | `/explore; /businesses` | Public | URL filters, search, category, city, pagination, reset, retry, listing navigation | GET /businesses?page&size&search&category&city | Reference hero, overlapping search, categories, listing grid | Explore; service/route tests | Implemented; final QA pending |
 | BusinessDetail | `/businesses/:id` | Public; signed-in non-owner review actions; owner controls | Gallery, contacts, messaging, review CRUD, review pagination/summary, reporting | GET /businesses/:id; /images; /reviews; /reviews/summary; /reviews/me; POST /reviews; PUT/DELETE /reviews/:reviewId; POST /reports | Detail columns, gallery, cards, review forms, dialogs | BusinessDetail; service/route tests | Implemented; final QA pending |
@@ -32,7 +32,7 @@ Endpoints below are relative to `/api`. Existing page tests are under `frontend/
 | JobDetail | `/jobs/:id` | Public; signed-in applicants; employer management | Apply, employer applications, accept/reject, close/reopen, edit, message, report | GET /jobs/:id; PATCH /jobs/:id/status; GET/POST /jobs/:id/applications; PATCH /jobs/:id/applications/:applicationId; POST /reports | Detail columns, application cards, message form | JobDetail; service/route tests | Implemented; final QA pending |
 | JobForm | `/jobs/new; /jobs/:id/edit` | Protected; edit restricted to employer | Create/edit fields, validation, saving state, retry without data loss | GET /jobs/:id; POST /jobs; PUT /jobs/:id | Editorial header, premium form panel | JobForm; service/route tests | Implemented; final QA pending |
 | MyJobApplications | `/my-applications` | Protected | Applications, status, pagination, job navigation, retry | GET /jobs/me/applications | Application cards, status badges | MyJobApplications; service/route tests | Implemented; final QA pending |
-| Profile | `/profile` | Protected | Edit personal details; email/account type read-only; role-specific management; logout | GET/PUT /users/me | Profile summary, personal details form | Profile; service/route tests | Audited; pending migration |
+| Profile | `/profile` | Protected | Edit personal details; email/account type read-only; role-specific management; logout | GET/PUT /users/me | Profile summary, personal details form | Profile; service/route tests | Implemented; final QA pending |
 | Messages | `/messages` | Protected; conversation participants | Participant deep links, conversation selection, message pagination/send, timestamps, retry | GET/POST /conversations; GET/POST /conversations/:id/messages | Conversation rail, message bubbles, composer | Messages; service/route tests | Audited; pending migration |
 | Notifications | `/notifications` | Protected | Unread count, mark read, resource navigation, pagination, retry | GET /notifications; GET /notifications/unread-count; PATCH /notifications/:id/read | Notification cards and unread accents | Notifications; service/route tests | Audited; pending migration |
 | AdminReports | `/admin/reports` | Protected; ADMIN (frontend and backend) | Open report paging, decisions/notes, dismiss/remove, retry | GET /reports; PATCH /reports/:id/moderation | Moderation cards and decision forms | AdminReports; service/route tests | Audited; pending migration |
@@ -44,7 +44,7 @@ Endpoints below are relative to `/api`. Existing page tests are under `frontend/
 - B: implemented; shared lint/build passed; final behavior and browser verification recorded in the final QA section.
 - C: implemented; shared lint/build passed; final behavior and browser verification recorded in the final QA section.
 - D: implemented; shared lint/build passed; final behavior and browser verification recorded in the final QA section.
-- E: authentication and accounts — pending.
+- E: implemented; shared lint/build passed; final behavior and browser verification recorded in the final QA section.
 - F: messaging and notifications — pending.
 - G: moderation and supporting pages — pending.
 

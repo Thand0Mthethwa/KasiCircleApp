@@ -175,7 +175,7 @@ export default function Profile() {
 
   if (isAuthLoading) {
     return (
-      <div className="page-wrapper flex items-center justify-center min-h-screen">
+      <div className="page-wrapper account-profile flex items-center justify-center min-h-screen">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -183,7 +183,7 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="page-wrapper page-padding py-8 flex items-center justify-center min-h-screen">
+      <div className="page-wrapper account-profile page-padding py-8 flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-neutral-600 mb-4">No profile information available.</p>
           <Button variant="primary" onClick={() => navigate('/login')}>
@@ -195,9 +195,10 @@ export default function Profile() {
   }
 
   return (
-    <div className="page-wrapper pb-12">
+    <div className="page-wrapper account-profile pb-12">
       {/* Top Header */}
       <Header
+        eyebrow="Your place in the circle"
         title="My Profile"
         subtitle="Manage your personal information"
         showBack={true}
