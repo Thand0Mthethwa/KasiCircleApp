@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { execFileSync } from 'node:child_process';
+import { testDatabaseSQL } from '../scripts/e2e-database.mjs';
 import { randomUUID } from 'node:crypto';
 
 const api = 'http://127.0.0.1:18081/api';
@@ -12,7 +12,7 @@ async function call(request, method, path, token, data, status = 200) {
     data,
   });
   // Do not dump request headers or JWTs into test output.
-  expect(response.status(), `${method} ${path}: ${await response.text()}`).toBe(status);
+  expect(response.status(), `${method} ${path}: unexpected HTTP status`).toBe(status);
   return response.status() === 204 || !(await response.text()) ? null : response.json();
 }
 
@@ -23,8 +23,7 @@ async function account(request, accountType = 'RESIDENT', admin = false) {
   }, 201);
   if (admin) {
     // Generated UUID email only; restricted disposable local database is enforced by config.
-    execFileSync('psql', [process.env.E2E_DATABASE_URL, '-v', 'ON_ERROR_STOP=1', '-c',
-      `UPDATE users SET role = 'ADMIN' WHERE email = '${email}';`], { stdio: 'pipe' });
+    testDatabaseSQL(`UPDATE users SET role = 'ADMIN' WHERE email = '${email}';`);
   }
   const { token } = await call(request, 'POST', '/auth/login', null, { email, password });
   const user = await call(request, 'GET', '/users/me', token);
@@ -194,4 +193,154 @@ test('regular user reports content, cannot moderate, administrator resolves from
   await expect(page.getByText('Report dismissed.', { exact: true })).toBeVisible();
   await expect(page.getByText(reportData.details, { exact: true })).toHaveCount(0);
   await call(request, 'PATCH', `/reports/${report.id}/moderation`, admin.token, { status: 'ACTIONED' }, 409);
+});
+
+test('registration validates fields, logs in a resident, and protects account routes after logout', async ({ page, request }) => {
+  await page.goto('/profile');
+  await expect(page).toHaveURL(/\/welcome$/);
+  await page.goto('/register');
+  await page.getByRole('button', { name: 'Create Account', exact: true }).click();
+  await expect(page.getByLabel('Full Name')).toHaveAttribute('aria-invalid', 'true');
+  const email = `qa-ui-${randomUUID()}@example.test`;
+  await page.getByLabel('Full Name').fill('QA Resident');
+  await page.getByLabel('Phone Number').fill('0821234567');
+  await page.getByLabel('Email Address', { exact: true }).fill(email);
+  await page.getByLabel('Password', { exact: true }).fill(password);
+  await page.getByLabel('Confirm Password').fill(password);
+  await page.locator('#terms').check();
+  await page.getByRole('button', { name: 'Create Account', exact: true }).click();
+  await expect(page).toHaveURL(/\/home$/);
+  const token = await page.evaluate(() => localStorage.getItem('kasicircle_token'));
+  const registered = await call(request, 'GET', '/users/me', token);
+  expect(registered.email).toBe(email);
+  expect(registered.accountType).toBe('RESIDENT');
+  await page.getByLabel('Account menu').click();
+  await page.getByRole('button', { name: 'Sign out' }).click();
+  await expect(page).toHaveURL(/\/welcome$/);
+  await page.goto('/messages');
+  await expect(page).toHaveURL(/\/welcome$/);
+  await page.goto('/login');
+  await page.getByLabel('Email address', { exact: true }).fill(email);
+  await page.getByLabel('Password', { exact: true }).fill('WrongFixturePassword123!');
+  await page.getByRole('button', { name: 'Login', exact: true }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test('business owner creates and edits a listing; real API filters and database-backed images render', async ({ page, request }, testInfo) => {
+  const owner = await account(request, 'BUSINESS');
+  await login(page, owner);
+  await page.goto('/business-profile');
+  const name = `QA Acceptance ${randomUUID()}`;
+  await page.getByLabel(/Business Name/).fill(name);
+  await page.locator('#business-category').selectOption('Retail');
+  await page.locator('#business-description').fill('Controlled isolated database acceptance fixture.');
+  await page.getByLabel(/Phone Number/).fill('+27821234567');
+  await page.getByLabel(/Business Email/).fill('fixture@example.test');
+  await page.getByLabel(/Physical Address/).fill('1 QA Test Road');
+  await page.getByLabel(/Township \/ City/).fill('Soweto');
+  await page.locator('#business-province').selectOption('Gauteng');
+  await page.getByRole('button', { name: 'Create Business Profile', exact: true }).click();
+  await expect(page.getByTestId('existing-business-view')).toBeVisible();
+  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Edit Business Profile', exact: true }).click();
+  await page.locator('#business-description').fill('Edited through the redesigned owner form.');
+  await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
+  await expect(page.getByText('Business profile updated successfully!', { exact: true })).toBeVisible();
+  const listing = (await call(request, 'GET', `/businesses?search=${encodeURIComponent(name)}&category=Retail&city=Soweto`)).content[0];
+  expect(listing.description).toBe('Edited through the redesigned owner form.');
+  // Only the identity-verified isolated DB is seeded. No Cloudinary account is mutated.
+  // API responses are real; the local image is an explicitly controlled test fixture.
+  const imageId = randomUUID();
+  testDatabaseSQL(`INSERT INTO business_images (id,business_id,image_url,storage_id,file_name,content_type,file_size,is_cover,sort_order,created_at) VALUES ('${imageId}','${listing.id}','http://127.0.0.1:5176/images/kota.webp','qa-only-${imageId}','QA image fixture.webp','image/webp',1000,true,0,now());`);
+  expect((await call(request, 'GET', `/businesses/${listing.id}/images`))[0].id).toBe(imageId);
+  await page.goto('/explore');
+  await page.getByRole('searchbox', { name: 'Search businesses by name' }).fill(name);
+  await page.getByRole('textbox', { name: 'Filter by township or city' }).fill('Soweto');
+  await page.getByRole('button', { name: 'Retail', exact: true }).click();
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  const card = page.getByTestId(`business-card-${listing.id}`);
+  await expect(card).toBeVisible();
+  const photo = card.getByRole('img');
+  await expect(photo).toBeVisible();
+  expect(await photo.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath('real-explore.png'), fullPage: true });
+  await card.getByRole('link', { name: `View details for ${name}` }).click();
+  await expect(page.getByTestId('business-image-gallery')).toBeVisible();
+  const cover = page.getByRole('button', { name: 'View business cover photo' });
+  await cover.click();
+  await expect(page.getByRole('dialog', { name: 'Photo lightbox view' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath('real-business-detail.png'), fullPage: true });
+});
+
+test('live directory navigation and responsive layouts work with persisted fixtures', async ({ page, request }, testInfo) => {
+  const owner = await account(request, 'BUSINESS');
+  const business = await call(request, 'POST', '/businesses', owner.token, {
+    name: `QA Visual ${randomUUID()}`, description: 'Isolated real backend visual acceptance fixture.',
+    phoneNumber: '+27821234567', email: 'visual@example.test', category: 'Retail',
+    address: '1 QA Road', city: 'Soweto', province: 'Gauteng',
+  }, 201);
+  const imageId = randomUUID();
+  testDatabaseSQL(`INSERT INTO business_images (id,business_id,image_url,storage_id,file_name,content_type,file_size,is_cover,sort_order,created_at) VALUES ('${imageId}','${business.id}','http://127.0.0.1:5176/images/kota.webp','qa-only-${imageId}','QA visual fixture.webp','image/webp',1000,true,0,now());`);
+  const sizes = testInfo.project.name === 'desktop'
+    ? [[1440, 900], [768, 1024]] : [[375, 812]];
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width, height });
+    await page.goto(`/explore?search=${encodeURIComponent(business.name)}`);
+    await expect(page.getByTestId(`business-card-${business.id}`)).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+    await expect.poll(() => page.locator('img:visible').evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0))).toBe(true);
+    const layout = await page.evaluate(() => ({
+      viewport: innerWidth, scrollWidth: document.documentElement.scrollWidth,
+      squares: [...document.querySelectorAll('.app-header .brand-mark i')].map((square) => {
+        const box = square.getBoundingClientRect();return { width: box.width, height: box.height };
+      }),
+      headingFont: getComputedStyle(document.querySelector('h1')).fontFamily,
+      background: getComputedStyle(document.body).backgroundColor,
+      hero: (() => { const b = document.querySelector('.hero').getBoundingClientRect(); return {x:b.x,y:b.y,width:b.width,height:b.height}; })(),
+      search: (() => { const b = document.querySelector('.search-panel').getBoundingClientRect(); return {x:b.x,y:b.y,width:b.width,height:b.height}; })(),
+    }));
+    expect(layout.scrollWidth).toBe(layout.viewport);
+    expect(layout.squares).toHaveLength(4);
+    for (const square of layout.squares) { expect(square.width).toBeGreaterThan(10); expect(square.height).toBeGreaterThan(10); }
+    await testInfo.attach(`layout-${width}`, { body: Buffer.from(JSON.stringify(layout, null, 2)), contentType: 'application/json' });
+    await page.screenshot({ path: testInfo.outputPath(`real-explore-${width}.png`), fullPage: true });
+  }
+  const worker = await account(request, 'WORKER');
+  const headline = `QA Discovery ${randomUUID()}`;
+  const profile = await call(request, 'POST', '/workers/me', worker.token, { headline, bio: 'Controlled live discovery fixture.',
+    skills: ['Pipes'], serviceCategories: ['Plumbing'], city: 'Soweto', province: 'Gauteng' }, 201);
+  // A full one-row page forces the PostgreSQL count query as well as the content query.
+  for (let mask = 0; mask < 16; mask++) {
+    const params = new URLSearchParams({ size: '1' });
+    for (const [index, [key, value]] of [['search', headline], ['category', 'Plumbing'], ['skill', 'Pipes'], ['city', 'Soweto']].entries()) {
+      if (mask & (1 << index)) params.set(key, value);
+    }
+    const matches = await call(request, 'GET', `/workers?${params}`);
+    expect(matches.totalElements).toBeGreaterThan(0);
+    expect(matches.content.map((item) => item.id)).toContain(profile.id);
+  }
+  async function navigateMarketplace(label) {
+    if (page.viewportSize().width < 1024) {
+      await page.getByRole('button', { name: 'Open navigation' }).click();
+      await page.getByRole('navigation', { name: 'Mobile marketplace' }).getByRole('link', { name: label, exact: true }).click();
+    } else {
+      await page.getByRole('navigation', { name: 'Marketplace' }).getByRole('link', { name: label, exact: true }).click();
+    }
+  }
+  await navigateMarketplace('Workers');
+  await page.getByLabel('Name or keyword').fill(headline);
+  await page.getByLabel('Filter by skill').fill('Pipes');
+  await page.getByLabel('Filter workers by city').fill('Soweto');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.getByRole('button', { name: `View QA Member, ${headline}` })).toBeVisible();
+  const job = await call(request, 'POST', '/jobs', owner.token, jobData(`QA Discovery Job ${randomUUID()}`), 201);
+  await navigateMarketplace('Jobs');
+  await page.getByRole('textbox', { name: 'Search jobs', exact: true }).fill(job.title);
+  await page.getByRole('textbox', { name: 'Filter jobs by city' }).fill('Soweto');
+  await page.getByRole('button', { name: 'Search jobs', exact: true }).click();
+  await page.getByRole('button', { name: job.title, exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/jobs/${job.id}$`));
 });

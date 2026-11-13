@@ -1,0 +1,51 @@
+Executed real backend acceptance — 2026-11-13
+
+Backend tests/package
+[INFO] Tests run: 242, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  01:52 min
+
+Frontend full sequential tests
+ Test Files  38 passed (38)
+      Tests  237 passed (237)
+   Duration  246.50s (environment 39%, tests 30%, setup 19%, import 11%, worker 1%, transform 1%)
+
+Real desktop/mobile integration
+  ✓   1 [desktop] › e2e/marketplace.spec.js:43:1 › customer review persists, updates ratings and rejects duplicate/self/invalid reviews (9.9s)
+  ✓   2 [desktop] › e2e/marketplace.spec.js:72:1 › worker creates and edits own skills, is discoverable, and can securely exchange messages (13.3s)
+  ✓   3 [desktop] › e2e/marketplace.spec.js:118:1 › employer posts/edits job, applicant applies privately, employer decides, and notification opens (21.5s)
+  ✓   4 [desktop] › e2e/marketplace.spec.js:172:1 › regular user reports content, cannot moderate, administrator resolves from UI (12.3s)
+  ✓   5 [desktop] › e2e/marketplace.spec.js:198:1 › registration validates fields, logs in a resident, and protects account routes after logout (10.1s)
+  ✓   6 [desktop] › e2e/marketplace.spec.js:230:1 › business owner creates and edits a listing; real API filters and database-backed images render (11.8s)
+  ✓   7 [desktop] › e2e/marketplace.spec.js:278:1 › live directory navigation and responsive layouts work with persisted fixtures (8.9s)
+  ✓   8 [mobile] › e2e/marketplace.spec.js:43:1 › customer review persists, updates ratings and rejects duplicate/self/invalid reviews (8.2s)
+  ✓   9 [mobile] › e2e/marketplace.spec.js:72:1 › worker creates and edits own skills, is discoverable, and can securely exchange messages (13.4s)
+  ✓  10 [mobile] › e2e/marketplace.spec.js:118:1 › employer posts/edits job, applicant applies privately, employer decides, and notification opens (19.7s)
+  ✓  11 [mobile] › e2e/marketplace.spec.js:172:1 › regular user reports content, cannot moderate, administrator resolves from UI (11.5s)
+  ✓  12 [mobile] › e2e/marketplace.spec.js:198:1 › registration validates fields, logs in a resident, and protects account routes after logout (10.0s)
+  ✓  13 [mobile] › e2e/marketplace.spec.js:230:1 › business owner creates and edits a listing; real API filters and database-backed images render (13.3s)
+  ✓  14 [mobile] › e2e/marketplace.spec.js:278:1 › live directory navigation and responsive layouts work with persisted fixtures (7.3s)
+  14 passed (3.7m)
+
+ESLint
+
+> kasicircle-frontend@0.0.1 lint
+> eslint . --ext .js,.jsx
+
+
+Production build
+dist/assets/index-BPaZ5dlt.css                                          77.92 kB │ gzip:  14.86 kB
+dist/assets/index-DbjEQXej.js                                          390.19 kB │ gzip: 106.70 kB
+✓ built in 10.18s
+
+Verified isolated target: 127.0.0.1:55432/kasicircle_qa
+PostgreSQL 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1)
+Flyway successful migrations: 11
+Users: 62
+Businesses: 13
+Business images: 9
+Worker profiles: 9
+Jobs: 10
+
+
+Dedicated port-55432 cluster stopped cleanly after acceptance; no data deleted. Existing port-5432 PostgreSQL remained accepting connections.

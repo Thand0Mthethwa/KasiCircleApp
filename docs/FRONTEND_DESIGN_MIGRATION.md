@@ -1,5 +1,7 @@
 # Frontend design migration
 
+**Follow-up acceptance (2026-11-13): real Spring Boot/PostgreSQL desktop/mobile acceptance passed. See [the acceptance report](REAL_BACKEND_INTEGRATION_ACCEPTANCE.md). Historical pending-environment notes below describe the original migration handoff.**
+
 Reference: `/home/tsmthethwa/Downloads/KasiCircle-Explore-Source/KasiCircle-Explore` (the requested Projects reference directory is absent). Source reference remains read-only throughout this migration. Branch: `Feature/Authentication`; initial Git status clean. Date: 2026-11-13.
 
 ## Baseline and contract audit

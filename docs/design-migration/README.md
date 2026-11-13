@@ -39,3 +39,5 @@ These images use the existing browser QA fixtures, not production records.
 | messages | [1440px](routes/messages-1440.png) | [375px](routes/messages-375.png) |
 | business-profile | [1440px](routes/business-profile-1440.png) | [375px](routes/business-profile-375.png) |
 | admin_reports | [1440px](routes/admin_reports-1440.png) | [375px](routes/admin_reports-375.png) |
+
+Real backend follow-up: [acceptance report](../REAL_BACKEND_INTEGRATION_ACCEPTANCE.md) and [unmocked API screenshot gallery](../backend-acceptance/README.md). The original gallery above remains the historical visual comparison.
