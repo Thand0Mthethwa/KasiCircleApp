@@ -1,0 +1,37 @@
+Initial complete-suite invocation: npx playwright test
+Target: isolated 127.0.0.1:55432/kasicircle_qa; actual Spring Boot on 18081, frontend on 5176.
+The 16 marketplace cases use real APIs; responsive cases use explicitly declared UI fixtures.
+Runner terminated with exit 143 after the following 23 completed passes, before the final review-dialog case.
+
+✓   1 [desktop] › e2e/marketplace.spec.js:43:1 › customer review persists, updates ratings and rejects duplicate/self/invalid reviews (24.1s)
+✓   2 [desktop] › e2e/marketplace.spec.js:72:1 › worker creates and edits own skills, is discoverable, and can securely exchange messages (21.3s)
+✓   3 [desktop] › e2e/marketplace.spec.js:118:1 › employer posts/edits job, applicant applies privately, employer decides, and notification opens (37.0s)
+✓   4 [desktop] › e2e/marketplace.spec.js:172:1 › regular user reports content, cannot moderate, administrator resolves from UI (11.9s)
+✓   5 [desktop] › e2e/marketplace.spec.js:198:1 › registration validates fields, logs in a resident, and protects account routes after logout (9.3s)
+✓   6 [desktop] › e2e/marketplace.spec.js:230:1 › business owner creates and edits a listing; real API filters and database-backed images render (12.3s)
+✓   7 [desktop] › e2e/marketplace.spec.js:278:1 › live directory navigation and responsive layouts work with persisted fixtures (9.8s)
+✓   8 [desktop] › e2e/marketplace.spec.js:348:1 › unified marketplace uses real provider results, independent paging and preserved detail routes (18.0s)
+✓   9 [mobile] › e2e/marketplace.spec.js:43:1 › customer review persists, updates ratings and rejects duplicate/self/invalid reviews (8.1s)
+✓  10 [mobile] › e2e/marketplace.spec.js:72:1 › worker creates and edits own skills, is discoverable, and can securely exchange messages (12.4s)
+✓  11 [mobile] › e2e/marketplace.spec.js:118:1 › employer posts/edits job, applicant applies privately, employer decides, and notification opens (19.0s)
+✓  12 [mobile] › e2e/marketplace.spec.js:172:1 › regular user reports content, cannot moderate, administrator resolves from UI (13.8s)
+✓  13 [mobile] › e2e/marketplace.spec.js:198:1 › registration validates fields, logs in a resident, and protects account routes after logout (13.2s)
+✓  14 [mobile] › e2e/marketplace.spec.js:230:1 › business owner creates and edits a listing; real API filters and database-backed images render (17.0s)
+✓  15 [mobile] › e2e/marketplace.spec.js:278:1 › live directory navigation and responsive layouts work with persisted fixtures (8.5s)
+✓  16 [mobile] › e2e/marketplace.spec.js:348:1 › unified marketplace uses real provider results, independent paging and preserved detail routes (16.5s)
+✓  17 [responsive] › e2e/ui.spec.js:278:3 › all routes are responsive and labeled at 375px (1.1m)
+✓  18 [responsive] › e2e/ui.spec.js:278:3 › all routes are responsive and labeled at 768px (1.1m)
+✓  19 [responsive] › e2e/ui.spec.js:278:3 › all routes are responsive and labeled at 1280px (1.2m)
+✓  20 [responsive] › e2e/ui.spec.js:278:3 › all routes are responsive and labeled at 1440px (1.5m)
+✓  21 [responsive] › e2e/ui.spec.js:356:1 › mobile navigation and homepage search open the unified marketplace (7.2s)
+✓  22 [responsive] › e2e/ui.spec.js:383:1 › keyboard gallery, account menu and skip link retain usable focus (4.1s)
+✓  23 [responsive] › e2e/ui.spec.js:422:1 › loading, failure, retry and reduced motion stay usable (4.0s)
+
+Targeted completion: npx playwright test --grep "unified marketplace uses|mobile review controls"
+Exit 0: 3 passed (1.9m). The unified cases include an additional negative city check and refreshed screenshots.
+
+✓  1 [desktop] › e2e/marketplace.spec.js:348:1 › unified marketplace uses real provider results, independent paging and preserved detail routes (24.9s)
+✓  2 [mobile] › e2e/marketplace.spec.js:348:1 › unified marketplace uses real provider results, independent paging and preserved detail routes (20.5s)
+✓  3 [responsive] › e2e/ui.spec.js:459:1 › mobile review controls and owner deletion dialog fit and retain keyboard access (6.7s)
+
+Coverage across both invocations: all 24 distinct cases passed (16 real-backend and 8 fixture-driven responsive cases). This is not a claim that the original full invocation exited successfully.

@@ -353,42 +353,31 @@ for (const width of [375, 768, 1280, 1440]) {
   });
 }
 
-test("mobile navigation and scoped search call the intended directory", async ({
-  page,
-}) => {
+test("mobile navigation and homepage search open the unified marketplace", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 850 });
   const requests = await fixtures(page);
   await page.goto("/home");
   await page.getByRole("button", { name: "Open navigation" }).click();
-  await page
-    .getByRole("navigation", { name: "Mobile marketplace" })
-    .getByRole("link", { name: "Workers", exact: true })
-    .click();
+  await page.getByRole("navigation", { name: "Mobile marketplace" }).getByRole("link", { name: "Workers", exact: true }).click();
   await expect(page).toHaveURL(/\/workers$/);
-  await expect(
-    page.getByRole("navigation", { name: "Mobile marketplace" }),
-  ).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Mobile marketplace" })).toHaveCount(0);
   await page.goto("/home");
-  await page
-    .getByRole("group", { name: "Search marketplace by" })
-    .getByRole("button", { name: "Jobs", exact: true })
-    .click();
-  await page
-    .getByRole("searchbox", { name: "Search local jobs..." })
-    .fill("QA repairs");
-  await page
-    .getByRole("searchbox", { name: "Search local jobs..." })
-    .press("Enter");
-  await expect(page).toHaveURL(/\/jobs\?search=QA\+repairs$/);
-  await expect
-    .poll(() =>
-      requests.some(
-        (url) =>
-          url.pathname === "/api/jobs" &&
-          url.searchParams.get("search") === "QA repairs",
-      ),
-    )
-    .toBe(true);
+  await page.getByRole("searchbox", { name: "What are you looking for?" }).fill("QA repairs");
+  await page.getByLabel("Around your neighbourhood").fill("Soweto");
+  await page.getByRole("button", { name: "Find local providers" }).click();
+  await expect(page).toHaveURL(/\/explore\?search=QA\+repairs&city=Soweto$/);
+  for (const path of ["/api/businesses", "/api/workers"]) {
+    await expect.poll(() => requests.some((url) => url.pathname === path && url.searchParams.get("search") === "QA repairs" && url.searchParams.get("city") === "Soweto")).toBe(true);
+  }
+  await expect(page.getByRole("tab", { name: "All", exact: true })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByTestId("business-cards-list")).toBeVisible();
+  await expect(page.getByTestId("worker-cards-list")).toBeVisible();
+  await page.getByRole("tab", { name: "Workers", exact: true }).click();
+  await expect(page.getByTestId("business-cards-list")).toHaveCount(0);
+  await expect(page.getByTestId("worker-cards-list")).toBeVisible();
+  await page.getByRole("tab", { name: "Businesses", exact: true }).click();
+  await expect(page.getByTestId("worker-cards-list")).toHaveCount(0);
+  await expect(page.getByTestId("business-cards-list")).toBeVisible();
 });
 
 test("keyboard gallery, account menu and skip link retain usable focus", async ({

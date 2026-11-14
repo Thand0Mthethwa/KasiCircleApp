@@ -255,7 +255,7 @@ test('business owner creates and edits a listing; real API filters and database-
   testDatabaseSQL(`INSERT INTO business_images (id,business_id,image_url,storage_id,file_name,content_type,file_size,is_cover,sort_order,created_at) VALUES ('${imageId}','${listing.id}','http://127.0.0.1:5176/images/kota.webp','qa-only-${imageId}','QA image fixture.webp','image/webp',1000,true,0,now());`);
   expect((await call(request, 'GET', `/businesses/${listing.id}/images`))[0].id).toBe(imageId);
   await page.goto('/explore');
-  await page.getByRole('searchbox', { name: 'Search businesses by name' }).fill(name);
+  await page.getByRole('searchbox', { name: 'Search businesses and workers' }).fill(name);
   await page.getByRole('textbox', { name: 'Filter by township or city' }).fill('Soweto');
   await page.getByRole('button', { name: 'Retail', exact: true }).click();
   await page.getByRole('button', { name: 'Search', exact: true }).click();
@@ -343,4 +343,93 @@ test('live directory navigation and responsive layouts work with persisted fixtu
   await page.getByRole('button', { name: 'Search jobs', exact: true }).click();
   await page.getByRole('button', { name: job.title, exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/jobs/${job.id}$`));
+});
+
+test('unified marketplace uses real provider results, independent paging and preserved detail routes', async ({ page, request }, testInfo) => {
+  test.setTimeout(180000);
+  const keyword = `QA plumber ${randomUUID().slice(0, 8)}`;
+  const businesses = [];
+  for (let index = 0; index < 9; index++) {
+    const owner = await account(request, 'BUSINESS');
+    const business = await call(request, 'POST', '/businesses', owner.token, {
+      name: `${keyword} business ${index}`, description: 'Isolated unified discovery acceptance record.',
+      phoneNumber: '+27821234567', email: 'unified@example.test', category: 'Retail',
+      address: '1 QA Road', city: 'Soweto', province: 'Gauteng',
+    }, 201);
+    businesses.push(business);
+    const worker = await account(request, 'WORKER');
+    await call(request, 'POST', '/workers/me', worker.token, {
+      headline: `${keyword} worker ${index}`, bio: 'Public independent worker profile for isolated discovery acceptance.',
+      skills: ['Pipes'], serviceCategories: ['Plumbing'], city: 'Soweto', province: 'Gauteng',
+    }, 201);
+  }
+  // Give the final business page a real persisted image row, without provider writes.
+  const imageId = randomUUID();
+  testDatabaseSQL(`INSERT INTO business_images (id,business_id,image_url,storage_id,file_name,content_type,file_size,is_cover,sort_order,created_at) VALUES ('${imageId}','${businesses[0].id}','http://127.0.0.1:5176/images/kota.webp','qa-only-${imageId}','QA unified image.webp','image/webp',1000,true,0,now());`);
+  await page.goto('/home');
+  await page.getByRole('searchbox', { name: 'What are you looking for?' }).fill(keyword);
+  await page.getByLabel('Around your neighbourhood').fill('Soweto');
+  await page.getByRole('button', { name: 'Find local providers', exact: true }).click();
+  await expect(page.getByRole('tab', { name: 'All', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByText('9 businesses listed', { exact: true })).toBeVisible();
+  await expect(page.getByText('9 independent workers listed', { exact: true })).toBeVisible();
+  await expect(page.getByTestId('business-cards-list').locator('article')).toHaveCount(8);
+  await expect(page.getByTestId('worker-cards-list').locator('article')).toHaveCount(8);
+  await page.getByLabel('Filter by township or city').fill('Durban');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.getByText('No businesses found', { exact: true })).toBeVisible();
+  await expect(page.getByText('No workers found', { exact: true })).toBeVisible();
+  await page.getByLabel('Filter by township or city').fill('Soweto');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.getByText('9 businesses listed', { exact: true })).toBeVisible();
+  await expect(page.getByText('9 independent workers listed', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Retail', exact: true }).click();
+  await expect(page.getByText('9 independent workers listed', { exact: true })).toBeVisible();
+  await page.getByLabel('Worker skill', { exact: true }).fill('Pipes');
+  await page.getByLabel('Worker service category', { exact: true }).fill('Plumbing');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.getByTestId('worker-cards-list').locator('article')).toHaveCount(8);
+  await expect(page.getByText('9 businesses listed', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
+  await expect(page.getByTestId('business-cards-list').locator('article')).toHaveCount(1);
+  await expect(page.getByTestId('worker-cards-list').locator('article')).toHaveCount(8);
+  await expect(page.getByRole('navigation', { name: 'Business pages' })).toContainText('Page 2 of 2');
+  await expect(page.getByRole('navigation', { name: 'Worker pages' })).toContainText('Page 1 of 2');
+  await page.getByRole('button', { name: 'Next worker page' }).click();
+  await expect(page.getByTestId('worker-cards-list').locator('article')).toHaveCount(1);
+  await expect(page.getByText('9 businesses listed', { exact: true })).toBeVisible();
+  await expect(page.getByText('9 independent workers listed', { exact: true })).toBeVisible();
+  await page.getByRole('tab', { name: 'Businesses', exact: true }).click();
+  await expect(page.getByTestId('worker-cards-list')).toHaveCount(0);
+  await expect(page.getByTestId('business-cards-list').locator('article')).toHaveCount(1);
+  await page.getByRole('tab', { name: 'Workers', exact: true }).click();
+  await expect(page.getByTestId('business-cards-list')).toHaveCount(0);
+  await expect(page.getByTestId('worker-cards-list').locator('article')).toHaveCount(1);
+  await page.getByRole('tab', { name: 'All', exact: true }).click();
+  const businessLink = page.getByTestId('business-cards-list').getByRole('link', { name: /View details for/ });
+  await expect(businessLink).toBeVisible();
+  const businessHref = await businessLink.getAttribute('href');
+  await businessLink.click(); await expect(page).toHaveURL(new RegExp(`${businessHref}$`));
+  await expect(page.getByTestId('business-detail-content')).toBeVisible();
+  await page.goBack(); await expect(page.getByTestId('worker-cards-list')).toBeVisible();
+  const workerLink = page.getByTestId('worker-cards-list').getByRole('link', { name: /View worker profile for/ });
+  const workerHref = await workerLink.getAttribute('href');
+  await workerLink.click(); await expect(page).toHaveURL(new RegExp(`${workerHref}$`));
+  await expect(page.getByRole('heading', { level: 1, name: 'QA Member' })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('searchbox', { name: 'Search businesses and workers' })).toHaveValue(keyword);
+  await expect(page.getByRole('navigation', { name: 'Business pages' })).toContainText('Page 2 of 2');
+  await expect(page.getByRole('navigation', { name: 'Worker pages' })).toContainText('Page 2 of 2');
+  const sizes = testInfo.project.name === 'desktop' ? [[1440, 900], [768, 1024]] : [[375, 812]];
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width, height });
+    await page.evaluate(async () => { await document.fonts.ready; document.activeElement?.blur(); window.scrollTo({ top: 0, behavior: 'instant' }); });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect(page.getByTestId('worker-cards-list')).toBeVisible();
+    await expect.poll(() => page.locator('img:visible').evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0))).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath(`unified-${width}.png`), fullPage: true, scale: 'css' });
+  }
+  await page.getByRole('button', { name: 'Reset all filters' }).click();
+  await expect(page).toHaveURL(/\/explore$/);
+  await expect(page.getByRole('searchbox', { name: 'Search businesses and workers' })).toHaveValue('');
 });
