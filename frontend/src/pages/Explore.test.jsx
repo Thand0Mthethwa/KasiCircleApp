@@ -4,13 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Explore from './Explore';
-import { businessService } from '../services/api';
+import { businessService, workerService } from '../services/api';
 
 // Mock businessService
 vi.mock('../services/api', () => ({
   businessService: {
     getAllBusinesses: vi.fn(),
   },
+  workerService: { getWorkers: vi.fn() },
 }));
 
 // Mock react-router-dom useNavigate
@@ -77,6 +78,7 @@ describe('Explore (Public Business Directory) Page', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    workerService.getWorkers.mockResolvedValue({ content: [], totalElements: 0, totalPages: 0 });
   });
 
   const renderComponent = (initialEntries = ['/explore']) =>
@@ -92,8 +94,8 @@ describe('Explore (Public Business Directory) Page', () => {
     renderComponent();
 
     // Directory title & inputs
-    expect(screen.getByRole('heading', { name: 'Find businesses near you.' })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/search businesses by name/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Find local providers near you.' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Business name or worker keyword/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/filter by township\/city/i)).toBeInTheDocument();
 
     // Verify initial API call
@@ -124,7 +126,7 @@ describe('Explore (Public Business Directory) Page', () => {
       expect(screen.getByText('Kasi Fresh Cafe')).toBeInTheDocument();
     });
 
-    const searchInput = screen.getByPlaceholderText(/search businesses by name/i);
+    const searchInput = screen.getByPlaceholderText(/Business name or worker keyword/i);
     await user.clear(searchInput);
     await user.type(searchInput, 'Kasi Fresh');
 
@@ -206,7 +208,7 @@ describe('Explore (Public Business Directory) Page', () => {
     });
 
     // Type search
-    const searchInput = screen.getByPlaceholderText(/search businesses by name/i);
+    const searchInput = screen.getByPlaceholderText(/Business name or worker keyword/i);
     await user.type(searchInput, 'Cafe');
 
     // Type city
@@ -243,7 +245,7 @@ describe('Explore (Public Business Directory) Page', () => {
     });
 
     // Apply a search
-    const searchInput = screen.getByPlaceholderText(/search businesses by name/i);
+    const searchInput = screen.getByPlaceholderText(/Business name or worker keyword/i);
     await user.type(searchInput, 'Cafe');
     const searchBtn = screen.getByRole('button', { name: /^search$/i });
     await user.click(searchBtn);
@@ -455,7 +457,7 @@ describe('Explore (Public Business Directory) Page', () => {
       await screen.findByTestId('business-rating-biz-1');
 
       // Search still works
-      const searchInput = screen.getByPlaceholderText(/search businesses by name/i);
+      const searchInput = screen.getByPlaceholderText(/Business name or worker keyword/i);
       await user.type(searchInput, 'Cafe');
       const searchBtn = screen.getByRole('button', { name: /^search$/i });
       await user.click(searchBtn);

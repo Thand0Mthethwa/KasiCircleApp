@@ -40,15 +40,16 @@ export function JobCard({ job, onOpen }) {
   );
 }
 
-export function BusinessCard({ business, onOpen }) {
+export function BusinessCard({ business, onOpen, providerLabel }) {
   const [failedImage, setFailedImage] = useState("");
   const photo = business.coverImageUrl;
   const hasPhoto = photo && failedImage !== photo;
   return (
     <article
-      className="marketplace-card business-card overflow-hidden flex flex-col"
+      className="marketplace-card business-card relative overflow-hidden flex flex-col"
       data-testid={`business-card-${business.id}`}
     >
+      {providerLabel && <span className="provider-type business-provider-type">{providerLabel}</span>}
       <div className="business-card-image relative overflow-hidden bg-kasi-green-light">
         {hasPhoto ? (
           <img
