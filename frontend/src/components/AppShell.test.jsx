@@ -42,6 +42,19 @@ describe("Marketplace shell", () => {
     expect(screen.queryByLabelText("Account menu")).not.toBeInTheDocument();
   });
 
+  it.each(["RESIDENT", "BUSINESS", "WORKER"])("keeps %s account management separate from public Explore navigation", async (accountType) => {
+    auth.isAuthenticated = true;
+    auth.user = { firstName: "QA", accountType, role: "USER" };
+    const user = userEvent.setup(); setup();
+    expect(within(screen.getByRole("navigation", { name: "Marketplace" })).getByRole("link", { name: "Explore", exact: true })).toHaveAttribute("href", "/explore");
+    await user.click(screen.getByLabelText("Account menu"));
+    if (accountType === "BUSINESS") expect(screen.getByRole("link", { name: "Manage my business" })).toHaveAttribute("href", "/business-profile");
+    else expect(screen.queryByRole("link", { name: "Manage my business" })).not.toBeInTheDocument();
+    if (accountType === "WORKER") expect(screen.getByRole("link", { name: "Manage my worker profile" })).toHaveAttribute("href", "/worker-profile");
+    else expect(screen.queryByRole("link", { name: "Manage my worker profile" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Content reports" })).not.toBeInTheDocument();
+  });
+
   it("opens the mobile menu, navigates and closes it on a route change", async () => {
     const user = userEvent.setup();
     setup();

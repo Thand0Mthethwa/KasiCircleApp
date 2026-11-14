@@ -44,5 +44,5 @@ export const categoryName = (value) =>
 export const artworkFor = (business) => business.coverImageUrl;
 
 export function BusinessCard({ business }) {
-  return <MarketplaceBusinessCard business={business} />;
+  return <MarketplaceBusinessCard business={business} providerLabel="Business" />;
 }

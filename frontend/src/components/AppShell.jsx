@@ -21,7 +21,7 @@ import { Avatar } from "./ui";
 
 const destinations = [
   { to: "/home", label: "Home", icon: Home },
-  { to: "/explore", label: "Businesses", icon: Store },
+  { to: "/explore", label: "Explore", icon: Store },
   { to: "/workers", label: "Workers", icon: Wrench },
   { to: "/jobs", label: "Jobs", icon: Briefcase },
 ];

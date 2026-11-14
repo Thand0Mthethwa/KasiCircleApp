@@ -36,29 +36,14 @@ describe("Home marketplace navigation", () => {
     businessService.getAllBusinesses.mockResolvedValue({ content: [] });
   });
 
-  it("searches the real worker directory and greets the signed-in user", async () => {
+  it("searches both provider types without a scope choice and greets the signed-in user", async () => {
     const user = userEvent.setup();
     renderHome();
-
-    expect(
-      screen.getByRole("heading", { name: /Good .* Amahle/i }),
-    ).toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: "Workers", exact: true }),
-    );
-    await user.type(
-      screen.getByRole("searchbox", {
-        name: "Search workers by name or skill...",
-      }),
-      "electrician",
-    );
+    expect(screen.getByRole("heading", { name: /Good .* Amahle/i })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Search marketplace by" })).not.toBeInTheDocument();
+    await user.type(screen.getByRole("searchbox", { name: "What are you looking for?" }), "plumber");
     await user.keyboard("{Enter}");
-
-    await waitFor(() =>
-      expect(screen.getByTestId("location")).toHaveTextContent(
-        "/workers?search=electrician",
-      ),
-    );
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/explore?search=plumber"));
   });
 
   it("links marketplace sections to supported directories without fabricated listings", async () => {
@@ -82,7 +67,7 @@ describe("Home marketplace navigation", () => {
 
     await waitFor(() =>
       expect(screen.getByTestId("location")).toHaveTextContent(
-        "/workers?skill=Plumber",
+        "/explore?provider=workers&skill=Plumber",
       ),
     );
   });
@@ -110,7 +95,7 @@ describe("Home marketplace navigation", () => {
       screen.getByLabelText("Around your neighbourhood"),
       "Soweto",
     );
-    await user.click(screen.getByRole("button", { name: /Find businesses/ }));
+    await user.click(screen.getByRole("button", { name: /Find local providers/ }));
     await waitFor(() =>
       expect(screen.getByTestId("location")).toHaveTextContent(
         "/explore?search=cafe&city=Soweto",
@@ -132,20 +117,11 @@ describe("Home marketplace navigation", () => {
     );
   });
 
-  it("searches local jobs when the jobs scope is selected", async () => {
+  it("takes the primary discovery action to the unified marketplace", async () => {
     const user = userEvent.setup();
     renderHome();
-    await user.click(screen.getByRole("button", { name: "Jobs", exact: true }));
-    await user.type(
-      screen.getByRole("searchbox", { name: "Search local jobs..." }),
-      "plumbing",
-    );
-    await user.keyboard("{Enter}");
-    await waitFor(() =>
-      expect(screen.getByTestId("location")).toHaveTextContent(
-        "/jobs?search=plumbing",
-      ),
-    );
+    await user.click(screen.getByRole("button", { name: /Explore the marketplace/ }));
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/explore"));
   });
 
   it("renders actual API listing fields and opens the matching business", async () => {

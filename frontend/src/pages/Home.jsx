@@ -5,7 +5,6 @@ import {
   Briefcase,
   Coffee,
   MapPin,
-  ArrowDown,
   Search,
   X,
   Leaf,
@@ -14,7 +13,6 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import { SearchBar } from "../components";
 import "../styles/home-migration.css";
 import { BusinessCard, categories } from "../components/HomeBusinessCard";
 import {
@@ -38,14 +36,6 @@ const businessCategories = [
   { label: "Beauty & care", category: "Salon & Beauty", icon: Scissors },
   { label: "Local services", category: "Professional Services", icon: Wrench },
 ];
-const searchTypes = {
-  businesses: { path: "/explore", placeholder: "Find a local business..." },
-  workers: {
-    path: "/workers",
-    placeholder: "Search workers by name or skill...",
-  },
-  jobs: { path: "/jobs", placeholder: "Search local jobs..." },
-};
 
 export default function Home() {
   const navigate = useNavigate();
@@ -54,7 +44,6 @@ export default function Home() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
-  const [searchType, setSearchType] = useState("businesses");
   const [businesses, setBusinesses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -85,13 +74,6 @@ export default function Home() {
     };
   }, [retry, category]);
 
-  const handleSearch = (query) => {
-    const params = new URLSearchParams();
-    if (query.trim()) params.set("search", query.trim());
-    if (city.trim() && searchType === "businesses")
-      params.set("city", city.trim());
-    navigate(searchTypes[searchType].path + (params.size ? `?${params}` : ""));
-  };
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
@@ -110,19 +92,15 @@ export default function Home() {
               favourite is <em>right here.</em>
             </h1>
             <p>
-              Discover the food, shops, and everyday services that make a
+              Discover local businesses and independent workers who make a
               neighbourhood feel like home.
             </p>
             <button
               type="button"
               className="hero-browse"
-              onClick={() =>
-                document
-                  .getElementById("directory")
-                  ?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" })
-              }
+              onClick={() => navigate("/explore")}
             >
-              Explore the neighbourhood <ArrowDown size={16} />
+              Explore the marketplace <ArrowRight size={16} />
             </button>
             <div className="hero-local-note">
               <Leaf size={15} />
@@ -153,7 +131,7 @@ export default function Home() {
                 id="business-search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="A kota spot, a salon, a local service…"
+                placeholder="A local business, plumber or service…"
               />
             </div>
             {search && (
@@ -190,7 +168,7 @@ export default function Home() {
             )}
           </div>
           <button className="primary-button search-submit" type="submit">
-            Find businesses <ArrowRight size={16} />
+            Find local providers <ArrowRight size={16} />
           </button>
         </form>
       </section>
@@ -261,7 +239,7 @@ export default function Home() {
             <div className="results-toolbar">
               <p>Discover real businesses in your community</p>
               <Link to="/explore" className="outline-button">
-                View full directory
+                View full marketplace
               </Link>
             </div>
             {isLoading ? (
@@ -307,35 +285,11 @@ export default function Home() {
           <h2 className="text-sm font-medium mb-4">
             {greeting}, {user?.firstName || "neighbour"}!
           </h2>
-          <div
-            className="flex gap-2 my-3"
-            role="group"
-            aria-label="Search marketplace by"
-          >
-            {["workers", "jobs"].map((type) => (
-              <button
-                key={type}
-                type="button"
-                className="outline-button"
-                aria-pressed={searchType === type}
-                onClick={() => setSearchType(type)}
-              >
-                {type === "workers" ? "Workers" : "Jobs"}
-              </button>
-            ))}
-          </div>
-          {searchType !== "businesses" && (
-            <SearchBar
-              key={searchType}
-              placeholder={searchTypes[searchType].placeholder}
-              onSearch={handleSearch}
-            />
-          )}
           <div className="grid sm:grid-cols-3 gap-3">
             {[
               {
-                label: "Explore businesses",
-                detail: "Find your next local favourite",
+                label: "Explore marketplace",
+                detail: "Businesses and independent workers",
                 path: "/explore",
                 icon: Store,
               },
@@ -392,7 +346,7 @@ export default function Home() {
               key={item.category}
               onClick={() =>
                 navigate(
-                  `/explore?category=${encodeURIComponent(item.category)}`,
+                  `/explore?provider=businesses&category=${encodeURIComponent(item.category)}`,
                 )
               }
               className="category-tile"
@@ -436,7 +390,7 @@ export default function Home() {
                 key={label}
                 type="button"
                 onClick={() =>
-                  navigate(`/workers?skill=${encodeURIComponent(label)}`)
+                  navigate(`/explore?provider=workers&skill=${encodeURIComponent(label)}`)
                 }
                 className="skill-tile"
               >
