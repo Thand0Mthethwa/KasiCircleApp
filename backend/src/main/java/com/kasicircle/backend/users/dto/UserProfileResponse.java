@@ -18,6 +18,7 @@ public record UserProfileResponse(
         String email,
         String phoneNumber,
         Role role,
-        AccountType accountType
+        AccountType accountType,
+        String profileImageUrl
 ) {
 }

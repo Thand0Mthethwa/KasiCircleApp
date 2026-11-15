@@ -15,6 +15,12 @@ public record WorkerProfileResponse(
         String city,
         String province,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        String profileImageUrl
 ) {
+    public WorkerProfileResponse(UUID id, UUID ownerId, String displayName, String headline, String bio,
+            Set<String> skills, Set<String> serviceCategories, String city, String province,
+            Instant createdAt, Instant updatedAt) {
+        this(id, ownerId, displayName, headline, bio, skills, serviceCategories, city, province, createdAt, updatedAt, null);
+    }
 }

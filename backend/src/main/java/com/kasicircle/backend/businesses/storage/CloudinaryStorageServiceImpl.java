@@ -61,11 +61,11 @@ public class CloudinaryStorageServiceImpl implements ImageStorageService {
             log.info("Successfully uploaded image to Cloudinary: {}", returnedPublicId);
             return new ImageUploadResult(secureUrl, returnedPublicId);
         } catch (IOException ex) {
-            log.error("IO error uploading image to Cloudinary", ex);
-            throw new StorageException("Failed to upload image to Cloudinary due to IO error: " + ex.getMessage(), ex);
+            log.error("IO error uploading image to Cloudinary");
+            throw new StorageException("Failed to upload image to Cloudinary due to IO error.", ex);
         } catch (Exception ex) {
-            log.error("Cloudinary upload failed", ex);
-            throw new StorageException("Failed to upload image to Cloudinary: " + ex.getMessage(), ex);
+            log.error("Cloudinary upload failed");
+            throw new StorageException("Failed to upload image to Cloudinary.", ex);
         }
     }
 
@@ -79,7 +79,8 @@ public class CloudinaryStorageServiceImpl implements ImageStorageService {
 
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> result = cloudinary.uploader().destroy(storageId, ObjectUtils.emptyMap());
+            Map<String, Object> result = cloudinary.uploader().destroy(storageId, storageId.startsWith("kasicircle/account-avatars/")
+                    ? ObjectUtils.asMap("invalidate", true) : ObjectUtils.emptyMap());
             String status = (String) result.get("result");
 
             if ("ok".equalsIgnoreCase(status) || "not found".equalsIgnoreCase(status)) {
@@ -91,8 +92,8 @@ public class CloudinaryStorageServiceImpl implements ImageStorageService {
         } catch (StorageException ex) {
             throw ex;
         } catch (Exception ex) {
-            log.error("Error deleting image from Cloudinary: {}", storageId, ex);
-            throw new StorageException("Failed to delete image from Cloudinary: " + ex.getMessage(), ex);
+            log.error("Error deleting image from Cloudinary");
+            throw new StorageException("Failed to delete image from Cloudinary.", ex);
         }
     }
 

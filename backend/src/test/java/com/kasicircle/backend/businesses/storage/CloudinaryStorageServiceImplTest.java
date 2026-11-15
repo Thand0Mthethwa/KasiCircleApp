@@ -127,5 +127,16 @@ class CloudinaryStorageServiceImplTest {
                 () -> unconfiguredService.deleteImage("kasicircle/sample"));
         assertTrue(ex.getMessage().contains("Cloudinary credentials are not configured"));
     }
+    @Test
+    void avatarDeletionRequestsCdnInvalidationWithoutChangingBusinessDeletion() throws Exception {
+        String avatar = "kasicircle/account-avatars/" + java.util.UUID.randomUUID();
+        when(cloudinary.uploader()).thenReturn(uploader);
+        when(uploader.destroy(anyString(), anyMap())).thenReturn(Map.of("result", "ok"));
+        storageService.deleteImage(avatar);
+        verify(uploader).destroy(eq(avatar), eq(Map.of("invalidate", true)));
+        storageService.deleteImage("kasicircle/businesses/existing");
+        verify(uploader).destroy(eq("kasicircle/businesses/existing"), eq(Map.of()));
+    }
+
 }
 

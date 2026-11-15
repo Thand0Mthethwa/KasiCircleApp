@@ -91,6 +91,13 @@
         </dependency>
 
 
+        <!-- Decode WebP content with the same ImageIO validation path as JPEG/PNG. -->
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-webp</artifactId>
+            <version>3.15.3</version>
+        </dependency>
+
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

@@ -137,7 +137,8 @@ public class WorkerProfileServiceImpl implements WorkerProfileService {
                 profile.getCity(),
                 profile.getProvince(),
                 profile.getCreatedAt(),
-                profile.getUpdatedAt()
+                profile.getUpdatedAt(),
+                owner.getProfileImageUrl()
         );
     }
 }

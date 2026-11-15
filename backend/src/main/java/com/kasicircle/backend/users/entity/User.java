@@ -19,6 +19,7 @@ import java.util.UUID;
 /**
  * Persistent account record for a KasiCircle user.
  */
+@org.hibernate.annotations.DynamicUpdate
 @Entity
 @Table(name = "users")
 public class User {
@@ -38,6 +39,13 @@ public class User {
 
     @Column(name = "phone_number", length = 15)
     private String phoneNumber;
+
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
+    @JsonIgnore
+    @Column(name = "profile_image_public_id", length = 255)
+    private String profileImagePublicId;
 
     @JsonIgnore
     @Column(nullable = false)
@@ -205,6 +213,11 @@ public class User {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String value) { profileImageUrl = value; }
+    public String getProfileImagePublicId() { return profileImagePublicId; }
+    public void setProfileImagePublicId(String value) { profileImagePublicId = value; }
 
     public String getPassword() {
         return password;
