@@ -1,11 +1,15 @@
-import { createElement, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, createElement, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../components";
+import MarketplaceMapBoundary from "../components/MarketplaceMapBoundary";
 import ProviderResults from "../components/ProviderResults";
 import useProviderResults from "../hooks/useProviderResults";
 import { Search, MapPin, X, LayoutGrid, Utensils, ShoppingBag, Wrench, Hammer, Scissors, Briefcase, HeartPulse, Laptop, MoreHorizontal } from "lucide-react";
 import "../styles/explore-reference.css";
 import "../styles/unified-marketplace.css";
+import "../styles/marketplace-map.css";
+
+const MarketplaceMap = lazy(() => import("../components/MarketplaceMap"));
 
 const categoryIcons = [LayoutGrid, Utensils, ShoppingBag, Wrench, Hammer, Scissors, Briefcase, HeartPulse, Laptop, MoreHorizontal];
 const categoryLabels = ["All", "Food", "Retail", "Automotive", "Hardware", "Beauty", "Services", "Health", "Technology", "Other"];
@@ -39,6 +43,7 @@ export default function Explore() {
   useEffect(() => { pendingQuery.current = query; }, [query]);
   const defaultProvider = pathname.replace(/\/+$/, "") === "/businesses" ? "businesses" : "all";
   const provider = PROVIDERS.includes(params.get("provider")) ? params.get("provider") : defaultProvider;
+  const view = params.get("view") === "map" ? "map" : "list";
   const search = params.get("search") || "";
   const city = params.get("city") || "";
   const category = params.get("category") || "All";
@@ -123,6 +128,13 @@ export default function Explore() {
             aria-selected={provider === value} aria-controls="marketplace-results" tabIndex={provider === value ? 0 : -1}
             onClick={() => selectProvider(value)} onKeyDown={(event) => tabKey(event, index)}>{labels[value]}</button>)}
         </div>
+        <div className="marketplace-view-controls" role="group" aria-label="Marketplace view">
+          <button type="button" aria-pressed={view === 'list'} aria-controls="marketplace-results" onClick={() => update({ view: null })}>List View</button>
+          <button type="button" aria-pressed={view === 'map'} aria-controls="marketplace-results" onClick={() => update({ view: 'map' })}>Map View</button>
+        </div>
+        {view === 'map' && <p className="marketplace-worker-map-note">{provider === 'workers'
+          ? 'Worker locations are private and are not plotted. Browse the worker list below or choose List View.'
+          : 'Only businesses with valid public coordinates appear as pins. Workers without publicly approved location data are not plotted; their list remains below when All is selected.'}</p>}
         {showBusinesses && <section className="business-filter-controls" aria-label="Business filters">
           <h2 className="source-filter-heading">Business categories</h2>
           <nav className="categories live-categories" aria-label="Business Categories">
@@ -148,7 +160,13 @@ export default function Explore() {
         <div role="tabpanel" id="marketplace-results" aria-labelledby={`provider-tab-${provider}`} tabIndex={0} className="provider-panels">
           {showBusinesses && <ProviderResults type="business" results={businessResults} page={businessPage}
             onPage={(page) => update({ businessPage: page ? page + 1 : null })} onReset={reset} filtered={filtered}
-            onOpenBusiness={(id) => navigate(`/businesses/${id}`)} />}
+            onOpenBusiness={(id) => navigate(`/businesses/${id}`)}>
+            {view === 'map' && <MarketplaceMapBoundary onListView={() => update({ view: null })}>
+              <Suspense fallback={<p role="status">Opening business map…</p>}>
+                <MarketplaceMap businesses={businessResults.items || []} page={businessPage} onListView={() => update({ view: null })} />
+              </Suspense>
+            </MarketplaceMapBoundary>}
+          </ProviderResults>}
           {showWorkers && <ProviderResults type="worker" results={workerResults} page={workerPage}
             onPage={(page) => update({ workerPage: page ? page + 1 : null })} onReset={reset} filtered={filtered} />}
         </div>
