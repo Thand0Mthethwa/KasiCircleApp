@@ -95,6 +95,19 @@ export const authService = {
 };
 
 export const userService = {
+  uploadProfileImage: async (file) => {
+    const data = new FormData();
+    data.append('file', file);
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/api/users/me/profile-image`, {
+      method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {}, body: data,
+    });
+    return handleResponse(response, { authenticated: true });
+  },
+  removeProfileImage: async () => {
+    const response = await fetch(`${API_BASE_URL}/api/users/me/profile-image`, { method: 'DELETE', headers: getHeaders(true) });
+    return handleResponse(response, { authenticated: true });
+  },
   getCurrentUser: async () => {
     const response = await fetch(`${API_BASE_URL}/api/users/me`, {
       method: 'GET',

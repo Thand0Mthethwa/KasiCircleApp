@@ -201,4 +201,27 @@ describe('AuthContext', () => {
     expect(result.current.user).toEqual(updatedUser);
     expect(JSON.parse(localStorage.getItem('kasicircle_user'))).toEqual(updatedUser);
   });
+  it('refreshes avatar metadata in state and cache while preserving the JWT and subsequent sessions', async () => {
+    const pictured = { ...mockUser, profileImageUrl: 'https://images.example.test/account.png' };
+    localStorage.setItem('kasicircle_token', 'existing-session-token');
+    userService.getCurrentUser.mockResolvedValue(mockUser);
+    const first = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(first.result.current.user).toEqual(mockUser));
+    userService.getCurrentUser.mockResolvedValue(pictured);
+    await act(async () => { await first.result.current.refreshUser(); });
+    expect(first.result.current.user.profileImageUrl).toBe(pictured.profileImageUrl);
+    expect(JSON.parse(localStorage.getItem('kasicircle_user')).profileImageUrl).toBe(pictured.profileImageUrl);
+    expect(localStorage.getItem('kasicircle_token')).toBe('existing-session-token');
+    first.unmount();
+    const reloaded = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(reloaded.result.current.isLoading).toBe(false));
+    expect(reloaded.result.current.user.profileImageUrl).toBe(pictured.profileImageUrl);
+    authService.logout.mockImplementationOnce(() => { localStorage.clear(); });
+    act(() => reloaded.result.current.logout());
+    authService.login.mockResolvedValueOnce({ token: 'next-session-token' });
+    await act(async () => { await reloaded.result.current.login('test@example.test', 'test-only-value'); });
+    expect(reloaded.result.current.user.profileImageUrl).toBe(pictured.profileImageUrl);
+    expect(JSON.parse(localStorage.getItem('kasicircle_user')).profileImageUrl).toBe(pictured.profileImageUrl);
+  });
+
 });

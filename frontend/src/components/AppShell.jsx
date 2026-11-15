@@ -111,6 +111,7 @@ export function AppHeader() {
                 <summary aria-label="Account menu">
                   <Avatar
                     name={`${user?.firstName || ""} ${user?.lastName || ""}`}
+                    src={user?.profileImageUrl}
                     className="!w-10 !h-10"
                   />
                   <ChevronDown size={14} className="hidden sm:block" />

@@ -64,6 +64,7 @@ export default function WorkerDetail() {
             <Card className="p-6 md:p-8">
               <Avatar
                 name={worker.displayName}
+                src={worker.profileImageUrl}
                 className="!w-20 !h-20 !text-2xl mb-5"
               />
               <h1 className="font-display text-3xl md:text-4xl">

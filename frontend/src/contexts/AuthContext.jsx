@@ -108,6 +108,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('kasicircle_user', JSON.stringify(updatedUserData));
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const profile = await userService.getCurrentUser();
+    updateUser(profile);
+    return profile;
+  }, [updateUser]);
+
   const value = {
     isAuthenticated,
     user,
@@ -117,6 +123,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Card, Header, LoadingSpinner } from '../components';
 import { useAuth } from '../contexts/AuthContext';
+import ProfileImageEditor from '../components/ProfileImageEditor';
 import { userService } from '../services/api';
 import {
   Edit2,
@@ -43,15 +44,6 @@ const getAccountTypeDetails = (type) => {
         description: 'Local community member',
       };
   }
-};
-
-/**
- * Derives user initials for avatar display.
- */
-const getInitials = (firstName, lastName) => {
-  const first = (firstName || '').trim().charAt(0).toUpperCase();
-  const last = (lastName || '').trim().charAt(0).toUpperCase();
-  return `${first}${last}` || 'KC';
 };
 
 export default function Profile() {
@@ -227,9 +219,7 @@ export default function Profile() {
 
         {/* User Identity Banner */}
         <Card className="profile-summary p-6 text-center bg-kasi-green-light">
-          <div className="mx-auto w-20 h-20 rounded-full bg-kasi-green text-white font-semibold text-2xl flex items-center justify-center mb-4">
-            {getInitials(user.firstName, user.lastName)}
-          </div>
+          <ProfileImageEditor />
           <h2 className="text-xl font-bold text-neutral-900">
             {user.firstName} {user.lastName}
           </h2>

@@ -12,6 +12,6 @@ export function toProvider(type, record) {
       description: record.description, coverImageUrl: record.coverImageUrl,
       averageRating: record.averageRating, reviewCount: record.reviewCount };
   }
-  return { ...common, displayName: record.displayName, headline: record.headline,
+  return { ...common, displayName: record.displayName, profileImageUrl: record.profileImageUrl, headline: record.headline,
     bio: record.bio, skills: record.skills || [], serviceCategories: record.serviceCategories || [] };
 }

@@ -92,22 +92,7 @@ export function StatusBadge({ status, children }) {
   );
 }
 
-export function Avatar({ name = "", className = "" }) {
-  const initials =
-    name
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase() || "KC";
-  return (
-    <span className={`avatar ${className}`} aria-hidden="true">
-      {initials}
-    </span>
-  );
-}
+export { default as Avatar } from './Avatar';
 
 export function RatingDisplay({ rating, count, ...props }) {
   const rated = Number(rating) > 0 && Number(count) > 0;

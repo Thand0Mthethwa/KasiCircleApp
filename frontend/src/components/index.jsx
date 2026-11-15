@@ -1,4 +1,5 @@
 import React from 'react';
+import Avatar from './Avatar';
 import { ChevronLeft, Search, Home, Briefcase, Compass, MessageCircle, User, Wrench } from 'lucide-react';
 
 // Button Components
@@ -144,7 +145,7 @@ export const CategoryCard = ({ icon: Icon, label, onClick, isSelected = false })
 export const WorkerCard = ({ worker, image, name = worker?.displayName || '', profession = worker?.headline || '', isVerified = false, onClick }) => {
   return <button type="button" onClick={onClick} className="marketplace-card worker-card w-full h-full p-6 text-left flex flex-col items-start hover:border-kasi-green transition-colors" aria-label={`View ${name}, ${profession}`}>
     <div className="flex items-start justify-between gap-4 w-full mb-5">
-      <span className="avatar !w-16 !h-16 !text-xl overflow-hidden">{image ? <img src={image} alt="" loading="lazy" className="w-full h-full object-cover" /> : name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('')}</span>
+      <Avatar name={name} src={worker?.profileImageUrl || image} className="!w-16 !h-16 !text-xl" />
       <Wrench size={20} className="text-neutral-500 mt-2" aria-hidden="true" />
     </div>
     <h2 className="text-xl font-semibold">{name}</h2>

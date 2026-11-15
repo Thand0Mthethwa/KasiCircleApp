@@ -11,7 +11,7 @@ export default function ProviderCard({ provider, onOpenBusiness }) {
   return (
     <article className="marketplace-card provider-worker-card p-5 flex flex-col" data-testid={`worker-card-${provider.id}`}>
       <div className="flex items-start justify-between gap-3 mb-5">
-        <Avatar name={provider.displayName} className="!w-16 !h-16 !text-xl" />
+        <Avatar name={provider.displayName} src={provider.profileImageUrl} className="!w-16 !h-16 !text-xl" />
         <span className="provider-type">Independent worker</span>
       </div>
       <h3 className="font-display text-2xl font-bold"><Link to={url}>{provider.displayName}</Link></h3>

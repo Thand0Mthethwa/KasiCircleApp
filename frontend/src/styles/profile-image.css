@@ -1,0 +1,4 @@
+
+.profile-picture-editor { margin-bottom: 24px; }
+.profile-picture-camera { background: #ffbf29; color: #391a38; border: 2px solid #fffaf3; border-radius: 50%; min-width: 44px; min-height: 44px; }
+.profile-picture-editor [type='file']:focus-visible { position: static; width: auto; height: auto; clip-path: none; margin-top: 12px; }
