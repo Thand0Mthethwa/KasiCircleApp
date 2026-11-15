@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 // Explicit UI fixtures, isolated from the real API journeys in marketplace.spec.js.
 // These records are never shipped in the application or written to a database.
@@ -505,3 +506,50 @@ test("mobile review controls and owner deletion dialog fit and retain keyboard a
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(trigger).toBeFocused();
 });
+
+
+for (const width of [375, 1440]) {
+  test(`account avatar preview, replacement, refresh and removal at ${width}px`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 950 });
+    await fixtures(page);
+    const image = readFileSync(new URL('../../backend/src/test/resources/images/avatar.webp', import.meta.url));
+    let picture = null;
+    await page.route('**/ui-avatar.webp', route => route.fulfill({ contentType: 'image/webp', body: image }));
+    await page.route('**/api/users/me', route => route.fulfill({ json: { ...currentMember(page), profileImageUrl: picture } }));
+    await page.route('**/api/users/me/profile-image', async route => {
+      if (route.request().method() === 'POST') picture = new URL('/ui-avatar.webp', page.url()).href;
+      else if (route.request().method() === 'DELETE') picture = null;
+      else throw new Error('Unexpected avatar fixture method');
+      return route.fulfill({ json: { ...currentMember(page), profileImageUrl: picture } });
+    });
+    await page.route('**/api/auth/login', route => route.fulfill({ json: { token: 'ui-avatar-session' } }));
+    await page.goto('/profile');
+    await expect(page.getByRole('img', { name: 'QA Member profile picture' })).toContainText('QM');
+    const file = { name: 'temporary-avatar.webp', mimeType: 'image/webp', buffer: image };
+    await page.getByLabel('Choose a profile picture file').setInputFiles(file);
+    await expect(page.getByAltText('Selected profile picture preview')).toBeVisible();
+    await page.getByRole('button', { name: 'Cancel picture' }).click();
+    await expect(page.getByAltText('Selected profile picture preview')).toHaveCount(0);
+    await page.getByLabel('Choose a profile picture file').setInputFiles(file);
+    await page.screenshot({ path: testInfo.outputPath(`avatar-preview-${width}.png`), fullPage: true, scale: 'css' });
+    await page.getByRole('button', { name: 'Save picture' }).click();
+    await expect(page.getByText('Profile picture saved.', { exact: true })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'QA Member profile picture' }).locator('img')).toHaveAttribute('src', /ui-avatar.webp$/);
+    await expect.poll(() => page.locator('summary[aria-label="Account menu"] img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Remove picture' })).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath(`avatar-saved-${width}.png`), fullPage: true, scale: 'css' });
+    await page.getByRole('button', { name: 'Sign Out', exact: true }).click();
+    await page.goto('/login');
+    await page.getByLabel('Email address', { exact: true }).fill('avatar-fixture@example.test');
+    await page.getByLabel('Password', { exact: true }).fill('ui-fixture-not-a-real-password');
+    await page.getByRole('button', { name: 'Login', exact: true }).click();
+    await expect(page).toHaveURL(/\/home$/);
+    await page.goto('/profile');
+    await expect(page.getByRole('button', { name: 'Remove picture' })).toBeVisible();
+    await page.getByRole('button', { name: 'Remove picture' }).click();
+    await expect(page.getByText('Profile picture removed.', { exact: true })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'QA Member profile picture' })).toContainText('QM');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+}

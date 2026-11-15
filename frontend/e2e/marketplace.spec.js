@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { testDatabaseSQL } from '../scripts/e2e-database.mjs';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 const api = 'http://127.0.0.1:18081/api';
 const password = 'MarketplaceQA123!';
@@ -432,4 +433,31 @@ test('unified marketplace uses real provider results, independent paging and pre
   await page.getByRole('button', { name: 'Reset all filters' }).click();
   await expect(page).toHaveURL(/\/explore$/);
   await expect(page.getByRole('searchbox', { name: 'Search businesses and workers' })).toHaveValue('');
+});
+
+
+test('account avatar endpoints protect ownership and reject invalid uploads without live storage', async ({ request }) => {
+  const endpoint = '/users/me/profile-image';
+  const image = readFileSync(new URL('../../backend/src/test/resources/images/avatar.webp', import.meta.url));
+  expect((await request.post(`${api}${endpoint}`, { multipart: { file: { name: 'avatar.webp', mimeType: 'image/webp', buffer: image } } })).status()).toBe(401);
+  expect((await request.delete(`${api}${endpoint}`)).status()).toBe(401);
+  for (const type of ['RESIDENT', 'BUSINESS', 'WORKER']) {
+    const member = await account(request, type);
+    const headers = { Authorization: `Bearer ${member.token}` };
+    const before = await call(request, 'GET', '/users/me', member.token);
+    expect(before.profileImageUrl).toBeNull();
+    expect(before).not.toHaveProperty('profileImagePublicId');
+    for (const file of [
+      { name: 'bad.png', mimeType: 'image/png', buffer: Buffer.from('not an image') },
+      { name: 'bad.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg/>') },
+      { name: 'big.png', mimeType: 'image/png', buffer: Buffer.alloc(5 * 1024 * 1024 + 1) },
+    ]) expect((await request.post(`${api}${endpoint}`, { headers, multipart: { file } })).status()).toBe(400);
+    // Config explicitly removes Cloudinary credentials. Valid decoded images fail safely before provider I/O.
+    const result = await request.post(`${api}${endpoint}`, { headers, multipart: { file: { name: 'avatar.webp', mimeType: 'image/webp', buffer: image } } });
+    expect(result.status()).toBe(503);
+    const removed = await call(request, 'DELETE', endpoint, member.token);
+    expect(removed.profileImageUrl).toBeNull();
+    const after = await call(request, 'GET', '/users/me', member.token);
+    expect(after.id).toBe(before.id); expect(after.accountType).toBe(type); expect(after.profileImageUrl).toBeNull();
+  }
 });
