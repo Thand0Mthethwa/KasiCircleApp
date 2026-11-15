@@ -1,0 +1,86 @@
+{
+  "baseURL": "http://localhost:5173",
+  "api": "http://localhost:8081",
+  "database": "localhost:5432/kasicircle",
+  "businessStatus": 500,
+  "workerStatus": 200,
+  "blockedWrites": 0,
+  "results": [
+    {
+      "name": "Development business discovery API",
+      "status": "FAIL"
+    },
+    {
+      "name": "Development worker API and actual empty directory",
+      "status": "PASS"
+    },
+    {
+      "name": "All tab represents independent actual service states",
+      "status": "PASS"
+    },
+    {
+      "name": "Businesses tab scopes visible results",
+      "status": "PASS"
+    },
+    {
+      "name": "Workers tab scopes visible results",
+      "status": "PASS"
+    },
+    {
+      "name": "Keyword and actual city are sent to both APIs and persisted",
+      "status": "PASS"
+    },
+    {
+      "name": "Worker unmatched keyword and city empty state",
+      "status": "PASS"
+    },
+    {
+      "name": "Both directories show actual empty results for an unmatched search",
+      "status": "PASS"
+    },
+    {
+      "name": "Loading states forward to real APIs without mocked payloads",
+      "status": "PASS"
+    },
+    {
+      "name": "Network error and retry restore the actual worker response",
+      "status": "PASS"
+    },
+    {
+      "name": "Existing business detail API and rendered route",
+      "status": "FAIL"
+    },
+    {
+      "name": "Business detail failure is presented safely",
+      "status": "PASS"
+    },
+    {
+      "name": "Existing image metadata and cover selection are readable",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual persisted cover image decodes in Chromium",
+      "status": "PASS"
+    },
+    {
+      "name": "Guest business management route is protected",
+      "status": "PASS"
+    },
+    {
+      "name": "Guest worker management route is protected",
+      "status": "PASS"
+    },
+    {
+      "name": "Guest management APIs require authentication",
+      "status": "PASS"
+    },
+    {
+      "name": "Independent page query preservation and honest worker page recovery",
+      "status": "PASS"
+    },
+    {
+      "name": "Mobile navigation, Workers view and no horizontal overflow",
+      "status": "PASS"
+    }
+  ]
+}
