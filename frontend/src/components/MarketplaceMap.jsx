@@ -1,3 +1,4 @@
+import PlaceAttribution from './PlaceAttribution';
 import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { MapContainer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet';
@@ -81,6 +82,7 @@ export default function MarketplaceMap({ businesses = [], page = 0, onListView }
         <BusinessPopup business={business} />
       </Marker>)}
     </MapContainer>
+    <PlaceAttribution />
     <p className="marketplace-map-hint">Use the zoom buttons or keyboard + / − to zoom, and arrow keys to pan. Worker locations are not plotted.</p>
   </section>;
 }

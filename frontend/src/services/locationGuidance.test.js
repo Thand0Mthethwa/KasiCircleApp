@@ -1,26 +1,23 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { placeSearchConfig, parsePlaces, searchPlaces } from './placeSearch';
+import { placeSearchStatus, parsePlaces, searchPlaces } from './placeSearch';
 import { requestDeviceLocation } from './deviceLocation';
 afterEach(()=>{vi.unstubAllGlobals();localStorage.clear();});
-const configured={VITE_PLACE_SEARCH_ENABLED:'true',VITE_PLACE_SEARCH_URL:'/api/places/search',VITE_PLACE_SEARCH_ATTRIBUTION:'OpenStreetMap contributors',VITE_PLACE_SEARCH_ATTRIBUTION_URL:'https://www.openstreetmap.org/copyright'};
-describe('approved place search',()=>{
-  it('is disabled by default and rejects public endpoints, missing approval or missing credit',()=>{
-    expect(placeSearchConfig({}).enabled).toBe(false);
-    for(const change of [{VITE_PLACE_SEARCH_ENABLED:'false'},{VITE_PLACE_SEARCH_URL:'https://nominatim.openstreetmap.org/search'},{VITE_PLACE_SEARCH_URL:'//external/search'},{VITE_PLACE_SEARCH_URL:'/api/places?secret=bad'},{VITE_PLACE_SEARCH_ATTRIBUTION:''}]) expect(placeSearchConfig({...configured,...change}).enabled).toBe(false);
-    expect(placeSearchConfig(configured).enabled).toBe(true);
+describe('backend place search',()=>{
+  it('reads availability without a provider key in the client',async()=>{
+    vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({enabled:false})}));
+    expect(await placeSearchStatus()).toBe(false);expect(fetch.mock.calls[0][0]).toMatch(/\/api\/places\/status$/);
   });
-  it('uses explicit same-origin search, bounded results, no cache or redirects, and genuine valid provider coordinates',async()=>{
-    const result={features:[{geometry:{type:'Point',coordinates:[28.2,-25.7]},properties:{name:'Taxi rank',city:'Pretoria'}},{geometry:{type:'Point',coordinates:[28,99]},properties:{name:'Bad'}},{geometry:{type:'Point',coordinates:[null,0]},properties:{name:'Missing'}},{geometry:{type:'Point',coordinates:[0,0]},properties:{}}]};
-    vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>result}));localStorage.setItem('kasicircle_token','test-session');
-    expect(await searchPlaces(' Taxi rank ',{config:placeSearchConfig(configured)})).toEqual([{key:'0',label:'Taxi rank, Pretoria',latitude:-25.7,longitude:28.2}]);
-    expect(fetch).toHaveBeenCalledWith('/api/places/search?q=Taxi+rank&limit=5',expect.objectContaining({cache:'no-store',redirect:'error',credentials:'same-origin',headers:{Authorization:'Bearer test-session'}}));
+  it('submits an explicit encoded query with authentication and bounded validated results',async()=>{
+    vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({places:[{name:'Daveyton',formattedAddress:'Daveyton, Gauteng, South Africa',latitude:-26.15,longitude:28.42},{formattedAddress:'Bad',latitude:91,longitude:0}]})}));
+    localStorage.setItem('kasicircle_token','test-session');
+    expect(await searchPlaces(' Daveyton ')).toEqual([expect.objectContaining({name:'Daveyton',label:'Daveyton, Gauteng, South Africa',latitude:-26.15})]);
+    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/api\/places\/search\?q=Daveyton$/),expect.objectContaining({cache:'no-store',redirect:'error',headers:{Authorization:'Bearer test-session'}}));
   });
-  it('never requests an unconfigured provider or a very short query and reports unavailable responses',async()=>{
-    vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:false}));
-    await expect(searchPlaces('Soweto',{config:placeSearchConfig({})})).rejects.toThrow(/not available/);expect(fetch).not.toHaveBeenCalled();
-    await expect(searchPlaces('a',{config:placeSearchConfig(configured)})).rejects.toThrow(/3 and 120/);expect(fetch).not.toHaveBeenCalled();
-    await expect(searchPlaces('Soweto',{config:placeSearchConfig(configured)})).rejects.toThrow(/unavailable/);
-    expect(()=>parsePlaces({})).toThrow(/unreadable/);
+  it('validates queries before requesting and handles empty, failed and rate-limited responses',async()=>{
+    vi.stubGlobal('fetch',vi.fn());await expect(searchPlaces('a')).rejects.toThrow(/3 and 120/);expect(fetch).not.toHaveBeenCalled();
+    expect(parsePlaces({places:[]})).toEqual([]);expect(()=>parsePlaces({})).toThrow(/unavailable/);
+    fetch.mockResolvedValueOnce({ok:false,status:429}).mockResolvedValueOnce({ok:false,status:503});
+    await expect(searchPlaces('Daveyton')).rejects.toThrow(/wait a minute/);await expect(searchPlaces('Benoni')).rejects.toThrow(/temporarily unavailable/);
   });
 });
 describe('optional device location',()=>{

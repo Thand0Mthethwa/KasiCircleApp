@@ -49,6 +49,7 @@ test('owner selects, moves, saves, publishes, hides and removes a real QA busine
   await map.click({position:{x:170,y:210}});const marker=page.getByRole('button',{name:'Selected business location'});await expect(marker).toBeVisible();
   await page.getByText('Advanced: Enter GPS coordinates',{exact:true}).click();
   const before=await page.getByLabel('Longitude',{exact:true}).inputValue();
+  await marker.scrollIntoViewIfNeeded();
   const point=await marker.boundingBox();await page.mouse.move(point.x+point.width/2,point.y+point.height/2);await page.mouse.down();await page.mouse.move(point.x+point.width/2+35,point.y+point.height/2+18,{steps:8});await page.mouse.up();
   await expect(page.getByLabel('Longitude',{exact:true})).not.toHaveValue(before);
   await page.getByRole('button',{name:'Cancel location',exact:true}).click();
@@ -83,6 +84,9 @@ test('owner selects, moves, saves, publishes, hides and removes a real QA busine
 
 test('QA PostgreSQL constraints and JWT ownership protect private location drafts',async({request})=>{
   const owner=await account(request);const other=await account(request);const resident=await account(request,'RESIDENT');const worker=await account(request,'WORKER');
+  expect(await call(request,'GET','/places/status',owner.token)).toEqual({enabled:false});
+  await call(request,'GET','/places/search?q=Daveyton',owner.token,undefined,503);
+  for(const token of [null,resident.token,worker.token]) await call(request,'GET','/places/search?q=Benoni',token,undefined,token?403:401);
   const {business,data}=await create(request,owner);const endpoint=`/businesses/${business.id}/location`;
   for(const token of [null,other.token,resident.token,worker.token]) {
     const status=token?403:401;await call(request,'GET',endpoint,token,undefined,status);await call(request,'PUT',endpoint,token,{latitude:0,longitude:0,locationPublic:true},status);await call(request,'DELETE',endpoint,token,undefined,status);

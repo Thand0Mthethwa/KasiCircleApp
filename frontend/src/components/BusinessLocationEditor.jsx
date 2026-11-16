@@ -113,7 +113,7 @@ export default function BusinessLocationEditor({ businessId }) {
         {locating && <p role="status">Finding your location. You can cancel or choose another method.</p>}
       </>}
       {step === 2 && <>
-        {area && <p className="location-area-note">Near {area.label}. Mark the exact spot where customers should go.</p>}
+        {area && <p className="location-area-note">Near {area.label}. Mark the exact spot where customers should go.{area.attribution && <><br /><small>{area.attribution}</small></>}</p>}
         {accuracyWarning && <p role="status" className="location-device-warning">{accuracyWarning}</p>}
         {picker(false)}
         <details className="location-advanced"><summary>Advanced: Enter GPS coordinates</summary><p>Latitude must be between -90 and 90. Longitude must be between -180 and 180. Enter both values.</p>

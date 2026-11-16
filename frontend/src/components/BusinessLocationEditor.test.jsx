@@ -4,11 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import BusinessLocationEditor from './BusinessLocationEditor';
 import { businessService } from '../services/api';
 import { requestDeviceLocation } from '../services/deviceLocation';
+import { placeSearchStatus } from '../services/placeSearch';
+vi.mock('../services/placeSearch',()=>({placeSearchStatus:vi.fn(),searchPlaces:vi.fn()}));
 vi.mock('../services/api',()=>({businessService:{getLocation:vi.fn(),saveLocation:vi.fn(),removeLocation:vi.fn()}}));
 vi.mock('../services/deviceLocation',()=>({requestDeviceLocation:vi.fn()}));
 vi.mock('./BusinessLocationPicker',()=>({default:({onChange,disabled,area})=><div aria-label="Picker fixture">{area&&<p>Area: {area.label}</p>}<button type="button" disabled={disabled} onClick={()=>onChange(-25.72,28.24)}>Place test pin</button><button type="button" disabled={disabled} onClick={()=>onChange(-25.73,28.25)}>Move test pin</button></div>}));
 const empty={latitude:null,longitude:null,locationPublic:false},draft={latitude:-25.72,longitude:28.24,locationPublic:false};
-beforeEach(()=>{vi.resetAllMocks();businessService.getLocation.mockResolvedValue(empty);businessService.saveLocation.mockImplementation(async(_id,value)=>value);businessService.removeLocation.mockResolvedValue(empty);requestDeviceLocation.mockResolvedValue({...draft,accuracy:10,imprecise:false});});
+beforeEach(()=>{vi.resetAllMocks();placeSearchStatus.mockResolvedValue(false);businessService.getLocation.mockResolvedValue(empty);businessService.saveLocation.mockImplementation(async(_id,value)=>value);businessService.removeLocation.mockResolvedValue(empty);requestDeviceLocation.mockResolvedValue({...draft,accuracy:10,imprecise:false});});
 async function open(user){await user.click(screen.getByRole('button',{name:/Set business location|Manage business location/}));await screen.findByRole('heading',{name:/Step 1 of 5/});}
 async function map(user){await user.click(screen.getByRole('button',{name:'Choose on the map'}));await screen.findByRole('button',{name:'Place test pin'});}
 async function review(user){await user.click(screen.getByRole('button',{name:'Confirm this location'}));await screen.findByRole('heading',{name:/Step 3 of 5/});await user.click(screen.getByRole('button',{name:'Continue to visibility'}));}

@@ -50,6 +50,7 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 120000,
       env: {
+        GEOAPIFY_API_KEY: "",
         DB_URL: jdbcUrl,
         SPRING_DATASOURCE_URL: jdbcUrl,
         SPRING_DATASOURCE_USERNAME: database.username,

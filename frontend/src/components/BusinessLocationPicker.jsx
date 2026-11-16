@@ -1,3 +1,4 @@
+import PlaceAttribution from './PlaceAttribution';
 import { useEffect, useState } from 'react';
 import { MapContainer, Marker, ZoomControl, useMap, useMapEvents } from 'react-leaflet';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '../models/mapLocation';
@@ -24,6 +25,7 @@ export default function BusinessLocationPicker({ position, area, onChange, disab
       {tiles.layer}<MapKeyboard label="Business location picker" /><ZoomControl position="bottomleft" />
       <Placement position={position} area={area} onChange={onChange} disabled={disabled} />
     </MapContainer>
+    <PlaceAttribution />
     {!disabled && <><p className="text-sm">You can also use the arrow keys to move the map, then choose the button below.</p>
       <Button type="button" variant="secondary" disabled={!map} onClick={() => { const point = map.getCenter().wrap();onChange(point.lat, point.lng); }}>Place pin in the middle of the map</Button></>}
   </>;

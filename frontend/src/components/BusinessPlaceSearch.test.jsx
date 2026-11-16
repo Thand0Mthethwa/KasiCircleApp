@@ -2,16 +2,20 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, it, vi } from 'vitest';
 import BusinessPlaceSearch from './BusinessPlaceSearch';
-import { placeSearchConfig, searchPlaces } from '../services/placeSearch';
-vi.mock('../services/placeSearch',()=>({placeSearchConfig:vi.fn(),searchPlaces:vi.fn()}));
-beforeEach(()=>{vi.resetAllMocks();placeSearchConfig.mockReturnValue({enabled:true,attribution:'QA search data',attributionUrl:'https://example.test/license'});});
+import { placeSearchStatus, searchPlaces } from '../services/placeSearch';
+vi.mock('../services/placeSearch',()=>({placeSearchStatus:vi.fn(),searchPlaces:vi.fn()}));
+beforeEach(()=>{vi.resetAllMocks();placeSearchStatus.mockResolvedValue(true);});
 it('searches only on explicit submission and selects an approximate area, not a saved pin',async()=>{
   searchPlaces.mockResolvedValue([{key:'one',label:'Shopping centre, Soweto',latitude:-26,longitude:28}]);const onSelect=vi.fn();const user=userEvent.setup();render(<BusinessPlaceSearch onSelect={onSelect}/>);
   await user.type(screen.getByRole('searchbox'),'Shopping centre');expect(searchPlaces).not.toHaveBeenCalled();await user.keyboard('{Enter}');await user.click(await screen.findByRole('button',{name:'Shopping centre, Soweto'}));
-  expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({latitude:-26,longitude:28}));expect(screen.getByText(/not your confirmed business pin/)).toBeVisible();expect(screen.getByRole('link',{name:'QA search data'})).toBeVisible();
+  expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({latitude:-26,longitude:28}));expect(screen.getByText(/not your confirmed business pin/)).toBeVisible();expect(screen.getByRole('link',{name:'Geoapify'})).toBeVisible();
 });
-it('keeps alternatives available when no approved search provider exists',()=>{
-  placeSearchConfig.mockReturnValue({enabled:false});render(<BusinessPlaceSearch onSelect={vi.fn()}/>);expect(screen.getByRole('searchbox')).toBeDisabled();expect(screen.getByRole('status')).toHaveTextContent('use the map or your current location');expect(searchPlaces).not.toHaveBeenCalled();
+it('accepts Daveyton, edits and deletion even without a configured provider',async()=>{
+  placeSearchStatus.mockResolvedValue(false);const user=userEvent.setup();render(<BusinessPlaceSearch onSelect={vi.fn()}/>);
+  const input=screen.getByRole('searchbox');await user.type(input,'Daveyton');expect(input).toHaveValue('Daveyton');
+  await user.keyboard('{Backspace}');expect(input).toHaveValue('Daveyto');await user.clear(input);await user.type(input,'Benoni');expect(input).toHaveValue('Benoni');
+  expect(await screen.findByRole('status')).toHaveTextContent('temporarily unavailable');expect(input).toBeEnabled();expect(input).not.toHaveAttribute('readonly');
+  await user.keyboard('{Enter}');expect(searchPlaces).not.toHaveBeenCalled();expect(screen.getByRole('button',{name:'Search places'})).toBeDisabled();
 });
 it('shows empty or unavailable results and never invents a place',async()=>{
   searchPlaces.mockResolvedValueOnce([]).mockRejectedValueOnce(new Error('Search unavailable'));const user=userEvent.setup();render(<BusinessPlaceSearch onSelect={vi.fn()}/>);await user.type(screen.getByRole('searchbox'),'School');await user.click(screen.getByRole('button',{name:'Search places'}));expect(await screen.findByRole('status')).toHaveTextContent('No places found');await user.click(screen.getByRole('button',{name:'Search places'}));expect(await screen.findByRole('status')).toHaveTextContent('Search unavailable');expect(screen.queryByRole('list')).not.toBeInTheDocument();
