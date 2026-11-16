@@ -36,35 +36,43 @@ async function publicView(request, business, expected) {
   }
 }
 
+async function reviewPin(page) { await page.getByRole('button',{name:'Confirm this location'}).click();await page.getByRole('button',{name:'Continue to visibility'}).click(); }
+
 test('owner selects, moves, saves, publishes, hides and removes a real QA business location',async({page,request},testInfo)=>{
   const publicRequests=await tiles(page);const owner=await account(request);const {business}=await create(request,owner);const endpoint=`/businesses/${business.id}/location`;
   await publicView(request,business,null);await login(page,owner);await page.goto('/business-profile');
   await page.getByRole('button',{name:'Set business location',exact:true}).click();
+  await page.getByRole('button',{name:'Choose on the map',exact:true}).click();
   const map=page.getByRole('region',{name:'Business location picker'});await expect(map).toBeVisible();
-  await expect(page.getByRole('checkbox',{name:'Publish this precise business location to customers'})).not.toBeChecked();
+  await expect(page.locator('details.location-advanced')).not.toHaveAttribute('open','');
   await expect(page.locator('.leaflet-marker-icon')).toHaveCount(0);
   await map.click({position:{x:170,y:210}});const marker=page.getByRole('button',{name:'Selected business location'});await expect(marker).toBeVisible();
+  await page.getByText('Advanced: Enter GPS coordinates',{exact:true}).click();
   const before=await page.getByLabel('Longitude',{exact:true}).inputValue();
   const point=await marker.boundingBox();await page.mouse.move(point.x+point.width/2,point.y+point.height/2);await page.mouse.down();await page.mouse.move(point.x+point.width/2+35,point.y+point.height/2+18,{steps:8});await page.mouse.up();
   await expect(page.getByLabel('Longitude',{exact:true})).not.toHaveValue(before);
   await page.getByRole('button',{name:'Cancel location',exact:true}).click();
   expect((await call(request,'GET',endpoint,owner.token)).latitude).toBeNull();
   await page.getByRole('button',{name:'Set business location',exact:true}).click();
+  await page.getByRole('button',{name:'Choose on the map',exact:true}).click();
+  await page.getByText('Advanced: Enter GPS coordinates',{exact:true}).click();
   await page.getByLabel('Latitude',{exact:true}).fill('-25.72');await page.getByLabel('Longitude',{exact:true}).fill('28.24');
+  await reviewPin(page);await page.getByRole('button',{name:'Continue to save',exact:true}).click();
   await page.getByRole('button',{name:'Save location',exact:true}).click();await expect(page.getByText(/Business location saved privately/)).toBeVisible();
   await publicView(request,business,null);expect(await call(request,'GET',endpoint,owner.token)).toEqual({latitude:-25.72,longitude:28.24,locationPublic:false});
   await page.getByRole('button',{name:'Manage business location',exact:true}).click();
-  await page.getByRole('checkbox',{name:'Publish this precise business location to customers'}).check();
-  await expect(marker).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.getByRole('button',{name:'Review my saved pin',exact:true}).click();await reviewPin(page);
+  await page.getByRole('checkbox',{name:'Show this pin to customers',exact:true}).check();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.locator('.business-location-editor').screenshot({path:testInfo.outputPath(`owner-location-editor-${testInfo.project.name}.png`)});
+  await page.getByRole('button',{name:'Continue to save',exact:true}).click();
   await page.getByRole('button',{name:'Save location',exact:true}).click();await expect(page.getByText(/Business location published/)).toBeVisible();
   await publicView(request,business,{latitude:-25.72,longitude:28.24});await page.reload();
-  await page.getByRole('button',{name:'Set business location',exact:true}).click();await expect(page.getByLabel('Latitude',{exact:true})).toHaveValue('-25.72');await expect(page.getByRole('checkbox')).toBeChecked();
+  await page.getByRole('button',{name:'Set business location',exact:true}).click();await page.getByRole('button',{name:'Review my saved pin',exact:true}).click();await page.getByText('Advanced: Enter GPS coordinates',{exact:true}).click();await expect(page.getByLabel('Latitude',{exact:true})).toHaveValue('-25.72');await reviewPin(page);await expect(page.getByRole('checkbox',{name:'Show this pin to customers'})).toBeChecked();
   await page.goto(`/explore?search=${encodeURIComponent(business.name)}&view=map`);const pin=page.getByRole('button',{name:`Location of ${business.name}`});await expect(pin).toBeVisible();
   await pin.focus();await page.keyboard.press('Enter');await expect(page.getByRole('link',{name:`View details for ${business.name}`})).toBeVisible();
   await page.getByRole('region',{name:'Interactive business locations map'}).screenshot({path:testInfo.outputPath(`published-location-${testInfo.project.name}.png`)});
   await page.getByRole('link',{name:`View details for ${business.name}`} ).click();await expect(page).toHaveURL(new RegExp(`/businesses/${business.id}$`));
-  await page.goto('/business-profile');await page.getByRole('button',{name:'Set business location',exact:true}).click();await page.getByRole('checkbox',{name:'Publish this precise business location to customers'}).uncheck();
+  await page.goto('/business-profile');await page.getByRole('button',{name:'Set business location',exact:true}).click();await page.getByRole('button',{name:'Review my saved pin',exact:true}).click();await reviewPin(page);await page.getByRole('checkbox',{name:'Show this pin to customers'}).uncheck();await page.getByRole('button',{name:'Continue to save'}).click();
   await page.getByRole('button',{name:'Save location',exact:true}).click();await expect(page.getByText(/hidden from the marketplace map/)).toBeVisible();await publicView(request,business,null);
   await page.goto(`/explore?search=${encodeURIComponent(business.name)}&view=map`);await expect(page.getByText('Precise business locations are not available on this page yet.')).toBeVisible();await expect(pin).toHaveCount(0);
   await page.getByRole('button',{name:'List View',exact:true}).click();await expect(page.getByTestId(`business-card-${business.id}`)).toBeVisible();
