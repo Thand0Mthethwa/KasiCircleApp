@@ -6,3 +6,38 @@
 .location-consent { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; min-height: 44px; }
 .location-consent input { width: 22px; height: 22px; flex-shrink: 0; accent-color: #391a38; }
 @media(max-width:740px) { .location-coordinate-fields { grid-template-columns: minmax(0,1fr); } }
+.business-location-editor { font-size: 16px; line-height: 1.6; }
+.business-location-editor .location-main-heading { font-size: clamp(22px, 3vw, 30px); line-height: 1.25; margin-bottom: 12px; }
+.business-location-editor button, .business-location-editor summary { min-height: 48px; font-size: 16px; }
+.business-location-editor :focus-visible { outline: 3px solid #391a38; outline-offset: 4px; }
+.location-saved-summary, .location-guided-flow { margin-top: 20px; }
+.location-state { font-weight: 700; margin-bottom: 12px; }
+.location-step-list { display: flex; gap: 10px; list-style: none; padding: 0; margin-bottom: 22px; }
+.location-step-list li { flex: 1; display: flex; gap: 8px; padding-bottom: 10px; border-bottom: 3px solid #dacbd4; font-size: 14px; line-height: 1.4; }
+.location-step-list li > span:first-child { flex-shrink: 0; width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; background: #eee2eb; font-weight: 700; }
+.location-step-list [aria-current=step] { border-color: #ffbf29; font-weight: 700; }
+.location-step-list [aria-current=step] > span:first-child { background: #391a38; color: #fffaf3; }
+.location-guided-flow h4 { font-size: 21px; font-weight: 700; margin-bottom: 16px; }
+.location-guided-flow p { margin-block: 12px; }
+.location-place-search { padding: 18px; border: 1px solid #dacbd4; border-radius: 12px; }
+.location-place-search label { font-size: 18px; font-weight: 700; }
+.location-search-row, .location-methods, .location-flow-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 16px; }
+.location-search-row input { flex: 1; min-width: 150px; }
+.location-place-results { display: grid; gap: 10px; list-style: none; padding: 0; }
+.location-place-results button { text-align: left; width: 100%; padding: 12px; border: 1px solid #8d7486; border-radius: 9px; background: #fffaf3; }
+.location-place-results button:hover { background: #eee2eb; }
+.location-search-credit { font-size: 13px; text-decoration: underline; }
+.location-device-explanation, .location-device-warning, .location-area-note, .location-final-review { padding: 18px; border: 1px solid #8d7486; border-radius: 12px; background: #f4eaf1; margin-block: 16px; }
+.location-device-explanation button { margin: 8px 12px 0 0; }
+.location-advanced { border: 1px solid #dacbd4; border-radius: 10px; padding: 12px 16px; margin-block: 18px; }
+.location-advanced summary { display: list-item; cursor: pointer; padding-block: 12px; font-weight: 650; }
+.location-public-replacement { padding: 16px; background: #f4eaf1; border: 1px solid #8d7486; border-radius: 10px; margin-block: 18px; }
+.location-secondary-actions { padding-top: 16px; border-top: 1px solid #dacbd4; }
+.location-notice { padding: 14px; border-left: 4px solid #391a38; background: #f4eaf1; margin-top: 16px; }
+@media(max-width:740px) {
+  .location-step-list li { justify-content: center; }
+  .location-step-list li > span:last-child { display: none; }
+  .location-search-row, .location-methods, .location-flow-actions { flex-direction: column; }
+  .location-methods button, .location-flow-actions button, .location-final-review button, .location-device-explanation button { width: 100%; }
+  .location-device-explanation button { margin-right: 0; }
+}

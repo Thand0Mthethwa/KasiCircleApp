@@ -1,0 +1,21 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, expect, it, vi } from 'vitest';
+import BusinessPlaceSearch from './BusinessPlaceSearch';
+import { placeSearchConfig, searchPlaces } from '../services/placeSearch';
+vi.mock('../services/placeSearch',()=>({placeSearchConfig:vi.fn(),searchPlaces:vi.fn()}));
+beforeEach(()=>{vi.resetAllMocks();placeSearchConfig.mockReturnValue({enabled:true,attribution:'QA search data',attributionUrl:'https://example.test/license'});});
+it('searches only on explicit submission and selects an approximate area, not a saved pin',async()=>{
+  searchPlaces.mockResolvedValue([{key:'one',label:'Shopping centre, Soweto',latitude:-26,longitude:28}]);const onSelect=vi.fn();const user=userEvent.setup();render(<BusinessPlaceSearch onSelect={onSelect}/>);
+  await user.type(screen.getByRole('searchbox'),'Shopping centre');expect(searchPlaces).not.toHaveBeenCalled();await user.keyboard('{Enter}');await user.click(await screen.findByRole('button',{name:'Shopping centre, Soweto'}));
+  expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({latitude:-26,longitude:28}));expect(screen.getByText(/not your confirmed business pin/)).toBeVisible();expect(screen.getByRole('link',{name:'QA search data'})).toBeVisible();
+});
+it('keeps alternatives available when no approved search provider exists',()=>{
+  placeSearchConfig.mockReturnValue({enabled:false});render(<BusinessPlaceSearch onSelect={vi.fn()}/>);expect(screen.getByRole('searchbox')).toBeDisabled();expect(screen.getByRole('status')).toHaveTextContent('use the map or your current location');expect(searchPlaces).not.toHaveBeenCalled();
+});
+it('shows empty or unavailable results and never invents a place',async()=>{
+  searchPlaces.mockResolvedValueOnce([]).mockRejectedValueOnce(new Error('Search unavailable'));const user=userEvent.setup();render(<BusinessPlaceSearch onSelect={vi.fn()}/>);await user.type(screen.getByRole('searchbox'),'School');await user.click(screen.getByRole('button',{name:'Search places'}));expect(await screen.findByRole('status')).toHaveTextContent('No places found');await user.click(screen.getByRole('button',{name:'Search places'}));expect(await screen.findByRole('status')).toHaveTextContent('Search unavailable');expect(screen.queryByRole('list')).not.toBeInTheDocument();
+});
+it('cancels stale queries so an older result cannot replace the latest area',async()=>{
+  let resolve;searchPlaces.mockImplementationOnce(()=>new Promise(done=>{resolve=done;})).mockResolvedValueOnce([{key:'new',label:'Latest place',latitude:0,longitude:0}]);const user=userEvent.setup();render(<BusinessPlaceSearch onSelect={vi.fn()}/>);await user.type(screen.getByRole('searchbox'),'Old place');await user.click(screen.getByRole('button',{name:'Search places'}));await user.clear(screen.getByRole('searchbox'));await user.type(screen.getByRole('searchbox'),'New place');await user.click(screen.getByRole('button',{name:'Search places'}));expect(await screen.findByRole('button',{name:'Latest place'})).toBeVisible();resolve([{key:'old',label:'Old place',latitude:1,longitude:1}]);await waitFor(()=>expect(screen.queryByRole('button',{name:'Old place'})).not.toBeInTheDocument());
+});
