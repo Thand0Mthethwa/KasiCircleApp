@@ -1,6 +1,9 @@
 package com.kasicircle.backend.businesses.service;
 
 import com.kasicircle.backend.businesses.domain.Business;
+import com.kasicircle.backend.businesses.dto.BusinessLocationRequest;
+import com.kasicircle.backend.businesses.dto.BusinessLocationResponse;
+import com.kasicircle.backend.businesses.location.BusinessCoordinates;
 import com.kasicircle.backend.businesses.domain.BusinessImage;
 import com.kasicircle.backend.businesses.dto.BusinessRatingStats;
 import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
@@ -191,6 +194,55 @@ public class BusinessServiceImpl implements BusinessService {
         }
 
         businessRepository.delete(business);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BusinessLocationResponse getLocation(UUID id) {
+        User owner = getLocationOwner();
+        Business business = getBusinessByIdInternal(id);
+        verifyOwnership(business, owner);
+        return locationResponse(business);
+    }
+
+    @Override
+    @Transactional
+    public BusinessLocationResponse updateLocation(UUID id, BusinessLocationRequest request) {
+        User owner = getLocationOwner();
+        Business business = businessRepository.findForLocationUpdate(id)
+                .orElseThrow(() -> new BusinessNotFoundException("Business not found."));
+        verifyOwnership(business, owner);
+        boolean empty = request.latitude() == null && request.longitude() == null;
+        if (request.locationPublic() == null || (!empty && !BusinessCoordinates.valid(request.latitude(), request.longitude()))
+                || (Boolean.TRUE.equals(request.locationPublic()) && empty)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Provide both valid coordinates (latitude -90 to 90, longitude -180 to 180) and explicit publication consent.");
+        }
+        business.setLatitude(request.latitude());
+        business.setLongitude(request.longitude());
+        business.setLocationPublic(request.locationPublic());
+        return locationResponse(businessRepository.saveAndFlush(business));
+    }
+
+    @Override
+    @Transactional
+    public BusinessLocationResponse removeLocation(UUID id) {
+        return updateLocation(id, new BusinessLocationRequest(null, null, false));
+    }
+
+    private User getLocationOwner() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required.");
+        }
+        User owner = getAuthenticatedUser();
+        verifyBusinessAccount(owner);
+        return owner;
+    }
+
+    private BusinessLocationResponse locationResponse(Business business) {
+        return new BusinessLocationResponse(business.getLatitude(), business.getLongitude(), business.isLocationPublic());
     }
 
     private String getCoverImageUrl(UUID businessId) {

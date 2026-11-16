@@ -13,6 +13,10 @@ import java.util.UUID;
 
 @Repository
 public interface BusinessRepository extends JpaRepository<Business, UUID>, JpaSpecificationExecutor<Business> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select b from Business b where b.id = :id")
+    Optional<Business> findForLocationUpdate(@org.springframework.data.repository.query.Param("id") UUID id);
+
     /**
      * Finds a page of businesses owned by a specific user.
      *

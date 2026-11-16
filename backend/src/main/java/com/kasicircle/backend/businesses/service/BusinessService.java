@@ -12,6 +12,10 @@ import java.util.UUID;
  * Service interface for managing business profiles.
  */
 public interface BusinessService {
+    com.kasicircle.backend.businesses.dto.BusinessLocationResponse getLocation(UUID id);
+    com.kasicircle.backend.businesses.dto.BusinessLocationResponse updateLocation(UUID id, com.kasicircle.backend.businesses.dto.BusinessLocationRequest request);
+    com.kasicircle.backend.businesses.dto.BusinessLocationResponse removeLocation(UUID id);
+
     /**
      * Creates a new business profile for the authenticated user.
      *

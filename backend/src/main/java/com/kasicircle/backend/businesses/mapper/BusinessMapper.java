@@ -13,8 +13,12 @@ public class BusinessMapper {
             Double averageRating,
             long reviewCount
     ) {
+        boolean published = business.isLocationPublic()
+                && com.kasicircle.backend.businesses.location.BusinessCoordinates.valid(business.getLatitude(), business.getLongitude());
         return BusinessResponse.builder()
                 .id(business.getId())
+                .latitude(published ? business.getLatitude() : null)
+                .longitude(published ? business.getLongitude() : null)
                 .name(business.getName())
                 .description(business.getDescription())
                 .phoneNumber(business.getPhoneNumber())

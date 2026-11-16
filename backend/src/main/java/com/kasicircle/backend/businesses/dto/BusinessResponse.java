@@ -23,8 +23,16 @@ public record BusinessResponse(
         Instant updatedAt,
         String coverImageUrl,
         Double averageRating,
-        long reviewCount
+        long reviewCount,
+        Double latitude,
+        Double longitude
 ) {
+    public BusinessResponse(UUID id, String name, String description, String phoneNumber, String email,
+            String category, String address, String city, String province, UUID ownerId, Instant createdAt,
+            Instant updatedAt, String coverImageUrl, Double averageRating, long reviewCount) {
+        this(id, name, description, phoneNumber, email, category, address, city, province, ownerId,
+                createdAt, updatedAt, coverImageUrl, averageRating, reviewCount, null, null);
+    }
     public BusinessResponse {
         if (averageRating == null) {
             averageRating = 0.0;
