@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.DynamicUpdate
 @Table(name = "businesses")
 public class Business {
 
@@ -51,6 +52,18 @@ public class Business {
 
     @NotBlank
     private String province;
+
+    private Double latitude;
+    private Double longitude;
+    @jakarta.persistence.Column(name = "location_public", nullable = false)
+    private boolean locationPublic;
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+    public boolean isLocationPublic() { return locationPublic; }
+    public void setLocationPublic(boolean locationPublic) { this.locationPublic = locationPublic; }
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)

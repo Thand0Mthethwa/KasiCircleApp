@@ -1,6 +1,8 @@
 package com.kasicircle.backend.businesses.controller;
 
 import com.kasicircle.backend.businesses.dto.CreateBusinessRequest;
+import com.kasicircle.backend.businesses.dto.BusinessLocationRequest;
+import com.kasicircle.backend.businesses.dto.BusinessLocationResponse;
 import com.kasicircle.backend.businesses.dto.UpdateBusinessRequest;
 import com.kasicircle.backend.businesses.dto.BusinessResponse;
 import com.kasicircle.backend.businesses.service.BusinessService;
@@ -71,6 +73,21 @@ public class BusinessController {
     ) {
         BusinessResponse response = businessService.updateBusiness(id, request);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/location")
+    public BusinessLocationResponse getLocation(@PathVariable UUID id) {
+        return businessService.getLocation(id);
+    }
+
+    @PutMapping("/{id}/location")
+    public BusinessLocationResponse updateLocation(@PathVariable UUID id, @Valid @RequestBody BusinessLocationRequest request) {
+        return businessService.updateLocation(id, request);
+    }
+
+    @DeleteMapping("/{id}/location")
+    public BusinessLocationResponse removeLocation(@PathVariable UUID id) {
+        return businessService.removeLocation(id);
     }
 
     @DeleteMapping("/{id}")
