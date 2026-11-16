@@ -1,0 +1,8 @@
+.business-location-editor { min-width: 0; }
+.location-action { min-height: 44px; padding: 10px 18px; border: 1px solid #391a38; border-radius: 10px; font-weight: 700; color: #391a38; background: #fffaf3; }
+.location-coordinate-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; min-width: 0; }
+.location-coordinate-fields label { min-width: 0; font-weight: 650; }
+.location-coordinate-fields input[type=number] { display: block; width: 100%; margin-top: 6px; }
+.location-consent { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.location-consent input { width: 22px; height: 22px; flex-shrink: 0; accent-color: #391a38; }
+@media(max-width:740px) { .location-coordinate-fields { grid-template-columns: minmax(0,1fr); } }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Input, Card, Header, LoadingSpinner } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import { businessService } from '../services/api';
+import BusinessLocationEditor from '../components/BusinessLocationEditor';
 import useDialogFocus from '../components/useDialogFocus';
 import {
   Building2,
@@ -577,6 +578,8 @@ export default function BusinessProfile() {
                 </p>
               </div>
             </Card>
+
+            <BusinessLocationEditor key={business.id} businessId={business.id} />
 
             {/* Business Details Card */}
             <Card className="p-6 shadow-sm border-neutral-200 space-y-4">

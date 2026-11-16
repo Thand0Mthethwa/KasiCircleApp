@@ -143,6 +143,9 @@ export const userService = {
 };
 
 export const businessService = {
+  getLocation: async (id) => handleResponse(await fetch(`${API_BASE_URL}/api/businesses/${encodeURIComponent(id)}/location`, { headers: getHeaders(true) }), { authenticated: true }),
+  saveLocation: async (id, location) => handleResponse(await fetch(`${API_BASE_URL}/api/businesses/${encodeURIComponent(id)}/location`, { method: 'PUT', headers: getHeaders(true), body: JSON.stringify(location) }), { authenticated: true }),
+  removeLocation: async (id) => handleResponse(await fetch(`${API_BASE_URL}/api/businesses/${encodeURIComponent(id)}/location`, { method: 'DELETE', headers: getHeaders(true) }), { authenticated: true }),
   getAllBusinesses: async (pageOrParams = 0, maybeSize = 10, maybeFilters = {}) => {
     let page = 0;
     let size = 10;

@@ -1,22 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Icon } from 'leaflet';
-import { MapContainer, Marker, Popup, TileLayer, ZoomControl, useMap } from 'react-leaflet';
-import markerUrl from 'leaflet/dist/images/marker-icon.png';
-import markerRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
-import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
-import 'leaflet/dist/leaflet.css';
+import { MapContainer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet';
+import { markerIcon, MapKeyboard, useMapTiles } from './mapRuntime';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, hasPublicBusinessCoordinates } from '../models/mapLocation';
-import '../styles/marketplace-map.css';
-
-const markerIcon = new Icon({ iconUrl: markerUrl, iconRetinaUrl: markerRetinaUrl, shadowUrl,
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
-const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-const customUrl = import.meta.env.VITE_MAP_TILE_URL;
-// Public OSM tiles are a development default only. Production must select a suitable provider.
-const tileUrl = customUrl || (import.meta.env.DEV ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png' : '');
-const attribution = import.meta.env.VITE_MAP_TILE_ATTRIBUTION || (!customUrl ? osmAttribution : '');
-const tilesConfigured = Boolean(tileUrl && attribution);
 
 function MapViewport({ businesses }) {
   const map = useMap();
@@ -29,20 +15,6 @@ function MapViewport({ businesses }) {
     if (businesses.length) map.fitBounds(businesses.map(({ latitude, longitude }) => [latitude, longitude]), { padding: [36, 36], maxZoom: 15, animate: false });
     else map.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, { animate: false });
   }, [map, businesses]);
-  useEffect(() => {
-    const container = map.getContainer();
-    function navigate(event) {
-      if (event.target !== container || event.altKey || event.ctrlKey || event.metaKey) return;
-      const pans = { ArrowLeft: [-80, 0], ArrowRight: [80, 0], ArrowUp: [0, -80], ArrowDown: [0, 80] };
-      if (pans[event.key]) map.panBy(pans[event.key].map(value => value * (event.shiftKey ? 3 : 1)), { animate: false });
-      else if (event.key === '+' || event.key === '=') map.zoomIn(1, { animate: false });
-      else if (event.key === '-') map.zoomOut(1, { animate: false });
-      else return;
-      event.preventDefault();
-    }
-    container.addEventListener('keydown', navigate);
-    return () => container.removeEventListener('keydown', navigate);
-  }, [map]);
   return null;
 }
 
@@ -79,12 +51,8 @@ function BusinessPopup({ business }) {
 }
 
 export default function MarketplaceMap({ businesses = [], page = 0, onListView }) {
+  const tiles = useMapTiles();
   const eligible = useMemo(() => businesses.filter(hasPublicBusinessCoordinates), [businesses]);
-  const [tileError, setTileError] = useState(false);
-  const [loading, setLoading] = useState(tilesConfigured);
-  const [tileAttempt, setTileAttempt] = useState(0);
-  const tileEvents = useMemo(() => ({ loading: () => setLoading(true), load: () => setLoading(false), tileerror: () => setTileError(true) }), []);
-
   const initialView = eligible.length
     ? { bounds: eligible.map(({ latitude, longitude }) => [latitude, longitude]), boundsOptions: { padding: [36, 36], maxZoom: 15, animate: false } }
     : { center: DEFAULT_MAP_CENTER, zoom: DEFAULT_MAP_ZOOM };
@@ -100,17 +68,12 @@ export default function MarketplaceMap({ businesses = [], page = 0, onListView }
       </div>}
       <button type="button" className="marketplace-map-list-link" onClick={onListView}>Browse List View</button>
     </div>
-    {!tilesConfigured && <p role="status" className="marketplace-map-message">Map tiles are not configured. Business pins and List View remain available.</p>}
-    {tilesConfigured && loading && !tileError && <p role="status" className="marketplace-map-message">Loading map tiles…</p>}
-    {tileError && <div role="alert" className="marketplace-map-message">
-      <p>Some map tiles could not load. Business pins and List View remain available.</p>
-      <button type="button" className="marketplace-map-list-link" onClick={() => { setTileError(false); setLoading(true); setTileAttempt(value => value + 1); }}>Retry map tiles</button>
-    </div>}
+    {tiles.feedback}
     <MapContainer {...initialView} minZoom={2} maxZoom={19}
       className="marketplace-map"
       scrollWheelZoom={false} keyboard={false} zoomControl={false} inertia={false} zoomAnimation={false} fadeAnimation={false} markerZoomAnimation={false}>
-      {tilesConfigured && <TileLayer key={tileAttempt} url={tileUrl} attribution={attribution}
-        maxZoom={19} keepBuffer={0} updateWhenIdle eventHandlers={tileEvents} referrerPolicy="strict-origin-when-cross-origin" />}
+      {tiles.layer}
+      <MapKeyboard label="Interactive business locations map" />
       <MapViewport businesses={eligible} />
       <ZoomControl position="bottomleft" />
       {eligible.map(business => <Marker key={`${business.key || business.id}:${business.name}`} position={[business.latitude, business.longitude]}
