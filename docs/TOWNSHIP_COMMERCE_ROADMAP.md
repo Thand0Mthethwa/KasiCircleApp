@@ -1,6 +1,6 @@
 # Township commerce roadmap
 
-The local Feature/Authentication branch is the baseline. The existing Flyway history ends at V13. Commerce will use the existing JWT authentication, business and worker ownership, notifications, and marketplace profiles. Jobs continue to use the existing application workflow.
+The local Feature/Authentication branch is the baseline. Commerce development started after Flyway V13. Commerce will use the existing JWT authentication, business and worker ownership, notifications, and marketplace profiles. Jobs continue to use the existing application workflow.
 
 | Sprint | Deliverable | Acceptance gate |
 | --- | --- | --- |
@@ -13,4 +13,6 @@ The local Feature/Authentication branch is the baseline. The existing Flyway his
 
 Sprint 1 is implemented. V14 succeeded against the isolated QA PostgreSQL database. Desktop and mobile sessions verified service publishing, requesting work, approving a proposal and cancelling. The database-backed API checks verified authorized completion, stable booking prices, duplicate suppression and conflict handling. See the [Sprint 1 report](COMMERCE_SPRINT_1_BOOKINGS.md) for API details, screenshots, test results and limits.
 
-Sprint 2 is next. Sprints 2–4 remain planned for later sessions. Each sprint requires an acceptance check before starting the following sprint.
+Sprint 2 adds business product catalogs, single-business carts and collection orders. V15 succeeded in isolated QA PostgreSQL. The order tests cover immutable prices, inventory reservations and release, duplicate submissions and participant permissions. See the [Sprint 2 report](COMMERCE_SPRINT_2_PRODUCTS.md) for verification and screenshots.
+
+Sprint 3 is next. Payment eligibility, agreements and provider verification remain required for payment work. Each sprint requires an acceptance check before starting the following sprint.
