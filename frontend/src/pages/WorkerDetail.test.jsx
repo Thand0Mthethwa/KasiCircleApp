@@ -6,6 +6,7 @@ import { workerService } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 
 vi.mock("../services/api", () => ({
+  commerceService: { services: vi.fn().mockResolvedValue({ content: [], totalPages: 0 }) },
   workerService: {
     getWorkerById: vi.fn(),
   },

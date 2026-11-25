@@ -477,6 +477,18 @@ export default function Profile() {
           </Card>
         )}
 
+        <Card className="p-5 space-y-3">
+          <h2 className="font-semibold">Bookings</h2>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="secondary" onClick={() => navigate('/bookings')}>My bookings</Button>
+            {['BUSINESS', 'WORKER'].includes(user?.accountType) && (
+              <>
+                <Button type="button" variant="secondary" onClick={() => navigate('/bookings/incoming')}>Incoming bookings</Button>
+                <Button type="button" variant="secondary" onClick={() => navigate('/services/manage')}>Manage services</Button>
+              </>
+            )}
+          </div>
+        </Card>
         {/* Account Actions */}
         <Card className="p-4 shadow-sm">
           <button

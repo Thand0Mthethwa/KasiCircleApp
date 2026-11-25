@@ -1,3 +1,4 @@
+import ProviderServices from '../components/commerce/ProviderServices';
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { MapPin, MessageCircle, ShieldCheck } from "lucide-react";
@@ -161,6 +162,7 @@ export default function WorkerDetail() {
                   Only your conversation participant can see your messages.
                 </p>
               </Card>
+              <ProviderServices key={worker.id} type="WORKER" providerId={worker.id} owner={user?.id === worker.ownerId} />
               <ReportForm targetType="WORKER_PROFILE" targetId={worker.id} />
               <Button
                 type="button"

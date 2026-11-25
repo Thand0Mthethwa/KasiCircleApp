@@ -60,6 +60,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/businesses/*/reviews/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/businesses", "/api/businesses/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/workers/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/services/mine").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/services", "/api/services/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/workers", "/api/workers/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/jobs/me/applications", "/api/jobs/*/applications").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/*").permitAll()

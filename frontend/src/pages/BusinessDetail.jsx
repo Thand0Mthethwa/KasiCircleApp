@@ -1,3 +1,4 @@
+import ProviderServices from '../components/commerce/ProviderServices';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Header, LoadingSpinner } from '../components';
@@ -740,6 +741,7 @@ export default function BusinessDetail() {
                 {business.description}
               </p>
             </Card>
+            <ProviderServices key={business.id} type="BUSINESS" providerId={business.id} owner={isOwner} />
             <ReportForm targetType="BUSINESS" targetId={business.id} />
 
             {/* Photos & Gallery Card */}

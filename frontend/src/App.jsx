@@ -24,6 +24,10 @@ import AdminReports from './pages/AdminReports';
 import Workers from './pages/Workers';
 import WorkerDetail from './pages/WorkerDetail';
 import WorkerProfile from './pages/WorkerProfile';
+import BookingDetail from './pages/BookingDetail';
+import Bookings from './pages/Bookings';
+import ManageServices from './pages/ManageServices';
+import RequestBooking from './pages/RequestBooking';
 import NotFound from './pages/NotFound';
 
 // Protected Route Component
@@ -133,6 +137,11 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/services/manage" element={<ProtectedRoute><ManageServices /></ProtectedRoute>} />
+      <Route path="/services/:id/book" element={<ProtectedRoute><RequestBooking /></ProtectedRoute>} />
+      <Route path="/bookings" element={<ProtectedRoute><Bookings key="mine" /></ProtectedRoute>} />
+      <Route path="/bookings/incoming" element={<ProtectedRoute><Bookings key="incoming" incoming /></ProtectedRoute>} />
+      <Route path="/bookings/:id" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
       <Route path="/jobs" element={<Jobs />} />
       <Route path="/jobs/:id" element={<JobDetail />} />
       <Route

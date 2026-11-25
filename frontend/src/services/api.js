@@ -648,3 +648,31 @@ export default {
   notificationService,
   reportService,
 };
+
+async function commerceRequest(path, method = 'GET', body, authenticated = true) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/${path}`, {
+      method,
+      headers: getHeaders(authenticated),
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    return await handleResponse(response, { authenticated });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error('Connection unavailable. Check your internet connection and try again.');
+    }
+    throw error;
+  }
+}
+
+export const commerceService = {
+  services: (providerType, providerId, page) => commerceRequest(
+    `services?${new URLSearchParams({ providerType, providerId, page })}`, 'GET', undefined, false),
+  offering: (id) => commerceRequest(`services/${id}`, 'GET', undefined, false),
+  mine: (page) => commerceRequest(`services/mine?page=${page}`),
+  save: (id, input) => id ? commerceRequest(`services/${id}`, 'PUT', input) : commerceRequest('services', 'POST', input),
+  request: (input) => commerceRequest('bookings', 'POST', input),
+  bookings: (incoming, page) => commerceRequest(`bookings/${incoming ? 'provider' : 'my'}?page=${page}`),
+  booking: (id) => commerceRequest(`bookings/${id}`),
+  change: (id, input) => commerceRequest(`bookings/${id}/status`, 'PATCH', input),
+};

@@ -28,12 +28,12 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testMatch: "**/marketplace.spec.js",
+      testMatch: ["**/marketplace.spec.js", "**/commerce.spec.js"],
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "mobile",
-      testMatch: "**/marketplace.spec.js",
+      testMatch: ["**/marketplace.spec.js", "**/commerce.spec.js"],
       use: { ...devices["iPhone 13"], defaultBrowserType: "chromium" },
     },
     {

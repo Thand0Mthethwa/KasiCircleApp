@@ -14,6 +14,7 @@ vi.mock('../contexts/AuthContext', () => ({
 
 // Mock businessService
 vi.mock('../services/api', () => ({
+  commerceService: { services: vi.fn().mockResolvedValue({ content: [], totalPages: 0 }) },
   businessService: {
     getBusinessById: vi.fn(),
     getBusinessImages: vi.fn(),
