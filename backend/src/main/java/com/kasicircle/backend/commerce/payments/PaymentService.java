@@ -78,21 +78,26 @@ class PaymentService {
         return view(attempt, sale, sale.customerId().equals(user));
     }
 
-    View verify(String email, String reference, PaymentGateway.Outcome mockOutcome) {
+    View verify(String email, String reference) {
         Attempt attempt = attempt(reference);
         requireCustomer(userId(email), sale(attempt.target(), false));
         requireGateway();
         if (attempt.provider() != config.provider) throw unavailable();
-        if (mockOutcome != null) {
-            if (!(config.gateway instanceof MockPaymentGateway mock)) throw missing();
-            mock.simulate(reference, mockOutcome);
-        } else if (attempt.status().verified() || !repository.claimManualCheck(attempt)) {
-            return status(email, reference);
-        }
+        if (attempt.status().verified() || (config.provider == PaymentConfiguration.Provider.PAYSTACK
+                && !repository.claimManualCheck(attempt))) return status(email, reference);
         PaymentGateway.Verification result = callProvider(() -> config.gateway.verify(reference));
         if (!apply(attempt, result, null, "VERIFICATION", null)) {
             throw conflict("The provider result does not match this payment. The payment remains unconfirmed.");
         }
+        return status(email, reference);
+    }
+
+    View simulate(String email, String reference, PaymentGateway.Outcome outcome) {
+        Attempt attempt = attempt(reference);
+        requireCustomer(userId(email), sale(attempt.target(), false));
+        if (!(config.gateway instanceof MockPaymentGateway mock)
+                || attempt.provider() != PaymentConfiguration.Provider.MOCK) throw missing();
+        mock.simulate(reference, outcome);
         return status(email, reference);
     }
 
@@ -143,6 +148,7 @@ class PaymentService {
         return new View(attempt.target(), attempt.reference(), attempt.provider(), attempt.expectedMinor(), "ZAR",
                 attempt.status(), resume ? attempt.checkoutUrl() : null,
                 resume && attempt.provider() == PaymentConfiguration.Provider.MOCK && attempt.status() == Status.PROCESSING,
+                customer && config.provider == attempt.provider() && !attempt.status().verified(),
                 attempt.createdAt(), attempt.updatedAt());
     }
 

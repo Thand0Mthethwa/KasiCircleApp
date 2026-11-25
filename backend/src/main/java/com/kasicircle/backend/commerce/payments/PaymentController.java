@@ -32,12 +32,12 @@ class PaymentController {
 
     @PostMapping("/{reference}/verify")
     View verify(Principal principal, @PathVariable String reference) {
-        return payments.verify(principal.getName(), reference, null);
+        return payments.verify(principal.getName(), reference);
     }
 
     @PostMapping("/{reference}/simulate")
     View simulate(Principal principal, @PathVariable String reference, @Valid @RequestBody Simulation input) {
-        return payments.verify(principal.getName(), reference, input.outcome());
+        return payments.simulate(principal.getName(), reference, input.outcome());
     }
 
     record Simulation(@NotNull PaymentGateway.Outcome outcome) {}

@@ -55,6 +55,6 @@ final class PaymentModels {
 
     record Prepared(Attempt attempt, boolean created) {}
     record View(Target target, String reference, Provider provider, long amountMinor, String currency,
-                Status status, String checkoutUrl, boolean mockCheckout, OffsetDateTime createdAt, OffsetDateTime updatedAt) {}
+                Status status, String checkoutUrl, boolean mockCheckout, boolean canVerify, OffsetDateTime createdAt, OffsetDateTime updatedAt) {}
     record History(boolean enabled, boolean canInitialize, Long amountMinor, List<View> attempts) {}
 }
