@@ -77,7 +77,7 @@ export function PaymentNote() {
   return (
     <Card className="p-4">
       <h2 className="font-semibold">Payment outside KasiCircle</h2>
-      <p className="text-sm text-neutral-700">Customers and providers arrange payment directly. KasiCircle does not collect or verify booking payments.</p>
+      <p className="text-sm text-neutral-700">Customers and providers arrange payment directly. Payment is separate from your booking request.</p>
     </Card>
   );
 }

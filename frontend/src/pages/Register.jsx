@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Input, LoadingSpinner } from "../components";
 import { useAuth } from "../contexts/AuthContext";
 import { Eye, EyeOff, Home, Store, Wrench } from "lucide-react";
+import { authDestination } from "../components/commerce/paymentStatus";
 import AuthLayout from "../components/AuthLayout";
 
 export default function Register() {
@@ -89,7 +90,7 @@ export default function Register() {
     });
 
     if (result.success) {
-      navigate(state?.returnToCart ? "/cart" : "/home");
+      navigate(authDestination(state));
     }
   };
 

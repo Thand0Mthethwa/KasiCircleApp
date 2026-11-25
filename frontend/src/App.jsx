@@ -32,6 +32,8 @@ import { CartProvider } from './components/commerce/CartContext';
 import Cart from './pages/Cart';
 import ManageProducts from './pages/ManageProducts';
 import { OrderDetail, OrderList } from './pages/Orders';
+import PaymentReturn from './pages/PaymentReturn';
+import { authDestination } from './components/commerce/paymentStatus';
 import NotFound from './pages/NotFound';
 
 // Protected Route Component
@@ -71,10 +73,10 @@ function AdminRoute({ children }) {
 function PublicRoute({ children }) {
   const { isAuthenticated } = useAuth();
   const { pathname, state } = useLocation();
-  const returningToCart = (pathname === '/login' || pathname === '/register') && state?.returnToCart === true;
+  const destination = pathname === '/login' || pathname === '/register' ? authDestination(state) : '/home';
 
   if (isAuthenticated) {
-    return <Navigate to={returningToCart ? '/cart' : '/home'} replace />;
+    return <Navigate to={destination} replace />;
   }
 
   return children;
@@ -148,6 +150,7 @@ function AppRoutes() {
       <Route path="/bookings" element={<ProtectedRoute><Bookings key="mine" /></ProtectedRoute>} />
       <Route path="/bookings/incoming" element={<ProtectedRoute><Bookings key="incoming" incoming /></ProtectedRoute>} />
       <Route path="/bookings/:id" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
+      <Route path="/payments/return" element={<PaymentReturn />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/products/manage" element={<ProtectedRoute><ManageProducts /></ProtectedRoute>} />
       <Route path="/orders" element={<ProtectedRoute><OrderList key="mine" /></ProtectedRoute>} />

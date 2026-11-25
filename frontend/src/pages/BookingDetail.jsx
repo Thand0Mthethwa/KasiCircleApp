@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button, Card } from '../components';
-import { BookingStatus, CommercePage, Field, PaymentNote, ResourceFeedback, useCommerceMutation } from '../components/commerce/CommerceUI';
+import { BookingStatus, CommercePage, Field, ResourceFeedback, useCommerceMutation } from '../components/commerce/CommerceUI';
+import PaymentPanel from '../components/commerce/PaymentPanel';
 import { bookingTime, rand, sastInput, sastInstant } from '../components/commerce/commerce';
 import useCommerceResource from '../components/commerce/useCommerceResource';
 import { commerceService } from '../services/api';
@@ -119,7 +120,7 @@ export default function BookingDetail() {
             )}
             {booking.viewer !== 'ADMIN' && <BookingActions booking={booking} reload={resource.retry} />}
           </Card>
-          <PaymentNote />
+          {booking.viewer !== 'ADMIN' && <PaymentPanel kind="BOOKING" id={id} label={booking.serviceName} />}
         </>
       )}
     </CommercePage>

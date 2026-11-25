@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button, Card } from '../components';
 import { CommercePage, Pagination, ResourceFeedback, useCommerceMutation } from '../components/commerce/CommerceUI';
+import PaymentPanel from '../components/commerce/PaymentPanel';
 import { bookingTime } from '../components/commerce/commerce';
 import { formatMinor, orderActions, orderLabels } from '../components/commerce/shop';
 import useCommerceResource from '../components/commerce/useCommerceResource';
@@ -111,9 +112,9 @@ export function OrderDetail() {
             <p className="text-lg font-semibold">Total {formatMinor(details.order.totalMinor)}</p>
             <p><strong>Collection address</strong><br />{details.collectionAddress}</p>
             {details.notes && <p className="whitespace-pre-wrap"><strong>Customer notes</strong><br />{details.notes}</p>}
-            <p>Payment is arranged directly with the business. This order does not record a payment.</p>
             {details.actions.length > 0 && <OrderStatusControls details={details} reload={resource.retry} />}
           </Card>
+          <PaymentPanel kind="ORDER" id={id} label={details.order.orderReference} />
           <Card className="space-y-3 p-5">
             <h2 className="font-semibold">Order history</h2>
             <ol className="space-y-2">

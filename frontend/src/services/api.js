@@ -687,3 +687,11 @@ export const shopService = {
   order: (id) => commerceRequest(`orders/${id}`),
   change: (id, input) => commerceRequest(`orders/${id}/status`, 'PATCH', input),
 };
+
+export const paymentService = {
+  history: (kind, id) => commerceRequest(`payments/history?${new URLSearchParams({ kind, id })}`),
+  initialize: (kind, id) => commerceRequest('payments/initialize', 'POST', { kind, id }),
+  status: (reference) => commerceRequest(`payments/${reference}`),
+  verify: (reference) => commerceRequest(`payments/${reference}/verify`, 'POST'),
+  simulate: (reference, outcome) => commerceRequest(`payments/${reference}/simulate`, 'POST', { outcome }),
+};
