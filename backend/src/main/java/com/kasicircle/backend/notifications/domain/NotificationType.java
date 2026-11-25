@@ -5,5 +5,6 @@ public enum NotificationType {
     APPLICATION_STATUS,
     MESSAGE,
     BOOKING_UPDATE,
-    ORDER_UPDATE
+    ORDER_UPDATE,
+    PAYMENT_UPDATE
 }
