@@ -1,5 +1,5 @@
 import { createElement, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Input, LoadingSpinner } from "../components";
 import { useAuth } from "../contexts/AuthContext";
 import { Eye, EyeOff, Home, Store, Wrench } from "lucide-react";
@@ -7,6 +7,7 @@ import AuthLayout from "../components/AuthLayout";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const { register, isLoading, error: authError } = useAuth();
 
   const [accountType, setAccountType] = useState("Resident");
@@ -88,7 +89,7 @@ export default function Register() {
     });
 
     if (result.success) {
-      navigate("/home");
+      navigate(state?.returnToCart ? "/cart" : "/home");
     }
   };
 
@@ -257,7 +258,7 @@ export default function Register() {
         Already have an account?{" "}
         <button
           type="button"
-          onClick={() => navigate("/login")}
+          onClick={() => navigate("/login", { state })}
           className="link-text px-1"
         >
           Login

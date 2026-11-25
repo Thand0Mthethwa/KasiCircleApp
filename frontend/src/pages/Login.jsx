@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Input, LoadingSpinner } from "../components";
 import { useAuth } from "../contexts/AuthContext";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
@@ -7,6 +7,7 @@ import AuthLayout from "../components/AuthLayout";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const { login, isLoading, error: authError } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -59,7 +60,7 @@ export default function Login() {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate("/home");
+      navigate(state?.returnToCart ? "/cart" : "/home");
     }
   };
 
@@ -128,7 +129,7 @@ export default function Login() {
         New to the neighbourhood?{" "}
         <button
           type="button"
-          onClick={() => navigate("/register")}
+          onClick={() => navigate("/register", { state })}
           className="link-text px-1"
         >
           Create an account

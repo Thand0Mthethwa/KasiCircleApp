@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AppShell from './components/AppShell';
@@ -28,6 +28,10 @@ import BookingDetail from './pages/BookingDetail';
 import Bookings from './pages/Bookings';
 import ManageServices from './pages/ManageServices';
 import RequestBooking from './pages/RequestBooking';
+import { CartProvider } from './components/commerce/CartContext';
+import Cart from './pages/Cart';
+import ManageProducts from './pages/ManageProducts';
+import { OrderDetail, OrderList } from './pages/Orders';
 import NotFound from './pages/NotFound';
 
 // Protected Route Component
@@ -66,9 +70,11 @@ function AdminRoute({ children }) {
 // Public Route Component (redirects to home if already authenticated)
 function PublicRoute({ children }) {
   const { isAuthenticated } = useAuth();
+  const { pathname, state } = useLocation();
+  const returningToCart = (pathname === '/login' || pathname === '/register') && state?.returnToCart === true;
 
   if (isAuthenticated) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to={returningToCart ? '/cart' : '/home'} replace />;
   }
 
   return children;
@@ -142,6 +148,11 @@ function AppRoutes() {
       <Route path="/bookings" element={<ProtectedRoute><Bookings key="mine" /></ProtectedRoute>} />
       <Route path="/bookings/incoming" element={<ProtectedRoute><Bookings key="incoming" incoming /></ProtectedRoute>} />
       <Route path="/bookings/:id" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/products/manage" element={<ProtectedRoute><ManageProducts /></ProtectedRoute>} />
+      <Route path="/orders" element={<ProtectedRoute><OrderList key="mine" /></ProtectedRoute>} />
+      <Route path="/orders/incoming" element={<ProtectedRoute><OrderList key="incoming" incoming /></ProtectedRoute>} />
+      <Route path="/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
       <Route path="/jobs" element={<Jobs />} />
       <Route path="/jobs/:id" element={<JobDetail />} />
       <Route
@@ -214,9 +225,11 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <AppShell>
-        <AppRoutes />
-      </AppShell>
+      <CartProvider>
+        <AppShell>
+          <AppRoutes />
+        </AppShell>
+      </CartProvider>
     </AuthProvider>
   );
 }

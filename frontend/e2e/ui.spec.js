@@ -124,6 +124,7 @@ async function fixtures(page) {
     else if (path === "/api/businesses" || path === "/api/users/me/businesses")
       response = pageOf([business]);
     else if (path === `/api/businesses/${business.id}`) response = business;
+    else if (path.endsWith("/products")) response = { content: [], hasNext: false };
     else if (path.endsWith("/reviews/summary"))
       response = {
         totalReviews: 1,

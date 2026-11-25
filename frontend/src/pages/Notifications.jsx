@@ -69,6 +69,8 @@ export default function Notifications() {
 
     if (notification.resourceType === "JOB") {
       navigate(`/jobs/${notification.resourceId}`);
+    } else if (notification.resourceType === "ORDER") {
+      navigate(`/orders/${notification.resourceId}`);
     } else if (notification.resourceType === "BOOKING") {
       navigate(`/bookings/${notification.resourceId}`);
     } else if (notification.resourceType === "CONVERSATION") {

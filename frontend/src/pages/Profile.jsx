@@ -489,6 +489,19 @@ export default function Profile() {
             )}
           </div>
         </Card>
+        <Card className="p-5 space-y-3">
+          <h2 className="font-semibold">Shopping</h2>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="secondary" onClick={() => navigate('/cart')}>Cart</Button>
+            <Button type="button" variant="secondary" onClick={() => navigate('/orders')}>My orders</Button>
+            {user?.accountType === 'BUSINESS' && (
+              <>
+                <Button type="button" variant="secondary" onClick={() => navigate('/products/manage')}>Manage products</Button>
+                <Button type="button" variant="secondary" onClick={() => navigate('/orders/incoming')}>Incoming orders</Button>
+              </>
+            )}
+          </div>
+        </Card>
         {/* Account Actions */}
         <Card className="p-4 shadow-sm">
           <button

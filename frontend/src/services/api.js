@@ -676,3 +676,14 @@ export const commerceService = {
   booking: (id) => commerceRequest(`bookings/${id}`),
   change: (id, input) => commerceRequest(`bookings/${id}/status`, 'PATCH', input),
 };
+
+export const shopService = {
+  catalog: (id, page) => commerceRequest(`businesses/${id}/products?page=${page}`, 'GET', undefined, false),
+  products: (page) => commerceRequest(`products/mine?page=${page}`),
+  saveProduct: (id, input) => id ? commerceRequest(`products/${id}`, 'PUT', input) : commerceRequest('products', 'POST', input),
+  review: (input) => commerceRequest('orders/review', 'POST', input),
+  place: (input) => commerceRequest('orders', 'POST', input),
+  orders: (incoming, page) => commerceRequest(`orders/${incoming ? 'incoming' : 'my'}?page=${page}`),
+  order: (id) => commerceRequest(`orders/${id}`),
+  change: (id, input) => commerceRequest(`orders/${id}/status`, 'PATCH', input),
+};

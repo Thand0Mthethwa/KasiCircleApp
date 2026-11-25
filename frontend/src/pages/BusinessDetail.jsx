@@ -1,3 +1,4 @@
+import ProductCatalog from '../components/commerce/ProductCatalog';
 import ProviderServices from '../components/commerce/ProviderServices';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -741,6 +742,7 @@ export default function BusinessDetail() {
                 {business.description}
               </p>
             </Card>
+            <ProductCatalog key={`products-${business.id}`} business={business} owner={isOwner} />
             <ProviderServices key={business.id} type="BUSINESS" providerId={business.id} owner={isOwner} />
             <ReportForm targetType="BUSINESS" targetId={business.id} />
 
