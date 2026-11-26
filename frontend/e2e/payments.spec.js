@@ -63,6 +63,7 @@ test('collection order failure, retry and verified result stay separate from ful
     await page.getByRole('heading', { name: 'Payment', exact: true }).evaluate((label) => label.parentElement.scrollIntoView());
     await page.getByRole('heading', { name: 'Payment', exact: true }).locator('..').screenshot({
       path: `${process.env.PAYMENT_SCREENSHOT_DIR}/mobile-pending.png`,
+      style: '.skip-link:not(:focus) { visibility: hidden; }',
     });
   }
   await page.getByRole('button', { name: 'Simulate success' }).click();

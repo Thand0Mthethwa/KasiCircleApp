@@ -15,4 +15,4 @@ Sprint 1 is implemented. V14 succeeded against the isolated QA PostgreSQL databa
 
 Sprint 2 adds business product catalogs, single-business carts and collection orders. V15 succeeded in isolated QA PostgreSQL. The order tests cover immutable prices, inventory reservations and release, duplicate submissions and participant permissions. See the [Sprint 2 report](COMMERCE_SPRINT_2_PRODUCTS.md) for verification and screenshots.
 
-Sprint 3 is next. Payment eligibility, agreements and provider verification remain required for payment work. Each sprint requires an acceptance check before starting the following sprint.
+Sprint 3 adds disabled-by-default Paystack test checkout for eligible collection orders and accepted bookings. V16 stores payment attempts, verification events and reconciliation cases separately from fulfillment. The [Sprint 3 report](COMMERCE_SPRINT_3_PAYMENTS.md) records the controlled QA results. Real Paystack test checkout, public HTTPS webhook delivery and merchant eligibility remain pending. Each sprint requires an acceptance check before starting the following sprint.
