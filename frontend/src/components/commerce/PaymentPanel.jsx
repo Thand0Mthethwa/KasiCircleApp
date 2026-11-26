@@ -76,6 +76,7 @@ export default function PaymentPanel({ kind, id, label }) {
         <div className="space-y-3 rounded-lg bg-kasi-green-light p-4">
           <p className="font-semibold">Review test payment</p>
           <p>{label} · {formatMinor(history.amountMinor)}</p>
+          {kind === 'BOOKING' && <p className="text-sm">Booking reference <strong>{id}</strong></p>}
           <p>The payment method is selected at hosted checkout.</p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" disabled={mutation.busy} onClick={initialize}>Start test checkout</Button>
@@ -96,6 +97,7 @@ export default function PaymentPanel({ kind, id, label }) {
             {history.attempts.map((attempt) => (
               <li key={attempt.reference} className="text-sm">
                 <strong>{paymentLabels[attempt.status]}</strong> · {formatMinor(attempt.amountMinor)} · {bookingTime(attempt.updatedAt)}
+                <p>Payment reference <span className="font-mono">{attempt.reference}</span></p>
                 {attempt.status === 'REFUND_REQUIRED' && <p>A refund review is needed. No refund has been confirmed.</p>}
               </li>
             ))}

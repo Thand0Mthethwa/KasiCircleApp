@@ -29,11 +29,13 @@ describe('commerce payments', () => {
     render(<PaymentPanel kind="BOOKING" id="booking" label="Electrical check" />);
     fireEvent.click(await screen.findByRole('button', { name: 'Pay online' }));
     expect(screen.getByText(/Electrical check.*45/)).toBeVisible();
+    expect(screen.getByText('Booking reference')).toHaveTextContent('booking');
     fireEvent.click(screen.getByRole('button', { name: 'Start test checkout' }));
     expect(await screen.findByText('Payment pending', { exact: true })).toBeVisible();
     expect(screen.queryByText('Test payment verified')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Check payment status' }));
     expect(await screen.findByText('Test payment verified')).toBeVisible();
+    expect(screen.getByText(attempt.reference)).toBeVisible();
     expect(paymentService.initialize).toHaveBeenCalledWith('BOOKING', 'booking');
   });
 
