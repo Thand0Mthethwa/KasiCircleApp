@@ -7,6 +7,8 @@ loadE2EEnvironment();
 const database = parseTestDatabase(process.env.E2E_DATABASE_URL);
 // A live identity/marker check must succeed before Spring Boot can run Flyway.
 testDatabaseSQL();
+const mockPayments = process.env.E2E_PAYMENTS_MOCK === 'true';
+if (mockPayments && !process.env.E2E_PAYMENT_SIGNING_SECRET) process.env.E2E_PAYMENT_SIGNING_SECRET = 'whsec_' + randomBytes(48).toString('hex');
 const jdbcUrl = `jdbc:postgresql://${database.host}:${database.port}/${database.name}`;
 
 export default defineConfig({
@@ -28,12 +30,12 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testMatch: ["**/marketplace.spec.js", "**/commerce.spec.js", "**/products.spec.js"],
+      testMatch: ["**/marketplace.spec.js", "**/commerce.spec.js", "**/products.spec.js", "**/payments.spec.js"],
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "mobile",
-      testMatch: ["**/marketplace.spec.js", "**/commerce.spec.js", "**/products.spec.js"],
+      testMatch: ["**/marketplace.spec.js", "**/commerce.spec.js", "**/products.spec.js", "**/payments.spec.js"],
       use: { ...devices["iPhone 13"], defaultBrowserType: "chromium" },
     },
     {
@@ -50,6 +52,11 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 120000,
       env: {
+        PAYMENTS_ENABLED: String(mockPayments),
+        PAYMENTS_LIVE_ENABLED: "false",
+        PAYMENTS_PROVIDER: "mock",
+        PAYSTACK_SECRET_KEY: "",
+        PAYSTACK_WEBHOOK_SECRET: mockPayments ? process.env.E2E_PAYMENT_SIGNING_SECRET : "",
         GEOAPIFY_API_KEY: "",
         DB_URL: jdbcUrl,
         SPRING_DATASOURCE_URL: jdbcUrl,

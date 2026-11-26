@@ -88,6 +88,7 @@ jobs:
         working-directory: frontend
         env:
           E2E_DATABASE_URL: postgresql://kasicircle:ci-only-password@127.0.0.1:5432/kasicircle_qa
+          E2E_PAYMENTS_MOCK: 'true'
         run: npm run test:e2e
 
   frontend:
