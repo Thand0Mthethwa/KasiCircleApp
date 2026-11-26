@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.client.ExpectedCount.once;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withException;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 class PaymentGatewayTest {
@@ -45,6 +46,19 @@ class PaymentGatewayTest {
         assertThat(gateway.verify("KC-abc")).isEqualTo(new PaymentGateway.Verification("KC-abc", 123L, 4500,
                 "ZAR", "test", "ORDER:example", PaymentGateway.Outcome.SUCCESS));
         assertThat(PaystackGateway.safeCheckout("https://checkout.paystack.com@other.test/code")).isFalse();
+        server.verify();
+    }
+
+    @Test
+    void providerTimeoutReturnsOnlyASafeRetryableError() {
+        var builder = RestClient.builder().baseUrl("https://api.paystack.co");
+        var server = MockRestServiceServer.bindTo(builder).build();
+        var gateway = new PaystackGateway(builder.build(), new ObjectMapper(), "https://example.test/payments/return");
+        server.expect(requestTo("https://api.paystack.co/transaction/verify/KC-fixture"))
+                .andRespond(withException(new java.net.SocketTimeoutException("controlled provider failure")));
+        assertThatThrownBy(() -> gateway.verify("KC-fixture"))
+                .isInstanceOf(PaymentGateway.Unavailable.class)
+                .hasMessageNotContaining("controlled provider failure");
         server.verify();
     }
 }
